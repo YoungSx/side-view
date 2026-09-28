@@ -1,0 +1,107 @@
+/*
+ * Styles for the detail column, injected INTO the shadow root (cssInjectionMode: 'ui').
+ * WXT resets the shadow root with `all: initial` and `rem` still scales to the page's font-size,
+ * so everything here is sized in px and kept independent of x.com's stylesheet.
+ */
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.sv-column {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  border-left: 1px solid rgba(128, 128, 128, 0.25);
+  background: #ffffff;
+  color: #0f1419;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.sv-bar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 8px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+}
+
+.sv-title {
+  flex: 1 1 auto;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.sv-action {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9999px;
+  color: inherit;
+  font-size: 15px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.sv-action:hover {
+  background: rgba(128, 128, 128, 0.15);
+}
+
+.sv-body {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sv-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.sv-hidden {
+  display: none;
+}
+
+.sv-empty,
+.sv-loading,
+.sv-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  font-size: 14px;
+  text-align: center;
+  color: #536471;
+}
+
+.sv-loading {
+  pointer-events: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sv-column {
+    background: #000000;
+    color: #e7e9ea;
+  }
+
+  .sv-empty,
+  .sv-loading,
+  .sv-error {
+    color: #71767b;
+  }
+}
