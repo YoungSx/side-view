@@ -107,6 +107,7 @@ it('close restores the page and stays closed through DOM changes, then reopens o
     vi.fn(() => ({ matches: true })),
   );
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+    right: 600,
     width: 600,
   } as DOMRect);
   expect(layout.open()).toBe(true);
@@ -204,4 +205,39 @@ it('positions a fixed column from the content geometry and reserves a retained n
   layout.setMode('insert-column');
   expect(host()?.style.left).toBe('1100px');
   expect(host()?.style.width).toBe('300px');
+});
+
+it('holds a fixed column in place instead of snapping to the left edge when the timeline is momentarily unmeasurable', async () => {
+  document.body.innerHTML =
+    '<main role="main"><div data-testid="feed-flatlist"><div><div data-testid="feedItem-by-alice"></div></div></div></main><nav role="navigation"></nav><div id="native-right"></div>';
+  const adapter = new BlueskyAdapter();
+  const primary = adapter.getPrimaryColumn();
+  if (!primary) throw new Error('Bluesky fixture missing');
+  const rect = vi
+    .spyOn(primary, 'getBoundingClientRect')
+    .mockReturnValue({ right: 800, width: 600 } as DOMRect);
+  layout = new ShadowLayoutController(ctx, adapter, 600);
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  expect(layout.open()).toBe(true);
+  expect(host()?.style.left).toBe('800px');
+  // Mid-navigation the feed column is torn down and reads zero-width: the column must NOT jump to 0.
+  rect.mockReturnValue({ right: 0, width: 0 } as DOMRect);
+  window.dispatchEvent(new Event('resize'));
+  expect(host()?.style.left).toBe('800px');
+  // Once the feed is measurable again it re-tracks the new right edge.
+  rect.mockReturnValue({ right: 900, width: 600 } as DOMRect);
+  window.dispatchEvent(new Event('resize'));
+  expect(host()?.style.left).toBe('900px');
+});
+
+it('tints the column with the host page surface so the loading state is not a hardcoded block', async () => {
+  addAnchor();
+  document.body.style.backgroundColor = 'rgb(21, 32, 43)';
+  document.body.style.color = 'rgb(231, 233, 234)';
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  expect(layout.open()).toBe(true);
+  expect(host()?.style.getPropertyValue('--sv-surface')).toBe('rgb(21, 32, 43)');
+  expect(host()?.style.getPropertyValue('--sv-on-surface')).toBe('rgb(231, 233, 234)');
+  document.body.style.backgroundColor = '';
+  document.body.style.color = '';
 });

@@ -167,7 +167,7 @@ export function App() {
 
           <SwitchRow
             label="Also open profiles, hashtags & searches"
-            hint="Off by default — only posts open in the side column."
+            hint="On by default — profile, hashtag and search links open in the side column too. Turn off to open only posts."
             checked={s.interceptProfilesAndTags}
             onCheckedChange={(v) => {
               patch({ interceptProfilesAndTags: v });

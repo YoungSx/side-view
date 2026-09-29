@@ -29,6 +29,9 @@ export class ShadowLayoutController implements LayoutController {
   private state: 'uninitialized' | 'initializing' | 'closed' | 'open' | 'disposed' =
     'uninitialized';
   private mode: LayoutMode = 'replace-sidebar';
+  /** The host page's sampled surface (background + text), applied so the column blends in. */
+  private surface: { background: string; foreground: string } = { background: '', foreground: '' };
+  private themeQuery: MediaQueryList | null = null;
 
   constructor(
     private readonly ctx: ContentScriptContext,
@@ -72,6 +75,9 @@ export class ShadowLayoutController implements LayoutController {
       this.observer = new MutationObserver(() => this.reattachIfDetached());
       this.state = 'closed';
       window.addEventListener('resize', this.resizeColumn);
+      // Re-sample the surface when the OS colour scheme flips so a live theme change re-tints.
+      this.themeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      this.themeQuery.addEventListener?.('change', this.onThemeChange);
     } catch (error) {
       this.detach(); // roll back the layout mutations so X's own layout is restored
       throw error;
@@ -110,6 +116,7 @@ export class ShadowLayoutController implements LayoutController {
       return false;
     try {
       this.state = 'open';
+      this.sampleSurface();
       this.injectLayoutCss();
       this.reattachIfDetached();
       if (!this.isColumnVisible()) {
@@ -184,6 +191,8 @@ export class ShadowLayoutController implements LayoutController {
     this.observer?.disconnect();
     this.observer = null;
     window.removeEventListener('resize', this.resizeColumn);
+    this.themeQuery?.removeEventListener?.('change', this.onThemeChange);
+    this.themeQuery = null;
     this.ui?.remove();
     this.ui = null;
     this.styleEl?.remove();
@@ -212,17 +221,25 @@ export class ShadowLayoutController implements LayoutController {
   }
 
   private styleHost(host: HTMLElement): void {
+    // Match the host page's own surface so the column and its loading state never flash a
+    // hardcoded colour that clashes with the live theme. Custom properties survive the shadow
+    // root's `all: initial` reset and inherit inward to the column CSS.
+    if (this.surface.background) host.style.setProperty('--sv-surface', this.surface.background);
+    if (this.surface.foreground) host.style.setProperty('--sv-on-surface', this.surface.foreground);
+
     const bounds = this.bounds();
-    const right = bounds?.left ?? 0;
-    const available = bounds?.width ?? 0;
-    host.style.flex = `0 0 ${Math.min(this.width, available)}px`;
-    host.style.width = `${Math.min(this.width, available)}px`;
+    // A null measurement means the timeline column is momentarily gone (an SPA rebuild). Keep the
+    // last good geometry rather than collapsing a fixed column onto the far-left edge (left: 0).
+    if (!bounds) return;
+
+    host.style.flex = `0 0 ${bounds.width}px`;
+    host.style.width = `${bounds.width}px`;
     host.style.overflow = 'hidden';
     host.style.alignSelf = 'flex-start';
     const fixed = this.adapter.columnPosition === 'fixed';
     host.style.position = fixed ? 'fixed' : 'sticky';
     if (fixed) {
-      host.style.left = `${right}px`;
+      host.style.left = `${bounds.left}px`;
       host.style.zIndex = '10';
     }
     host.style.top = '0';
@@ -230,17 +247,49 @@ export class ShadowLayoutController implements LayoutController {
     host.style.minWidth = '0';
   }
 
-  private columnLeft(): number {
-    const primaryRight = this.adapter.getPrimaryColumn()?.getBoundingClientRect().right ?? 0;
-    if (this.adapter.columnPosition === 'fixed' && this.mode === 'insert-column') {
-      const sidebar = this.adapter.getSidebarColumn();
-      if (sidebar) return Math.max(primaryRight, sidebar.getBoundingClientRect().right);
+  /** Sample the host page's background + text colour for the immersive column surface. */
+  private sampleSurface(): void {
+    const view = document.defaultView;
+    if (!view) return;
+    const opaque = (color: string): boolean =>
+      color !== '' && color !== 'transparent' && !/,\s*0\)\s*$/.test(color);
+    let background = '';
+    for (const el of [document.body, document.documentElement]) {
+      if (!el) continue;
+      const color = view.getComputedStyle(el).backgroundColor;
+      if (opaque(color)) {
+        background = color;
+        break;
+      }
     }
-    return primaryRight;
+    const foreground = document.body ? view.getComputedStyle(document.body).color : '';
+    this.surface = { background, foreground };
+  }
+
+  private readonly onThemeChange = (): void => {
+    this.sampleSurface();
+    this.resizeColumn();
+  };
+
+  /**
+   * Left edge for the detail column: the timeline column's right edge (and, when a native sidebar
+   * is retained in insert-column mode, past that). Returns null when the timeline column can't be
+   * measured right now, so a fixed column is never pinned to the far-left corner on a transient miss.
+   */
+  private columnLeft(): number | null {
+    const rect = this.adapter.getPrimaryColumn()?.getBoundingClientRect();
+    if (!rect || rect.width <= 0 || rect.right <= 0) return null;
+    let left = rect.right;
+    if (this.adapter.columnPosition === 'fixed' && this.mode === 'insert-column') {
+      const sidebar = this.adapter.getSidebarColumn()?.getBoundingClientRect();
+      if (sidebar && sidebar.right > left) left = sidebar.right;
+    }
+    return left;
   }
 
   private bounds(): { left: number; width: number } | null {
     const left = this.columnLeft();
+    if (left === null) return null;
     const width = Math.min(this.width, Math.max(0, document.documentElement.clientWidth - left));
     return width > 0 ? { left, width } : null;
   }
