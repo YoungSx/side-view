@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Open X (Twitter) tweet detail in a side column instead of navigating away.",
+  "description": "Open X, Bluesky and Threads post detail in a side column instead of navigating away.",
   "engines": {
     "node": ">=22",
     "pnpm": ">=10"

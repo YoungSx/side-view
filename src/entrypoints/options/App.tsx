@@ -96,7 +96,7 @@ export function App() {
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">side-view</h1>
         <p className="text-sm text-muted-foreground">
-          Open a tweet's detail beside the timeline instead of navigating away.
+          Open a post's detail beside the timeline instead of navigating away.
         </p>
       </header>
 
@@ -104,7 +104,7 @@ export function App() {
         <CardHeader>
           <CardTitle>Behaviour</CardTitle>
           <CardDescription>
-            Changes apply live; toggling Enabled needs an x.com reload.
+            Changes apply live; toggling Enabled needs a page reload.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -167,7 +167,7 @@ export function App() {
 
           <SwitchRow
             label="Also open profiles, hashtags & searches"
-            hint="Off by default — only tweets open in the side column."
+            hint="Off by default — only posts open in the side column."
             checked={s.interceptProfilesAndTags}
             onCheckedChange={(v) => {
               patch({ interceptProfilesAndTags: v });
@@ -175,6 +175,17 @@ export function App() {
             }}
           />
         </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Threads</CardTitle>
+          <CardDescription>
+            Uses and reuses one native Threads column. It is saved in your Threads account; use its
+            native column menu to remove it. Width, ordering and scrolling are managed by Threads.
+            The detail width and compact navigation settings above apply to X and Bluesky.
+          </CardDescription>
+        </CardHeader>
       </Card>
 
       <Card>

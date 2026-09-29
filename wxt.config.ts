@@ -10,17 +10,18 @@ export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   manifest: {
     name: 'side-view',
-    description: 'Open X (Twitter) tweet detail in a side column instead of navigating away.',
+    description:
+      'Open X, Bluesky and Threads post detail in a side column instead of navigating away.',
     permissions: ['storage', 'declarativeNetRequestWithHostAccess'],
-    host_permissions: ['*://x.com/*', '*://twitter.com/*'],
-    // Header-relaxation ruleset, ENABLED at load. Live testing on x.com confirmed the detail
-    // document is served with `X-Frame-Options: deny` (no `frame-ancestors` to make Chrome ignore
-    // it), so removing those headers is REQUIRED for the same-origin iframe to render — not an
-    // optional fallback. Enabling it in the manifest makes it active the moment the extension loads,
-    // independent of the (sleep-prone) service-worker + storage + watch chain. The `bypassFrameHeaders`
-    // setting can still turn it off at runtime; it defaults to on so the two never disagree.
-    // The rule is tightly scoped (sub_frame + initiator x.com/twitter.com) so it only relaxes the
-    // framed detail document, never the top-level app.
+    host_permissions: [
+      '*://x.com/*',
+      '*://twitter.com/*',
+      'https://bsky.app/*',
+      'https://*.threads.com/*',
+      'https://*.threads.net/*',
+    ],
+    // X needs narrowly scoped sub-frame header relaxation. Bluesky permits same-origin
+    // frames, so its host permission does not add or broaden these network rules.
     declarative_net_request: {
       rule_resources: [
         {

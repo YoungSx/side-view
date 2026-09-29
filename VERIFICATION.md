@@ -90,7 +90,7 @@ recheck that platform behavior if framing regresses.
 ## 4. Chrome-stripping inside the frame
 
 The framed thread should show **without** X's left nav / right sidebar / compose button
-(`src/platforms/x/detail-frame-css.ts`, injected by `x-detail-frame.content.ts`, gated on
+(`src/platforms/x/detail-frame-css.ts`, injected by `detail-frame.content.ts`, gated on
 the iframe element name `sideview-detail`, with `window.name` as fallback). If X's chrome still shows, those selectors need updating.
 Watch for **frame-busting**: if the frame reloads the top page or logs you out, X ships
 `top !== self` defense — file an issue; it needs an in-frame guard.
@@ -109,6 +109,74 @@ tabs (layout mode, width, profile/hashtag interception); **Enabled** requires a 
 
 ---
 
-**Not yet implemented (phase 1 scope):** BlueSky/Threads adapters, the functional `insert-column`
+**Not yet fully verified:** the functional `insert-column`
 layout (the mode + CSS exist; verify placement when enabled), and a drag-to-resize handle (width is
 set via Options). See `README.md` for architecture.
+
+
+## Bluesky adapter verification (2026-09-29)
+
+Source reference: [official social-app](https://github.com/bluesky-social/social-app/tree/f3b7f9f38e7066a5d392f82be955813ab0e4f34f), especially Layout, DesktopRightNav and PostFeedItem.
+Selectors were also checked in the live production DOM. Virtual-list direct children can include
+full-viewport overlays: measure only the child containing actual posts, not the first child.
+
+Native Chrome public Discover: open and switch posts in the detail iframe while the main URL
+remains `https://bsky.app/`; close restores the native sidebar. The frame displays native content
+and replies without duplicating desktop navigation. No Bluesky DNR header relaxation is added.
+Authenticated timelines/actions and compact authenticated navigation have not been live-verified.
+Overrides use `bluesky.<key>` (for example `bluesky.primaryColumn`) so existing X overrides cannot
+silently break the other platform. Public posts do not require a login; account actions remain
+native and may prompt for sign-in.
+
+
+## Threads native integration (2026-09-30)
+
+Supersedes the discarded iframe / hand-built deck prototypes. The accepted behavior is a saved
+native detail column, identified by its server ID, reused by updating its native root URL and
+routing within it. Creation delegates to the same home-route passthrough (`newColumnID`,
+`newColumnURL`) as Threads' own Add as column UI. Updating delegates to the mounted native update
+callback and in-column router. The compatibility code reads only column identity and action
+capabilities from the mounted React tree; it performs no manual GraphQL calls and owns no native
+layout CSS or rendering. The dedicated MAIN script requires a trusted user click; an isolated
+script supplies settings and persists ownership in extension local storage.
+
+Authenticated native Chrome: created a real column, switched posts with the original feed still
+present, verified native Remove column menu, removed it, and created it again. Source/reference
+confirmation came from the currently loaded native module factories, including
+`useBarcelonaAddColumnFromPassthroughPropsEffect`, `useBarcelonaCreateColumnMutation`,
+`useBarcelonaUpdateColumnMutation`, `BarcelonaHomeColumn.react` and `BarcelonaRoutedColumn.react`.
+This is an internal site interface, not a public API; changes are capability-checked and fail
+back to normal navigation. No claim is made that this interface will remain stable across releases.
+
+Final native DOM verification after page refresh and another real post click: two native
+`data-deck-column` nodes (original feed plus the reused detail), zero `data-sideview-host` nodes,
+zero iframes, and no `sv-layout-style`. The original feed column server ID remained unchanged.
+
+
+## Native detail-header actions (2026-09-30)
+
+X and Bluesky no longer render the extension's separate title bar. A shared lifecycle-managed
+actions group is appended to the platform's native header flex row inside the same-origin frame.
+Bluesky's existing thread-options slot remains before the new actions, with no absolute positioning
+or native-node relocation. Only the added group and stylesheet are removed at teardown.
+
+Icon color is sampled from the nearest native button's painted SVG path (stroke or fill), excluding
+extension icons. Native DOM/style changes and system color-scheme changes resynchronize it. X and
+Bluesky can therefore retain their different icon palettes. Loading/error or missing-header states
+retain a small fallback action group, not another title bar.
+
+Native Chrome verified X's single Post header with native-colored open/close icons and successful
+close. Bluesky showed its gray-blue thread-options icon followed by matching open/close icons;
+the original thread-options menu still opened and exposed its view/sort controls. Regression tests
+cover color/style changes, delayed/replaced headers, exactly-one-group mounting, cleanup, and
+canonical open-link updates.
+
+
+Header polish follow-up: the shadow column has no added left border, and the framed X primary
+column has zero left/right border widths, leaving the original timeline's right divider as the
+single boundary. Native Chrome computed measurements for X: original back button 36 x 36 CSS px,
+open/close buttons both 36 x 36, all with 9999px radius. Live inspection reported outer border 0px,
+frame border 0px, zero `.sv-bar` / `.sv-title` / `.sv-fallback-actions` nodes, and one native-header
+actions group. Loading/error recovery now uses explicit text actions within its state panel;
+there is no legacy floating icon toolbar. The action dimensions/radius/icon size are sampled from
+the nearest native button rather than a fixed extension size.

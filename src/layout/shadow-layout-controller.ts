@@ -101,11 +101,11 @@ export class ShadowLayoutController implements LayoutController {
   /** Mount synchronously after content is prepared, so a failed open can fall through natively. */
   open(): boolean {
     if (this.state !== 'closed' && this.state !== 'open') return false;
-    const anchor = document.querySelector(this.adapter.columnAnchor.selector);
+    const anchor = this.adapter.getPrimaryColumn();
     if (
       !anchor?.parentElement ||
       !window.matchMedia(`(min-width: ${SV_MIN_VIEWPORT_PX}px)`).matches ||
-      document.documentElement.clientWidth <= anchor.getBoundingClientRect().right
+      !this.bounds()
     )
       return false;
     try {
@@ -132,6 +132,7 @@ export class ShadowLayoutController implements LayoutController {
     if (this.state === 'open') {
       if (this.ui?.shadowHost.isConnected) document.body.classList.add(SV_MODE_CLASS[mode]);
       this.injectLayoutCss();
+      this.resizeColumn();
     }
   }
 
@@ -211,20 +212,41 @@ export class ShadowLayoutController implements LayoutController {
   }
 
   private styleHost(host: HTMLElement): void {
-    const anchor = document.querySelector(this.adapter.columnAnchor.selector);
-    const right = anchor?.getBoundingClientRect().right ?? 0;
-    const available = Math.max(0, document.documentElement.clientWidth - right);
+    const bounds = this.bounds();
+    const right = bounds?.left ?? 0;
+    const available = bounds?.width ?? 0;
     host.style.flex = `0 0 ${Math.min(this.width, available)}px`;
     host.style.width = `${Math.min(this.width, available)}px`;
     host.style.overflow = 'hidden';
     host.style.alignSelf = 'flex-start';
-    host.style.position = 'sticky';
+    const fixed = this.adapter.columnPosition === 'fixed';
+    host.style.position = fixed ? 'fixed' : 'sticky';
+    if (fixed) {
+      host.style.left = `${right}px`;
+      host.style.zIndex = '10';
+    }
     host.style.top = '0';
     host.style.height = '100vh';
     host.style.minWidth = '0';
   }
 
+  private columnLeft(): number {
+    const primaryRight = this.adapter.getPrimaryColumn()?.getBoundingClientRect().right ?? 0;
+    if (this.adapter.columnPosition === 'fixed' && this.mode === 'insert-column') {
+      const sidebar = this.adapter.getSidebarColumn();
+      if (sidebar) return Math.max(primaryRight, sidebar.getBoundingClientRect().right);
+    }
+    return primaryRight;
+  }
+
+  private bounds(): { left: number; width: number } | null {
+    const left = this.columnLeft();
+    const width = Math.min(this.width, Math.max(0, document.documentElement.clientWidth - left));
+    return width > 0 ? { left, width } : null;
+  }
+
   private readonly resizeColumn = (): void => {
-    if (this.ui?.shadowHost.isConnected) this.styleHost(this.ui.shadowHost);
+    if (!this.ui?.shadowHost.isConnected) return;
+    this.styleHost(this.ui.shadowHost);
   };
 }

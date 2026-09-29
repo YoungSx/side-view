@@ -16,3 +16,5 @@ export const SV_MODE_CLASS: Record<'replace-sidebar' | 'insert-column', string> 
   'replace-sidebar': 'sv-mode-replace',
   'insert-column': 'sv-mode-insert',
 };
+
+export const SV_DETAIL_FRAME_STYLE_ID = 'sv-detail-frame-style';

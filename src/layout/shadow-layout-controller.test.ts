@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { ContentScriptContext } from '#imports';
+import { BlueskyAdapter } from '@/platforms/bluesky/adapter';
 import { XAdapter } from '@/platforms/x/adapter';
 import { ShadowLayoutController } from './shadow-layout-controller';
 
@@ -178,4 +179,29 @@ it('does not resurrect a view if context invalidates during asynchronous prepara
   expect(layout.open()).toBe(false);
   expect(host()).toBeNull();
   expect(document.getElementById('sv-layout-style')).toBeNull();
+});
+
+it('positions a fixed column from the content geometry and reserves a retained native sidebar', async () => {
+  document.body.innerHTML =
+    '<main role="main"><div data-testid="feed-flatlist"><div><div data-testid="feedItem-by-alice"></div></div></div></main><nav role="navigation"></nav><div id="native-right"></div>';
+  const adapter = new BlueskyAdapter();
+  const primary = adapter.getPrimaryColumn();
+  const sidebar = adapter.getSidebarColumn();
+  if (!primary || !sidebar) throw new Error('Bluesky fixture missing');
+  Object.defineProperty(primary, 'getBoundingClientRect', {
+    value: () => ({ right: 800, width: 600 }),
+    configurable: true,
+  });
+  Object.defineProperty(sidebar, 'getBoundingClientRect', {
+    value: () => ({ right: 1100, width: 300 }),
+    configurable: true,
+  });
+  layout = new ShadowLayoutController(ctx, adapter, 600);
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  expect(layout.open()).toBe(true);
+  expect(host()?.style.position).toBe('fixed');
+  expect(host()?.style.left).toBe('800px');
+  layout.setMode('insert-column');
+  expect(host()?.style.left).toBe('1100px');
+  expect(host()?.style.width).toBe('300px');
 });

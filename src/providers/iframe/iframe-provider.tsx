@@ -50,6 +50,9 @@ export class IframeColumnProvider implements DetailColumnProvider {
     this.onClose();
   };
 
+  private readonly findHeader = (doc: Document): HTMLElement | null =>
+    this.adapter.detailHeader(doc);
+
   private render(): void {
     if (!this.intent) return;
     this.root?.render(
@@ -57,6 +60,7 @@ export class IframeColumnProvider implements DetailColumnProvider {
         intent={this.intent}
         frameName={this.adapter.detailFrameName}
         frameUrl={this.adapter.detailFrameUrl(this.intent.url)}
+        findHeader={this.findHeader}
         onClose={this.clear}
       />,
     );

@@ -38,6 +38,7 @@ export interface LayoutMountHooks {
 /** Encapsulates ALL knowledge of a single platform's DOM and navigation. */
 export interface PlatformAdapter {
   readonly id: 'x' | 'bluesky' | 'threads';
+  readonly columnPosition: 'inline' | 'fixed';
   /** Marker set as the detail iframe's `name` so the in-frame script recognises itself. */
   readonly detailFrameName: string;
   /** Platform-specific document URL for the iframe; canonical links remain unchanged. */
@@ -61,6 +62,8 @@ export interface PlatformAdapter {
   compactNavigationCss(): string;
   /** CSS injected INSIDE the detail frame to strip the platform's own chrome. */
   detailFrameCss(): string;
+  /** The native flex row that owns the detail title and existing header actions. */
+  detailHeader(doc: Document): HTMLElement | null;
   /** Report which load-bearing selectors currently resolve — a DOM-drift canary. */
   runSelfCheck(): Record<string, boolean>;
 }

@@ -1,4 +1,5 @@
 import type { DetailIntent, IntentKind, LayoutMode, PlatformAdapter } from '@/core/types';
+import { findXDetailHeader } from '@/platforms/detail-headers';
 import { buildDetailFrameCss } from './detail-frame-css';
 import { buildCompactNavigationCss, buildLayoutCss } from './layout-css';
 import {
@@ -35,6 +36,7 @@ const HANDLE_RE = /^\/([A-Za-z0-9_]{1,15})\/?$/;
 /** x.com / twitter.com adapter. Holds ALL platform-specific DOM knowledge. */
 export class XAdapter implements PlatformAdapter {
   readonly id = 'x' as const;
+  readonly columnPosition = 'inline' as const;
   readonly detailFrameName = 'sideview-detail';
   detailFrameUrl(url: string): string {
     // X's logged-in SW serves cached HTML (including X-Frame-Options: deny), outside DNR.
@@ -75,6 +77,10 @@ export class XAdapter implements PlatformAdapter {
 
   compactNavigationCss(): string {
     return buildCompactNavigationCss(this.s);
+  }
+
+  detailHeader(doc: Document): HTMLElement | null {
+    return findXDetailHeader(doc);
   }
 
   detailFrameCss(): string {

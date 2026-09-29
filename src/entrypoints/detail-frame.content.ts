@@ -1,12 +1,12 @@
 import { defineContentScript } from '#imports';
+import { SV_DETAIL_FRAME_STYLE_ID } from '@/core/style-ids';
 import { pickAdapter } from '@/platforms/registry';
-import { SV_DETAIL_FRAME_STYLE_ID } from '@/platforms/x/detail-frame-css';
 
 // Runs in ALL frames but acts ONLY inside our detail iframe — identified by `window.name`, set by
-// the provider before the iframe's `src`. There it strips X's own chrome so just the thread shows.
+// the provider before the iframe's `src`. There it strips the platform's own chrome so just the thread shows.
 // A persistent <style> plus a MutationObserver re-inject it if X's in-frame React removes the node.
 export default defineContentScript({
-  matches: ['*://x.com/*', '*://twitter.com/*'],
+  matches: ['*://x.com/*', '*://twitter.com/*', 'https://bsky.app/*'],
   allFrames: true,
   runAt: 'document_start',
   main() {

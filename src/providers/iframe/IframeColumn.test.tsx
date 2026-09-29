@@ -8,6 +8,7 @@ const props = {
   frameUrl: `${url}?lang=en`,
   frameName: 'sideview-detail',
   onClose: vi.fn(),
+  findHeader: () => null,
 };
 afterEach(() => {
   cleanup();
@@ -23,10 +24,14 @@ it('ignores the initial blank load and exposes a bounded failure with a canonica
     value: { URL: 'about:blank' },
   });
   fireEvent.load(frame);
-  expect(screen.getByRole('status').textContent).toBe('Loading…');
+  expect(screen.getByRole('status').textContent).toContain('Loading…');
   act(() => vi.advanceTimersByTime(20000));
   expect(screen.getByRole('alert').textContent).toContain('Couldn’t load');
-  expect(screen.getByRole('link', { name: 'Open in a new tab' }).getAttribute('href')).toBe(url);
+  expect(
+    screen
+      .getAllByRole('link', { name: 'Open in a new tab' })
+      .every((link) => link.getAttribute('href') === url),
+  ).toBe(true);
 });
 
 it('detects blocked documents, then clears the error when switching to a valid detail', () => {
