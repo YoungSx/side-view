@@ -15,9 +15,9 @@ export const settings = {
   columnWidth: storage.defineItem<number>('sync:columnWidth', { fallback: 600 }),
   /** Keep the native navigation as an icon rail independently of the detail column. */
   compactNavigation: storage.defineItem<boolean>('sync:compactNavigation', { fallback: false }),
-  /** Also open profile / hashtag / search links in the side column (phase-1 default: off). */
+  /** Also open profile / hashtag / search links in the side column (default: on). */
   interceptProfilesAndTags: storage.defineItem<boolean>('sync:interceptProfilesAndTags', {
-    fallback: false,
+    fallback: true,
   }),
   /** Per-key selector overrides, applied over the built-in x.com selector map (DOM-drift hedge). */
   selectorOverrides: storage.defineItem<Record<string, string>>('sync:selectorOverrides', {

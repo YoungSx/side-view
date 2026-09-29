@@ -48,3 +48,18 @@ it('detects blocked documents, then clears the error when switching to a valid d
   expect(screen.queryByRole('status')).toBeNull();
   expect(screen.queryByRole('alert')).toBeNull();
 });
+
+it('reveals the platform view as soon as its document is interactive, before the full load event', () => {
+  vi.useFakeTimers();
+  render(<IframeColumn {...props} />);
+  const frame = screen.getByTitle('side-view detail') as HTMLIFrameElement;
+  Object.defineProperty(frame, 'contentDocument', {
+    configurable: true,
+    value: { URL: props.frameUrl, readyState: 'interactive', documentElement: null },
+  });
+  // No load event fired yet — the interactive-document poll should promote to ready on its own.
+  act(() => vi.advanceTimersByTime(150));
+  expect(screen.queryByRole('status')).toBeNull();
+  expect(screen.queryByRole('alert')).toBeNull();
+  expect(frame.style.visibility).toBe('visible');
+});

@@ -16,8 +16,10 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #ffffff;
-  color: #0f1419;
+  /* Sampled from the host page (set on the shadow host as inline custom properties) so the
+     column blends into the live theme; the literals are only a pre-sample fallback. */
+  background: var(--sv-surface, #ffffff);
+  color: var(--sv-on-surface, #0f1419);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -71,17 +73,11 @@
   padding: 24px;
   font-size: 14px;
   text-align: center;
-  color: #536471;
+  /* Cover the (still-hidden) frame with the page surface, not an opaque black card. */
+  background: var(--sv-surface, #ffffff);
+  color: var(--sv-on-surface, #536471);
 }
 
-@media (prefers-color-scheme: dark) {
-  .sv-column {
-    background: #000000;
-    color: #e7e9ea;
-  }
-
-  .sv-loading,
-  .sv-error {
-    color: #71767b;
-  }
+.sv-loading {
+  opacity: 0.7;
 }
