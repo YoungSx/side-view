@@ -40,6 +40,8 @@ export interface PlatformAdapter {
   readonly id: 'x' | 'bluesky' | 'threads';
   /** Marker set as the detail iframe's `name` so the in-frame script recognises itself. */
   readonly detailFrameName: string;
+  /** Platform-specific document URL for the iframe; canonical links remain unchanged. */
+  detailFrameUrl(url: string): string;
   /** Where the detail column attaches: a STABLE CSS selector + which side of the anchor. */
   readonly columnAnchor: { readonly selector: string; readonly append: 'after' | 'before' };
   /** Does this adapter own the given location? */
@@ -55,6 +57,8 @@ export interface PlatformAdapter {
   resolveIntent(event: MouseEvent): DetailIntent | null;
   /** Host-page CSS (attribute selectors + `!important`) for the given layout mode. */
   layoutCss(mode: LayoutMode): string;
+  /** Independent navigation customization, including its own activation selector. */
+  compactNavigationCss(): string;
   /** CSS injected INSIDE the detail frame to strip the platform's own chrome. */
   detailFrameCss(): string;
   /** Report which load-bearing selectors currently resolve — a DOM-drift canary. */
@@ -77,8 +81,12 @@ export interface DetailColumnProvider {
 
 /** Owns where/how the detail column sits in the host page. Layout concerns only. */
 export interface LayoutController {
-  /** Inject layout CSS and mount the shadow host for `mode`; idempotent. */
-  attach(mode: LayoutMode, hooks: LayoutMountHooks): Promise<void>;
+  /** Prepare a detached UI without altering the page; initialization runs once. */
+  initialize(mode: LayoutMode, hooks: LayoutMountHooks): Promise<void>;
+  /** Open prepared content; return false if native navigation should handle the click. */
+  open(): boolean;
+  /** Unmount the detail and restore the page, retaining independent navigation preferences. */
+  close(): void;
   /** Re-run the idempotent mount if the shadow host was detached by a host-page re-render. */
   reattachIfDetached(): void;
   /**

@@ -1,0 +1,181 @@
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { ContentScriptContext } from '#imports';
+import { XAdapter } from '@/platforms/x/adapter';
+import { ShadowLayoutController } from './shadow-layout-controller';
+
+let layout: ShadowLayoutController;
+let ctx: ContentScriptContext;
+const host = () => document.querySelector<HTMLElement>('[data-sideview-host]');
+const addAnchor = () => {
+  const anchor = document.createElement('div');
+  anchor.dataset.testid = 'primaryColumn';
+  document.body.append(anchor);
+  return anchor;
+};
+
+beforeEach(() => {
+  document.body.innerHTML = '';
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn(() => ({ matches: true })),
+  );
+  vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1400);
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+    right: 600,
+    width: 600,
+  } as DOMRect);
+  ctx = new ContentScriptContext('layout-test');
+  layout = new ShadowLayoutController(ctx, new XAdapter(), 600);
+});
+afterEach(() => {
+  layout.detach();
+  ctx.abort();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
+
+it('initializes closed and never mounts on late anchors, route reconciliation or settings changes', async () => {
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  addAnchor();
+  layout.setMode('insert-column');
+  layout.setWidth(500);
+  layout.reattachIfDetached();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  expect(host()).toBeNull();
+  expect(document.getElementById('sv-layout-style')).toBeNull();
+  expect(document.body.classList.contains('sv-active')).toBe(false);
+});
+
+it('restores a removed host and an atomically replaced anchor without remounting content', async () => {
+  const anchor = addAnchor();
+  const mount = vi.fn((container: HTMLElement) => {
+    container.textContent = 'Open thread';
+  });
+  await layout.initialize('replace-sidebar', { onMount: mount, onRemove: vi.fn() });
+  expect(layout.open()).toBe(true);
+  const original = host();
+  expect(original).not.toBeNull();
+  original?.remove();
+  expect(layout.isColumnVisible()).toBe(false);
+  await vi.waitFor(() => expect(host()).toBe(original));
+  const replacement = anchor.cloneNode() as HTMLElement;
+  document.body.replaceChildren(replacement);
+  await vi.waitFor(() => expect(replacement.nextElementSibling).toBe(original));
+  expect(mount).toHaveBeenCalledOnce();
+});
+
+it('restores native layout without an anchor and stops observing on invalidation', async () => {
+  const anchor = addAnchor();
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  expect(layout.open()).toBe(true);
+  anchor.remove();
+  await vi.waitFor(() => expect(host()).toBeNull());
+  expect(document.body.classList.contains('sv-active')).toBe(false);
+  ctx.abort();
+  addAnchor();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  expect(host()).toBeNull();
+  expect(document.getElementById('sv-layout-style')).toBeNull();
+});
+
+it('close restores the page and stays closed through DOM changes, then reopens on demand', async () => {
+  addAnchor();
+  const remove = vi.fn();
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: remove });
+  expect(layout.open()).toBe(true);
+  layout.close();
+  expect(host()).toBeNull();
+  expect(document.getElementById('sv-layout-style')).toBeNull();
+  expect(document.body.className).toBe('');
+  expect(remove).toHaveBeenCalledOnce();
+  document.body.replaceChildren();
+  const replacement = addAnchor();
+  layout.setMode('insert-column');
+  layout.reattachIfDetached();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  expect(host()).toBeNull();
+  expect(document.body.className).toBe('');
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn(() => ({ matches: false })),
+  );
+  expect(layout.open()).toBe(false);
+  expect(host()).toBeNull();
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn(() => ({ matches: true })),
+  );
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+    width: 600,
+  } as DOMRect);
+  expect(layout.open()).toBe(true);
+  expect(replacement.nextElementSibling).toBe(host());
+  expect(document.body.classList.contains('sv-active')).toBe(true);
+  vi.unstubAllGlobals();
+});
+
+it('fits the right column into remaining viewport space and updates on resize', async () => {
+  const anchor = addAnchor();
+  vi.spyOn(anchor, 'getBoundingClientRect').mockReturnValue({ right: 900, width: 600 } as DOMRect);
+  const viewport = vi.spyOn(document.documentElement, 'clientWidth', 'get');
+  viewport.mockReturnValue(1400);
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  expect(layout.open()).toBe(true);
+  expect(host()?.style.width).toBe('500px');
+  viewport.mockReturnValue(1200);
+  window.dispatchEvent(new Event('resize'));
+  expect(host()?.style.width).toBe('300px');
+  viewport.mockReturnValue(1800);
+  window.dispatchEvent(new Event('resize'));
+  expect(host()?.style.width).toBe('600px');
+  expect(anchor.style.width).toBe('');
+});
+
+it('keeps the compact navigation preference when detail closes, and removes it when disabled', async () => {
+  addAnchor();
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  layout.setCompactNavigation(true);
+  expect(document.body.classList.contains('sv-compact-nav')).toBe(true);
+  expect(document.getElementById('sv-navigation-style')).not.toBeNull();
+  expect(layout.open()).toBe(true);
+  layout.close();
+  expect(host()).toBeNull();
+  expect(document.body.classList.contains('sv-active')).toBe(false);
+  expect(document.body.classList.contains('sv-compact-nav')).toBe(true);
+  layout.setCompactNavigation(false);
+  expect(document.body.classList.contains('sv-compact-nav')).toBe(false);
+  expect(document.getElementById('sv-navigation-style')).toBeNull();
+  layout.setCompactNavigation(true);
+  ctx.abort();
+  expect(document.body.classList.contains('sv-compact-nav')).toBe(false);
+  expect(document.getElementById('sv-navigation-style')).toBeNull();
+});
+
+it('rolls back a failed mount and remains closed after disposal', async () => {
+  const anchor = addAnchor();
+  await layout.initialize('replace-sidebar', {
+    onMount: () => {
+      throw new Error('render failed');
+    },
+    onRemove: vi.fn(),
+  });
+  const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+  expect(layout.open()).toBe(false);
+  expect(host()).toBeNull();
+  expect(document.getElementById('sv-layout-style')).toBeNull();
+  expect(document.body.classList.contains('sv-active')).toBe(false);
+  expect(error).toHaveBeenCalled();
+  ctx.abort();
+  anchor.after(document.createElement('div'));
+  expect(layout.open()).toBe(false);
+});
+
+it('does not resurrect a view if context invalidates during asynchronous preparation', async () => {
+  addAnchor();
+  const preparation = layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  ctx.abort();
+  await preparation;
+  expect(layout.open()).toBe(false);
+  expect(host()).toBeNull();
+  expect(document.getElementById('sv-layout-style')).toBeNull();
+});

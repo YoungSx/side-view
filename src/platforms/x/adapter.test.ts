@@ -77,3 +77,20 @@ describe('XAdapter.resolveIntent', () => {
     expect(adapter.resolveIntent(clickOn(byId('external')))).toBeNull();
   });
 });
+
+describe('XAdapter.detailFrameUrl', () => {
+  it('bypasses the cached SW document while keeping the canonical URL unchanged', () => {
+    const originalLang = document.documentElement.lang;
+    document.documentElement.lang = 'zh';
+    try {
+      const canonical = 'https://x.com/jack/status/123';
+      expect(new XAdapter().detailFrameUrl(canonical)).toBe(`${canonical}?lang=zh`);
+      expect(canonical).toBe('https://x.com/jack/status/123');
+      expect(new XAdapter().detailFrameUrl('https://x.com/search?q=test&lang=ja')).toBe(
+        'https://x.com/search?q=test&lang=ja',
+      );
+    } finally {
+      document.documentElement.lang = originalLang;
+    }
+  });
+});

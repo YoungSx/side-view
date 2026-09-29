@@ -7,7 +7,7 @@ import { ClickRouter, type InterceptPolicy } from './click-router';
 const cleanups: Array<() => void> = [];
 
 function install(policy: InterceptPolicy) {
-  const onIntent = vi.fn();
+  const onIntent = vi.fn(() => true);
   const router = new ClickRouter(new XAdapter(), onIntent, policy);
   router.install({
     onInvalidated: (cb: () => void) => cleanups.push(cb),
@@ -56,4 +56,21 @@ describe('ClickRouter', () => {
     expect(onIntent).not.toHaveBeenCalled();
     expect(event.defaultPrevented).toBe(false);
   });
+});
+
+it('only prepares the side column for eligible, unmodified tweet clicks', () => {
+  document.body.innerHTML = X_TIMELINE_HTML;
+  const prepare = vi.fn(() => true);
+  const onIntent = vi.fn(() => true);
+  const router = new ClickRouter(new XAdapter(), onIntent, (kind) => kind === 'status', prepare);
+  router.install({
+    onInvalidated: (cb: () => void) => cleanups.push(cb),
+  } as unknown as ContentScriptContext);
+  click('name');
+  click('body', { ctrlKey: true });
+  expect(prepare).not.toHaveBeenCalled();
+  click('body');
+  expect(prepare).toHaveBeenCalledOnce();
+  expect(onIntent).toHaveBeenCalledOnce();
+  for (const teardown of cleanups.splice(0)) teardown();
 });

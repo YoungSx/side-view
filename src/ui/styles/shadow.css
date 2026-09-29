@@ -5,6 +5,7 @@
  */
 
 :host {
+  all: initial;
   display: block;
   height: 100%;
 }
@@ -71,11 +72,6 @@
   border: 0;
 }
 
-.sv-hidden {
-  display: none;
-}
-
-.sv-empty,
 .sv-loading,
 .sv-error {
   position: absolute;
@@ -99,7 +95,6 @@
     color: #e7e9ea;
   }
 
-  .sv-empty,
   .sv-loading,
   .sv-error {
     color: #71767b;

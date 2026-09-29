@@ -1,7 +1,8 @@
 import type { ContentScriptContext } from '#imports';
 import type { DetailIntent, IntentKind, PlatformAdapter } from '@/core/types';
 
-export type IntentHandler = (intent: DetailIntent) => void;
+/** True only when a visible detail view accepted the intent. */
+export type IntentHandler = (intent: DetailIntent) => boolean;
 export type InterceptPolicy = (kind: IntentKind) => boolean;
 /** Precondition gate: when it returns false, the click falls through to native navigation. */
 export type InterceptGate = () => boolean;
@@ -58,13 +59,13 @@ export class ClickRouter {
     }
     // A drag to select tweet text ends with a click on the text; leave the selection usable.
     if (hasActiveSelection()) return;
-    // Column hidden (e.g. sub-breakpoint viewport): don't cancel the user's only way to navigate.
-    if (!this.canIntercept()) return;
     const intent = this.adapter.resolveIntent(event);
     if (!intent || !this.policy(intent.kind)) return;
+    // Classification and policy checks precede any attempt to open the detail.
+    if (!this.canIntercept()) return;
+    if (!this.onIntent(intent)) return;
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
-    this.onIntent(intent);
   };
 }

@@ -12,11 +12,14 @@ export class IframeColumnProvider implements DetailColumnProvider {
   private root: Root | null = null;
   private intent: DetailIntent | null = null;
 
-  constructor(private readonly adapter: PlatformAdapter) {}
+  constructor(
+    private readonly adapter: PlatformAdapter,
+    private readonly onClose: () => void,
+  ) {}
 
   mount(container: HTMLElement): void {
     // WXT's mount() offers no already-mounted guard and does not pair onRemove before a re-mount
-    // (e.g. reattachIfDetached firing while autoMount lags). Unmount any prior root first so a
+    // during host-page DOM replacement. Unmount any prior root first so a
     // second onMount can never orphan a React root and its still-loaded detail iframe.
     this.root?.unmount();
     this.root = createRoot(container);
@@ -44,14 +47,16 @@ export class IframeColumnProvider implements DetailColumnProvider {
 
   private readonly clear = (): void => {
     this.intent = null;
-    this.render();
+    this.onClose();
   };
 
   private render(): void {
+    if (!this.intent) return;
     this.root?.render(
       <IframeColumn
         intent={this.intent}
         frameName={this.adapter.detailFrameName}
+        frameUrl={this.adapter.detailFrameUrl(this.intent.url)}
         onClose={this.clear}
       />,
     );

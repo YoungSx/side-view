@@ -12,7 +12,10 @@ export default defineContentScript({
   main() {
     const adapter = pickAdapter(new URL(location.href));
     if (!adapter) return;
-    if (window.top === window.self || window.name !== adapter.detailFrameName) return;
+    if (window.top === window.self) return;
+    // Chrome can clear window.name on navigation; the same-origin iframe element keeps its name.
+    const frameName = window.frameElement?.getAttribute('name') ?? window.name;
+    if (frameName !== adapter.detailFrameName) return;
     installChromeStripper(adapter.detailFrameCss());
   },
 });

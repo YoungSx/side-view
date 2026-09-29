@@ -26,27 +26,38 @@ export async function startSideView(ctx: ContentScriptContext): Promise<void> {
 
   log.debug('selector self-check', adapter.runSelfCheck());
 
-  const provider = new IframeColumnProvider(adapter);
   const layout = new ShadowLayoutController(ctx, adapter, snapshot.columnWidth);
-  await layout.attach(snapshot.layoutMode, {
+  const provider = new IframeColumnProvider(adapter, () => layout.close());
+  await layout.initialize(snapshot.layoutMode, {
     onMount: (container) => provider.mount(container),
     onRemove: () => provider.unmount(),
   });
+  if (ctx.isInvalid) return;
+  layout.setCompactNavigation(snapshot.compactNavigation);
 
   const router = new ClickRouter(
     adapter,
-    (intent) => provider.open(intent),
+    (intent) => {
+      provider.open(intent);
+      if (layout.open()) return true;
+      layout.close();
+      provider.destroy();
+      return false;
+    },
     makePolicy(snapshot.interceptProfilesAndTags),
-    () => layout.isColumnVisible(), // don't hijack clicks while the column is hidden (sub-breakpoint)
   );
   router.install(ctx);
+  ctx.onInvalidated(() => provider.destroy());
 
-  // Secondary guard: re-attach if a route change tore the host down while autoMount lagged.
+  // Route events provide an additional opportunity to reconcile the column.
   observeRoute(ctx, () => layout.reattachIfDetached());
 
   // Live settings — the options page can retune the running content script.
   ctx.onInvalidated(settings.layoutMode.watch((mode) => layout.setMode(mode)));
   ctx.onInvalidated(settings.columnWidth.watch((px) => layout.setWidth(px)));
+  ctx.onInvalidated(
+    settings.compactNavigation.watch((enabled) => layout.setCompactNavigation(enabled)),
+  );
   ctx.onInvalidated(
     settings.interceptProfilesAndTags.watch((v) => router.setPolicy(makePolicy(v))),
   );

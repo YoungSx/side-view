@@ -1,11 +1,14 @@
 import type { ContentScriptContext, ShadowRootContentScriptUi } from '#imports';
 import { createShadowRootUi } from '#imports';
+import { log } from '@/core/log';
 import {
   SV_ACTIVE_CLASS,
+  SV_COMPACT_NAV_CLASS,
   SV_HOST_ATTR,
   SV_LAYOUT_STYLE_ID,
   SV_MIN_VIEWPORT_PX,
   SV_MODE_CLASS,
+  SV_NAV_STYLE_ID,
 } from '@/core/style-ids';
 import type { LayoutController, LayoutMode, LayoutMountHooks, PlatformAdapter } from '@/core/types';
 
@@ -13,14 +16,18 @@ import type { LayoutController, LayoutMode, LayoutMountHooks, PlatformAdapter } 
  * Places the detail column in the host page using WXT's shadow-root UI.
  *
  * Style isolation comes from the shadow root (`all: initial` reset); the host is anchored as the
- * sibling after the platform's timeline column and `autoMount()` re-mounts it whenever the host
+ * sibling after the platform's timeline column and an observer reattaches it whenever the host
  * page rebuilds that column on SPA navigation. The reversible layout tweaks (hide native sidebar,
- * widen the timeline) live in a `<style>` in `<head>`, which host re-renders never touch.
+ * preserve the timeline width) live in a `<style>` in `<head>`, which host re-renders never touch.
  */
 export class ShadowLayoutController implements LayoutController {
   private ui: ShadowRootContentScriptUi<HTMLElement> | null = null;
   private styleEl: HTMLStyleElement | null = null;
+  private navigationStyleEl: HTMLStyleElement | null = null;
   private hooks: LayoutMountHooks | null = null;
+  private observer: MutationObserver | null = null;
+  private state: 'uninitialized' | 'initializing' | 'closed' | 'open' | 'disposed' =
+    'uninitialized';
   private mode: LayoutMode = 'replace-sidebar';
 
   constructor(
@@ -29,21 +36,21 @@ export class ShadowLayoutController implements LayoutController {
     private width: number,
   ) {}
 
-  async attach(mode: LayoutMode, hooks: LayoutMountHooks): Promise<void> {
+  async initialize(mode: LayoutMode, hooks: LayoutMountHooks): Promise<void> {
+    if (this.state !== 'uninitialized') throw new Error('Layout already initialized');
     this.mode = mode;
     this.hooks = hooks;
-    this.injectLayoutCss();
-    document.body.classList.add(SV_ACTIVE_CLASS, SV_MODE_CLASS[mode]);
-    // Body classes gate the layout CSS (hide native sidebar, widen timeline) the instant they are
-    // added; ensure they are removed even if the async mount below throws or the context dies, so
-    // the host page is never left mangled with no column mounted.
-    this.ctx.onInvalidated(() => this.removeBodyClasses());
+    this.state = 'initializing';
+    // Prepare a detached UI. Only open() may insert it or change the page layout.
+    this.ctx.onInvalidated(() => this.detach());
 
     try {
       const { selector, append } = this.adapter.columnAnchor;
-      this.ui = await createShadowRootUi<HTMLElement>(this.ctx, {
+      const ui = await createShadowRootUi<HTMLElement>(this.ctx, {
         name: 'side-view-column',
         position: 'inline',
+        // Use our reset: WXT's `all: initial !important` overrides the host's flex sizing.
+        inheritStyles: true,
         anchor: selector,
         append,
         isolateEvents: true,
@@ -55,7 +62,16 @@ export class ShadowLayoutController implements LayoutController {
         },
         onRemove: () => this.hooks?.onRemove(),
       });
-      this.ui.autoMount();
+      if (this.ctx.isInvalid) {
+        ui.remove();
+        return;
+      }
+      this.ui = ui;
+      // X can replace its children without changing the URL or ever leaving the anchor absent.
+      // Observe the actual host connection as well as the current anchor, not just selector existence.
+      this.observer = new MutationObserver(() => this.reattachIfDetached());
+      this.state = 'closed';
+      window.addEventListener('resize', this.resizeColumn);
     } catch (error) {
       this.detach(); // roll back the layout mutations so X's own layout is restored
       throw error;
@@ -64,15 +80,59 @@ export class ShadowLayoutController implements LayoutController {
 
   /** Whether the column is currently shown; below the min viewport it is hidden by CSS. */
   isColumnVisible(): boolean {
-    return window.matchMedia(`(min-width: ${SV_MIN_VIEWPORT_PX}px)`).matches;
+    const host = this.ui?.shadowHost;
+    return (
+      !!host?.isConnected &&
+      host.getBoundingClientRect().width > 0 &&
+      window.matchMedia(`(min-width: ${SV_MIN_VIEWPORT_PX}px)`).matches
+    );
+  }
+
+  /** Restore the native page until the next eligible tweet click. */
+  close(): void {
+    if (this.state === 'open') this.state = 'closed';
+    this.observer?.disconnect();
+    this.ui?.remove();
+    this.styleEl?.remove();
+    this.styleEl = null;
+    this.removeBodyClasses();
+  }
+
+  /** Mount synchronously after content is prepared, so a failed open can fall through natively. */
+  open(): boolean {
+    if (this.state !== 'closed' && this.state !== 'open') return false;
+    const anchor = document.querySelector(this.adapter.columnAnchor.selector);
+    if (
+      !anchor?.parentElement ||
+      !window.matchMedia(`(min-width: ${SV_MIN_VIEWPORT_PX}px)`).matches ||
+      document.documentElement.clientWidth <= anchor.getBoundingClientRect().right
+    )
+      return false;
+    try {
+      this.state = 'open';
+      this.injectLayoutCss();
+      this.reattachIfDetached();
+      if (!this.isColumnVisible()) {
+        this.close();
+        return false;
+      }
+      this.observer?.observe(document.body, { childList: true, subtree: true });
+      return true;
+    } catch (error) {
+      this.close();
+      log.error('failed to open detail column', error);
+      return false;
+    }
   }
 
   setMode(mode: LayoutMode): void {
     if (mode === this.mode) return;
     document.body.classList.remove(SV_MODE_CLASS[this.mode]);
     this.mode = mode;
-    document.body.classList.add(SV_MODE_CLASS[mode]);
-    this.injectLayoutCss();
+    if (this.state === 'open') {
+      if (this.ui?.shadowHost.isConnected) document.body.classList.add(SV_MODE_CLASS[mode]);
+      this.injectLayoutCss();
+    }
   }
 
   setWidth(px: number): void {
@@ -80,24 +140,57 @@ export class ShadowLayoutController implements LayoutController {
     if (this.ui) this.styleHost(this.ui.shadowHost);
   }
 
-  reattachIfDetached(): void {
-    if (!this.ui || this.ui.shadowHost.isConnected) return;
-    try {
-      this.ui.mount();
-    } catch {
-      // The route event fires before the host page rebuilds the timeline column, so the anchor
-      // selector can be momentarily absent and WXT's mount() throws "could not find anchor element".
-      // That's benign here: autoMount re-mounts once the anchor reappears. Swallow it so this
-      // secondary guard never surfaces an uncaught error on every navigation.
+  setCompactNavigation(enabled: boolean): void {
+    if (this.state === 'disposed') return;
+    this.navigationStyleEl?.remove();
+    this.navigationStyleEl = null;
+    document.body.classList.toggle(SV_COMPACT_NAV_CLASS, enabled);
+    if (enabled) {
+      this.navigationStyleEl = document.createElement('style');
+      this.navigationStyleEl.id = SV_NAV_STYLE_ID;
+      this.navigationStyleEl.textContent = this.adapter.compactNavigationCss();
+      document.head.append(this.navigationStyleEl);
     }
+    this.resizeColumn();
+  }
+
+  reattachIfDetached(): void {
+    const ui = this.ui;
+    if (this.state !== 'open' || !ui) return;
+    const { selector, append } = this.adapter.columnAnchor;
+    const anchor = document.querySelector(selector);
+    if (!anchor?.parentElement) {
+      if (ui.mounted || ui.shadowHost.isConnected) ui.remove();
+      this.removeBodyClasses();
+      return;
+    }
+    const adjacent = append === 'after' ? anchor.nextElementSibling : anchor.previousElementSibling;
+    if (adjacent !== ui.shadowHost) {
+      // Reuse the existing React tree when X only detached/moved the host.
+      if (ui.mounted) {
+        if (append === 'after') anchor.after(ui.shadowHost);
+        else anchor.before(ui.shadowHost);
+      } else {
+        ui.mount();
+      }
+    }
+    document.body.classList.add(SV_ACTIVE_CLASS, SV_MODE_CLASS[this.mode]);
+    this.styleHost(ui.shadowHost);
   }
 
   detach(): void {
+    this.state = 'disposed';
+    this.observer?.disconnect();
+    this.observer = null;
+    window.removeEventListener('resize', this.resizeColumn);
     this.ui?.remove();
     this.ui = null;
     this.styleEl?.remove();
     this.styleEl = null;
     this.removeBodyClasses();
+    this.navigationStyleEl?.remove();
+    this.navigationStyleEl = null;
+    document.body.classList.remove(SV_COMPACT_NAV_CLASS);
   }
 
   private removeBodyClasses(): void {
@@ -113,14 +206,25 @@ export class ShadowLayoutController implements LayoutController {
       this.styleEl = document.createElement('style');
       this.styleEl.id = SV_LAYOUT_STYLE_ID;
       document.head.appendChild(this.styleEl);
-      this.ctx.onInvalidated(() => this.styleEl?.remove());
     }
     this.styleEl.textContent = this.adapter.layoutCss(this.mode);
   }
 
   private styleHost(host: HTMLElement): void {
-    host.style.flex = `0 0 ${this.width}px`;
-    host.style.alignSelf = 'stretch';
+    const anchor = document.querySelector(this.adapter.columnAnchor.selector);
+    const right = anchor?.getBoundingClientRect().right ?? 0;
+    const available = Math.max(0, document.documentElement.clientWidth - right);
+    host.style.flex = `0 0 ${Math.min(this.width, available)}px`;
+    host.style.width = `${Math.min(this.width, available)}px`;
+    host.style.overflow = 'hidden';
+    host.style.alignSelf = 'flex-start';
+    host.style.position = 'sticky';
+    host.style.top = '0';
+    host.style.height = '100vh';
     host.style.minWidth = '0';
   }
+
+  private readonly resizeColumn = (): void => {
+    if (this.ui?.shadowHost.isConnected) this.styleHost(this.ui.shadowHost);
+  };
 }

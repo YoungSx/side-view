@@ -1,6 +1,6 @@
 import type { DetailIntent, IntentKind, LayoutMode, PlatformAdapter } from '@/core/types';
 import { buildDetailFrameCss } from './detail-frame-css';
-import { buildLayoutCss } from './layout-css';
+import { buildCompactNavigationCss, buildLayoutCss } from './layout-css';
 import {
   resolveSelectors,
   X_DEFAULT_SELECTORS,
@@ -36,6 +36,16 @@ const HANDLE_RE = /^\/([A-Za-z0-9_]{1,15})\/?$/;
 export class XAdapter implements PlatformAdapter {
   readonly id = 'x' as const;
   readonly detailFrameName = 'sideview-detail';
+  detailFrameUrl(url: string): string {
+    // X's logged-in SW serves cached HTML (including X-Frame-Options: deny), outside DNR.
+    // Its navigation handler explicitly skips URLs with `lang`, allowing the sub_frame
+    // response-header rules to run. Preserve the page language and any explicit URL language.
+    const frameUrl = new URL(url);
+    if (!frameUrl.searchParams.has('lang')) {
+      frameUrl.searchParams.set('lang', document.documentElement.lang || 'en');
+    }
+    return frameUrl.href;
+  }
   private readonly s: Record<XSelectorKey, string>;
 
   constructor(overrides: Readonly<Record<string, string>> = {}) {
@@ -61,6 +71,10 @@ export class XAdapter implements PlatformAdapter {
 
   layoutCss(mode: LayoutMode): string {
     return buildLayoutCss(mode, this.s);
+  }
+
+  compactNavigationCss(): string {
+    return buildCompactNavigationCss(this.s);
   }
 
   detailFrameCss(): string {

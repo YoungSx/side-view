@@ -138,7 +138,7 @@ export function App() {
           </div>
 
           <div className="flex items-center justify-between gap-4">
-            <Label htmlFor="sv-width">Column width (px)</Label>
+            <Label htmlFor="sv-width">Maximum detail width (px)</Label>
             <Input
               id="sv-width"
               type="number"
@@ -154,6 +154,16 @@ export function App() {
               }}
             />
           </div>
+
+          <SwitchRow
+            label="Compact left navigation"
+            hint="Show navigation icons in a narrow rail. Applies live and stays compact when you close the detail column."
+            checked={s.compactNavigation}
+            onCheckedChange={(v) => {
+              patch({ compactNavigation: v });
+              void settings.compactNavigation.setValue(v);
+            }}
+          />
 
           <SwitchRow
             label="Also open profiles, hashtags & searches"

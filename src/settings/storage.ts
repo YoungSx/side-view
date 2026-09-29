@@ -13,6 +13,8 @@ export const settings = {
   layoutMode: storage.defineItem<LayoutMode>('sync:layoutMode', { fallback: 'replace-sidebar' }),
   /** Detail column width, in CSS px. */
   columnWidth: storage.defineItem<number>('sync:columnWidth', { fallback: 600 }),
+  /** Keep the native navigation as an icon rail independently of the detail column. */
+  compactNavigation: storage.defineItem<boolean>('sync:compactNavigation', { fallback: false }),
   /** Also open profile / hashtag / search links in the side column (phase-1 default: off). */
   interceptProfilesAndTags: storage.defineItem<boolean>('sync:interceptProfilesAndTags', {
     fallback: false,
@@ -30,24 +32,33 @@ export interface SettingsSnapshot {
   enabled: boolean;
   layoutMode: LayoutMode;
   columnWidth: number;
+  compactNavigation: boolean;
   interceptProfilesAndTags: boolean;
   selectorOverrides: Record<string, string>;
 }
 
 /** Read every setting once. */
 export async function loadSettings(): Promise<SettingsSnapshot> {
-  const [enabled, layoutMode, columnWidth, interceptProfilesAndTags, selectorOverrides] =
-    await Promise.all([
-      settings.enabled.getValue(),
-      settings.layoutMode.getValue(),
-      settings.columnWidth.getValue(),
-      settings.interceptProfilesAndTags.getValue(),
-      settings.selectorOverrides.getValue(),
-    ]);
+  const [
+    enabled,
+    layoutMode,
+    columnWidth,
+    compactNavigation,
+    interceptProfilesAndTags,
+    selectorOverrides,
+  ] = await Promise.all([
+    settings.enabled.getValue(),
+    settings.layoutMode.getValue(),
+    settings.columnWidth.getValue(),
+    settings.compactNavigation.getValue(),
+    settings.interceptProfilesAndTags.getValue(),
+    settings.selectorOverrides.getValue(),
+  ]);
   return {
     enabled,
     layoutMode,
     columnWidth,
+    compactNavigation,
     interceptProfilesAndTags,
     selectorOverrides,
   };
