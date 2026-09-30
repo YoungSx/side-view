@@ -42,7 +42,7 @@ Threads 调用第一方页面内部动作，以及 X 去除 CSP 的范围，是�
 - 图标文件已完成：包内 128×128 PNG 使用 96px 内容框和透明边距，并提供 16、32、48px 版本及 manifest `icons`。当前选定图案引用旧 Twitter 鸟标；发布前需确认使用权及非官方身份表达，尺寸合规不代表商标使用已获许可或商店审核已通过。见 [图标说明](assets/icon/README.md)。
 - 必需的 440×280 小宣传图；1400×560 大宣传图可后续补。
 - 准备 3–5 张 1280×800 截图（官方允许 640×400；至少 1 张）：X 原生顶栏融合、Bluesky 原按钮让位、Threads 真原生多列、设置页。使用自有或获许可的中性演示内容，避免暴露私人消息、账号详情或不适合商店展示的动态流内容。
-- 商店标题建议 `Side View — Social Post Sidebar`，保持与 manifest / 产品品牌一致；最终名称由产品方确定。
+- 商店标题已定：`Side View — Social Post Sidebar`（中文 `Side View — 社交动态侧栏`）。标题无独立字段，取自 `manifest.name`，已改为 `__MSG_extName__` 按四语言本地化；平台名放在 description，不进标题以规避商标风险。
 - 单一用途草案：`Read social posts beside the feed without losing your place.`
 - 简述草案：`Read X and Bluesky posts beside your feed, and open Threads posts in a reusable native column.`（manifest description 上限 132 字符。）
 - 详细说明包括平台差异、开关 / 最大栏宽 / Compact 的适用范围、Threads 持久列行为、恢复原布局方式、已知限制、非官方声明和支持入口。

@@ -1,4 +1,8 @@
 {
+  "extName": {
+    "message": "Side View — 社群動態側欄",
+    "description": "Extension name shown in the Chrome Web Store listing and in chrome://extensions."
+  },
   "extDescription": {
     "message": "在側欄開啟 X、Bluesky 和 Threads 的貼文詳情，不必離開目前的時間軸。",
     "description": "Chrome Web Store listing description."

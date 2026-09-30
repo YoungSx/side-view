@@ -1,4 +1,8 @@
 {
+  "extName": {
+    "message": "Side View — ソーシャル投稿サイドバー",
+    "description": "Extension name shown in the Chrome Web Store listing and in chrome://extensions."
+  },
   "extDescription": {
     "message": "X・Bluesky・Threads の投稿詳細をタイムラインから離れずにサイドカラムで開きます。",
     "description": "Chrome Web Store listing description."
