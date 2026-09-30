@@ -179,7 +179,7 @@ export function App() {
           href="#settings"
         >
           <img src="/icons/128.png" alt="" width={32} height={32} className="size-8 shrink-0" />
-          side-view
+          {i18n.t('brand')}
         </a>
         <nav
           aria-label={i18n.t('options.sectionsNav')}

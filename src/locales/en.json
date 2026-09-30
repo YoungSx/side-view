@@ -7,18 +7,19 @@
     "message": "Open X, Bluesky and Threads post detail in a side column instead of navigating away.",
     "description": "Chrome Web Store listing description."
   },
+  "brand": "Side View",
   "common": {
     "close": "Close",
     "openInNewTab": "Open in a new tab"
   },
   "detail": {
-    "frameTitle": "side-view detail",
+    "frameTitle": "Side View detail",
     "actionsLabel": "Detail actions",
     "loading": "Loading…",
     "loadError": "Couldn’t load this view here."
   },
   "options": {
-    "title": "side-view · settings",
+    "title": "Side View · settings",
     "skipToSettings": "Skip to settings",
     "brandTagline": "Your timeline. A little more room.",
     "sectionsNav": "Settings sections",
@@ -35,7 +36,7 @@
     "general": {
       "title": "General",
       "subtitle": "Stay in your timeline while you explore.",
-      "enableTitle": "Enable side-view",
+      "enableTitle": "Enable Side View",
       "enableHint": "Open details beside your timeline. Reload X or Bluesky after changing this setting; Threads updates live.",
       "interceptTitle": "Open profiles, hashtags & searches",
       "interceptHint": "Include these links in the detail column. Turn off to open only posts.",
@@ -70,7 +71,7 @@
       "title": "Platforms",
       "subtitle": "One reading habit, three different homes.",
       "xBlueskyNote": "Use the layout and navigation preferences above. Changes apply live, except the main enable switch.",
-      "threadsNote": "Reuses one native column saved to your Threads account. Manage its width, order and scrolling in Threads. To remove it, use the native column menu; disabling side-view won’t delete it.",
+      "threadsNote": "Reuses one native column saved to your Threads account. Manage its width, order and scrolling in Threads. To remove it, use the native column menu; disabling Side View won’t delete it.",
       "xBlueskyTitle": "X & Bluesky",
       "threadsTitle": "Threads"
     },
@@ -86,6 +87,6 @@
       "overridesErrorFallback": "Check your JSON and try again.",
       "saveSelectors": "Save selectors"
     },
-    "footer": "side-view · Open a little wider."
+    "footer": "Side View · Open a little wider."
   }
 }
