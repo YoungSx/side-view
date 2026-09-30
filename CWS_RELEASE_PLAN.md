@@ -12,7 +12,7 @@
 - MV3；lint、类型检查、53 项测试通过；已有 X / Bluesky / Threads 的实机记录。
 - `pnpm zip` 可生成 `.output/side-view-0.1.0-chrome.zip`，manifest 位于 ZIP 根目录。
 - 图标已接入：`public/icons/` 包含 16/32/48/128px 透明 PNG，manifest 声明 `icons`；源图和导出说明见 `assets/icon/README.md`。
-- 隐私政策已产出：[docs/privacy-policy.md](docs/privacy-policy.md)。商店后台"隐私政策"字段填 `https://github.com/YoungSx/side-view/blob/main/docs/privacy-policy.md`（GitHub 原生渲染 Markdown，无需自建托管）。该网址依赖文件已进入 `main`，合入前不可用。尚缺专门审核指引和正式支持页面。
+- 隐私政策已产出：[docs/privacy-policy.md](docs/privacy-policy.md)。商店后台"隐私政策"字段填 `https://github.com/YoungSx/side-view/blob/main/docs/privacy-policy.md`（GitHub 原生渲染 Markdown，无需自建托管）。该网址依赖文件已进入 `main`，合入前不可用。审核备注已产出：[docs/review-notes.md](docs/review-notes.md)，覆盖 Threads 原生接入与 X 网络规则两处主动解释、权限逐项理由、非官方声明和测试步骤。支持页面已产出：[docs/support.md](docs/support.md)（Issues + 邮箱两个入口）。
 - 自动化测试和当前机器验收不能代替全新配置、商店安装版、多账户及平台变更后的验证。
 
 ## P0：送审前完成
@@ -47,7 +47,7 @@ Threads 调用第一方页面内部动作，以及 X 去除 CSP 的范围，是�
 - 单一用途草案：`Read social posts beside the feed without losing your place.`
 - 简述草案：`Read X and Bluesky posts beside your feed, and open Threads posts in a reusable native column.`（manifest description 上限 132 字符。）
 - 详细说明包括平台差异、开关 / 最大栏宽 / Compact 的适用范围、Threads 持久列行为、恢复原布局方式、已知限制、非官方声明和支持入口。
-- 提供公开 HTTPS 隐私政策地址、支持邮箱 / GitHub Issues、版本更新记录。可使用项目 GitHub Pages 托管说明页。
+- 支持入口已定：GitHub Issues `https://github.com/YoungSx/side-view/issues`（仓库已开放）与邮箱 `shangxin@outlook.com`，两个入口写在 [docs/support.md](docs/support.md)。版本更新记录用仓库 Releases。
 
 ## P2：开发者账号与后台
 
