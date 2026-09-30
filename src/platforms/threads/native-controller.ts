@@ -10,13 +10,6 @@ export const NATIVE_CHANNEL = 'side-view:threads-native:v1';
 const INTERACTIVE =
   'button,[role="button"],[role="menuitem"],input,textarea,select,video,[contenteditable="true"]';
 const SCROLL: ScrollIntoViewOptions = { block: 'nearest', inline: 'nearest', behavior: 'auto' };
-/**
- * Only Threads' home route mounts `useBarcelonaAddColumnFromPassthroughPropsEffect`, and opening a
- * column has to hand its request to that route — `native-runtime.ts` navigates to `/` carrying the
- * passthrough props. Off the home route nothing can honour that request, so a column may be
- * *reused* anywhere but never *opened*. Ask before intercepting rather than intercept and hope.
- */
-const canOpenColumn = (): boolean => location.pathname === '/';
 
 export function installThreadsNative(): () => void {
   let config: NativeConfig | null = null;
@@ -116,10 +109,9 @@ export function installThreadsNative(): () => void {
       } else if (owned) {
         if (!updateNativeColumn(owned, relative)) return;
       } else {
-        // Refuse before swallowing: on a route that cannot open a column, and when a recorded
-        // column is gone, the click stays a plain Threads navigation.
-        if (!canOpenColumn() || (config.columnId && !document.querySelector('[data-deck-column]')))
-          return;
+        // Refuse before swallowing when a recorded column is gone: recreating it here would open
+        // a duplicate the user never asked for.
+        if (config.columnId && !document.querySelector('[data-deck-column]')) return;
         const requestId = crypto.randomUUID();
         pending = { requestId, url: relative, before: new Set(nativeColumns().map((c) => c.id)) };
         observer.observe(document.body, { childList: true, subtree: true });
