@@ -38,7 +38,14 @@
       "enableTitle": "啟用 side-view",
       "enableHint": "在時間軸旁開啟詳情。變更此設定後請重新載入 X 或 Bluesky；Threads 會即時生效。",
       "interceptTitle": "開啟個人檔案、主題標籤和搜尋",
-      "interceptHint": "讓這些連結也在詳情欄開啟。關閉後僅開啟貼文。"
+      "interceptHint": "讓這些連結也在詳情欄開啟。關閉後僅開啟貼文。",
+      "languageTitle": "介面語言",
+      "languageHint": "同時套用於設定頁與詳情欄。選擇「跟隨瀏覽器」即使用瀏覽器本身的語言。",
+      "languageAuto": "跟隨瀏覽器",
+      "languageEn": "English",
+      "languageZhCN": "简体中文",
+      "languageZhTW": "繁體中文",
+      "languageJa": "日本語"
     },
     "layout": {
       "title": "版面配置",

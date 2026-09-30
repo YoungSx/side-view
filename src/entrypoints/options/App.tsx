@@ -14,7 +14,17 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { activeLanguage, setUiLanguage, UI_LANGUAGES, type UiLanguage } from '@/i18n/runtime';
 import { loadSettings, type SettingsSnapshot, settings } from '@/settings/storage';
+
+/** Maps a locale to the suffix of its display-name message key. */
+const LANGUAGE_LABEL_KEYS = {
+  auto: 'Auto',
+  en: 'En',
+  zh_CN: 'ZhCN',
+  zh_TW: 'ZhTW',
+  ja: 'Ja',
+} as const satisfies Record<UiLanguage, string>;
 
 function SwitchRow(props: {
   checked: boolean;
@@ -57,6 +67,15 @@ export function App() {
   const [widthError, setWidthError] = useState('');
   const [overridesText, setOverridesText] = useState('');
   const [overridesError, setOverridesError] = useState('');
+  const language = s?.uiLanguage;
+
+  // The locale is already applied by the time `s` changes, so this only mirrors it onto the
+  // document — the tab title and the language screen readers announce.
+  useEffect(() => {
+    if (!language) return;
+    document.title = i18n.t('options.title');
+    document.documentElement.lang = activeLanguage(language);
+  }, [language]);
 
   useEffect(() => {
     loadSettings().then(
@@ -79,6 +98,9 @@ export function App() {
       // The key and value share K; the storage items otherwise form a union of setters.
       const item = settings[key] as { setValue: (value: SettingsSnapshot[K]) => Promise<void> };
       await item.setValue(value);
+      // Apply the locale before touching `s` or `status`: both drive renders, and the strings
+      // for this update only exist once i18n points at the new table.
+      if (key === 'uiLanguage') await setUiLanguage(value as UiLanguage);
       setS((previous) => (previous ? { ...previous, [key]: value } : previous));
       setStatus(i18n.t('options.statusSaved'));
     } catch {
@@ -221,6 +243,39 @@ export function App() {
                 disabled={busy}
                 onCheckedChange={(value) => void save('interceptProfilesAndTags', value)}
               />
+              <fieldset disabled={busy} className="min-w-0 py-4">
+                <legend className="text-sm font-medium">
+                  {i18n.t('options.general.languageTitle')}
+                </legend>
+                <p
+                  id="language-hint"
+                  className="mt-1.5 mb-4 block text-sm font-normal leading-relaxed text-muted-foreground"
+                >
+                  {i18n.t('options.general.languageHint')}
+                </p>
+                <RadioGroup
+                  aria-label={i18n.t('options.general.languageTitle')}
+                  aria-describedby="language-hint"
+                  value={s.uiLanguage}
+                  className="grid gap-3 sm:grid-cols-2"
+                  onValueChange={(value) => {
+                    if (!UI_LANGUAGES.includes(value as UiLanguage)) return;
+                    void save('uiLanguage', value as UiLanguage);
+                  }}
+                >
+                  {UI_LANGUAGES.map((language) => (
+                    <Label
+                      key={language}
+                      htmlFor={`lang-${language}`}
+                      data-selected={s.uiLanguage === language}
+                      className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-sm font-normal transition-colors hover:bg-accent/50 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2 data-[selected=true]:border-primary data-[selected=true]:bg-accent"
+                    >
+                      <RadioGroupItem id={`lang-${language}`} value={language} />
+                      {i18n.t(`options.general.language${LANGUAGE_LABEL_KEYS[language]}`)}
+                    </Label>
+                  ))}
+                </RadioGroup>
+              </fieldset>
             </section>
             <Separator />
             <section className="scroll-mt-8" id="layout" aria-labelledby="layout-title">

@@ -1,5 +1,6 @@
 import { storage } from '#imports';
 import type { LayoutMode } from '@/core/types';
+import type { UiLanguage } from '@/i18n/runtime';
 
 /**
  * Typed, synced settings. Each item lives in `chrome.storage.sync` (cross-device) with a fallback,
@@ -23,6 +24,8 @@ export const settings = {
   selectorOverrides: storage.defineItem<Record<string, string>>('sync:selectorOverrides', {
     fallback: {},
   }),
+  /** UI language, or `auto` to follow the browser. Chrome's own locale is immutable at runtime. */
+  uiLanguage: storage.defineItem<UiLanguage>('sync:uiLanguage', { fallback: 'auto' }),
 } as const;
 
 export type SettingsKey = keyof typeof settings;
@@ -35,6 +38,7 @@ export interface SettingsSnapshot {
   compactNavigation: boolean;
   interceptProfilesAndTags: boolean;
   selectorOverrides: Record<string, string>;
+  uiLanguage: UiLanguage;
 }
 
 /** Read every setting once. */
@@ -46,6 +50,7 @@ export async function loadSettings(): Promise<SettingsSnapshot> {
     compactNavigation,
     interceptProfilesAndTags,
     selectorOverrides,
+    uiLanguage,
   ] = await Promise.all([
     settings.enabled.getValue(),
     settings.layoutMode.getValue(),
@@ -53,6 +58,7 @@ export async function loadSettings(): Promise<SettingsSnapshot> {
     settings.compactNavigation.getValue(),
     settings.interceptProfilesAndTags.getValue(),
     settings.selectorOverrides.getValue(),
+    settings.uiLanguage.getValue(),
   ]);
   return {
     enabled,
@@ -61,5 +67,6 @@ export async function loadSettings(): Promise<SettingsSnapshot> {
     compactNavigation,
     interceptProfilesAndTags,
     selectorOverrides,
+    uiLanguage,
   };
 }

@@ -38,7 +38,14 @@
       "enableTitle": "Enable side-view",
       "enableHint": "Open details beside your timeline. Reload X or Bluesky after changing this setting; Threads updates live.",
       "interceptTitle": "Open profiles, hashtags & searches",
-      "interceptHint": "Include these links in the detail column. Turn off to open only posts."
+      "interceptHint": "Include these links in the detail column. Turn off to open only posts.",
+      "languageTitle": "Language",
+      "languageHint": "Applies to the settings page and the detail column. Choose “Follow browser” to use the browser’s own language.",
+      "languageAuto": "Follow browser",
+      "languageEn": "English",
+      "languageZhCN": "简体中文",
+      "languageZhTW": "繁體中文",
+      "languageJa": "日本語"
     },
     "layout": {
       "title": "Layout",

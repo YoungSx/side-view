@@ -1,7 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { i18n } from '#i18n';
-import { browser } from '#imports';
+import { activeLanguage, applyStoredLanguage } from '@/i18n/runtime';
+import { settings } from '@/settings/storage';
 import { App } from './App';
 import './style.css';
 
@@ -13,9 +14,11 @@ const applyTheme = (dark: boolean): void => {
 applyTheme(media.matches);
 media.addEventListener('change', (event) => applyTheme(event.matches));
 
+// Retarget i18n at the stored language before the first paint, then title the tab in it. App
+// keeps both in sync from here on.
+await applyStoredLanguage();
 document.title = i18n.t('options.title');
-const uiLanguage = browser.i18n.getUILanguage?.();
-if (uiLanguage) document.documentElement.lang = uiLanguage;
+document.documentElement.lang = activeLanguage(await settings.uiLanguage.getValue());
 
 const root = document.getElementById('root');
 if (root) {
