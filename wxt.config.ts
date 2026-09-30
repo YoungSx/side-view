@@ -12,6 +12,12 @@ export default defineConfig({
     name: 'side-view',
     description:
       'Open X, Bluesky and Threads post detail in a side column instead of navigating away.',
+    icons: {
+      16: 'icons/16.png',
+      32: 'icons/32.png',
+      48: 'icons/48.png',
+      128: 'icons/128.png',
+    },
     permissions: ['storage', 'declarativeNetRequestWithHostAccess'],
     host_permissions: [
       '*://x.com/*',
