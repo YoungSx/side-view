@@ -113,3 +113,51 @@ it('matches the native button hit area, corner radius and icon size', () => {
   expect(actions?.style.getPropertyValue('--sv-native-button-radius')).toBe('18px');
   expect(actions?.style.getPropertyValue('--sv-native-icon-size')).toBe('20px');
 });
+
+it('coalesces a burst of subtree mutations into one header reconcile per frame', async () => {
+  vi.useFakeTimers();
+  document.body.innerHTML =
+    '<main role="main"><div id="header" style="position:sticky;flex-direction:row;min-height:52px"><button id="native">Prefs</button><span>Post</span></div></main>';
+  // reconcile() calls findHeader exactly once at its top, so a spy header finder counts reconciles.
+  const finder = vi.fn(findBlueskyDetailHeader);
+  cleanup = installDetailActions(document, finder, {
+    href: () => 'https://bsky.app/',
+    onClose: vi.fn(),
+    onMounted: vi.fn(),
+  });
+  // Drain the synchronous first reconcile and every frame its own DOM writes scheduled.
+  await vi.runAllTimersAsync();
+  finder.mockClear();
+  // Five attribute writes outside our own group in one synchronous burst.
+  const native = document.getElementById('native');
+  for (let i = 0; i < 5; i++) native?.setAttribute('style', `color:rgb(${i},0,0)`);
+  // Not synchronous.
+  expect(finder).not.toHaveBeenCalled();
+  // The observer delivers on a microtask and schedules a frame, but still doesn't reconcile yet.
+  await Promise.resolve();
+  expect(finder).not.toHaveBeenCalled();
+  // Only when the frame fires does the whole burst collapse to a single reconcile.
+  await vi.runAllTimersAsync();
+  expect(finder).toHaveBeenCalledTimes(1);
+});
+
+it('never reconciles after cleanup, even with a frame already pending', async () => {
+  vi.useFakeTimers();
+  document.body.innerHTML =
+    '<main role="main"><div id="header" style="position:sticky;flex-direction:row;min-height:52px"><button id="native">Prefs</button><span>Post</span></div></main>';
+  const finder = vi.fn(findBlueskyDetailHeader);
+  const teardown = installDetailActions(document, finder, {
+    href: () => 'https://bsky.app/',
+    onClose: vi.fn(),
+    onMounted: vi.fn(),
+  });
+  await vi.runAllTimersAsync();
+  finder.mockClear();
+  // Mutate, let the observer schedule the frame, then tear down before the frame fires.
+  document.getElementById('native')?.setAttribute('style', 'color:red');
+  await Promise.resolve();
+  teardown();
+  // The pending frame must see `disposed` and skip its reconcile.
+  await vi.runAllTimersAsync();
+  expect(finder).not.toHaveBeenCalled();
+});
