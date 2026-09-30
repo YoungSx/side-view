@@ -10,7 +10,7 @@
 当前状态：
 
 - MV3；lint、类型检查、53 项测试通过；已有 X / Bluesky / Threads 的实机记录。
-- `pnpm zip` 可生成 `.output/side-view-0.1.0-chrome.zip`，manifest 位于 ZIP 根目录。
+- `pnpm zip` 可生成 `.output/side-view-<version>-chrome.zip`，manifest 位于 ZIP 根目录。首发版本定为 `0.1.1`（留出 0.1.0 的余地，避免上架后版本号不可复用）。
 - 图标已接入：`public/icons/` 包含 16/32/48/128px 透明 PNG，manifest 声明 `icons`；源图和导出说明见 `assets/icon/README.md`。
 - 隐私政策已产出：[docs/privacy-policy.md](docs/privacy-policy.md)。商店后台"隐私政策"字段填 `https://github.com/YoungSx/side-view/blob/main/docs/privacy-policy.md`（GitHub 原生渲染 Markdown，无需自建托管）。该网址依赖文件已进入 `main`，合入前不可用。审核备注已产出：[docs/review-notes.md](docs/review-notes.md)，覆盖 Threads 原生接入与 X 网络规则两处主动解释、权限逐项理由、非官方声明和测试步骤。支持页面已产出：[docs/support.md](docs/support.md)（Issues + 邮箱两个入口）。
 - 自动化测试和当前机器验收不能代替全新配置、商店安装版、多账户及平台变更后的验证。
@@ -82,7 +82,7 @@ pnpm test
 pnpm zip
 ```
 
-- 冻结版本（建议首发准备完成后使用 0.1.1），每次更新递增。
+- 冻结版本（首发已定为 0.1.1），每次更新递增。
 - ZIP 只包含生产输出，manifest 位于根目录，不含源码研究副本、日志、测试截图、凭据或开发服务器地址。
 - 记录源码提交、Node / pnpm 版本、ZIP SHA-256，保存该次产物；未来不能用同版本不同内容替换留档。
 - 三平台各写一条独立测试路径：登录 / 可公开访问前提 → 点击 → 切换 → 关闭 / 移除 → 刷新重开。
