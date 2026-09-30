@@ -1,75 +1,116 @@
-# side-view
+<p align="center">
+  <a href="README.md">English</a> ·
+  <a href="README.zh-CN.md">简体中文</a> ·
+  <a href="README.zh-TW.md">繁體中文</a> ·
+  <a href="README.ja.md">日本語</a>
+</p>
 
-A Chrome (MV3) browser extension that opens a post's detail **in a column beside the timeline**
-instead of navigating away — reviving the multi-column reading experience of an older Twitter web
-client. Built on a platform-agnostic core so X, Bluesky, and future platforms are pluggable adapters.
+# Side View
 
-> **Status:** X / Twitter and Bluesky iframe adapters, plus native Threads column integration. X is verified with an authenticated session;
-> Bluesky is verified on public Discover posts, with authenticated flows still to be verified.
+**Read the post. Keep your timeline.**
 
-## How it works
+![Side View opens a post beside the timeline on X](assets/store/screenshots/01-x-sidebar.jpg)
 
-1. A shared content script watches the timeline and intercepts eligible post clicks in the
-   capture phase, cancelling client-side navigation only after the detail column accepts the post.
-2. The clicked post URL (`/{handle}/status/{id}` on X, `/profile/{actor}/post/{rkey}` on Bluesky) is loaded into a **same-origin
-   `<iframe>`** hosted in a Shadow-DOM column positioned beside the timeline. X uses an inline column; Bluesky uses a fixed column without moving its independently centered feed. The iframe reuses the platform's
-   own renderer and your logged-in session, so threads, media, polls and replies render natively.
-3. A second content script runs *inside* that iframe (identified by the iframe element name, with `window.name` as fallback) and strips the platform's
-   nav/sidebar so only the detail thread shows.
+You know the feeling. You're halfway down your timeline, a post catches your eye, you click it —
+and the whole feed is gone. Now you have to scroll all the way back, and whatever you were reading
+a minute ago is out of reach.
 
-The core engine talks only to three interfaces — `PlatformAdapter`, `DetailColumnProvider`,
-`LayoutController` — so new platforms, a future GraphQL renderer, or the reserved `insert-column`
-layout mode slot in without touching the interception logic.
+Side View opens that post **in a column right beside your timeline**. Your feed stays exactly
+where it was. Read it, reply, scroll through the thread, close it — and you're still looking at
+the same screen.
 
-## Develop
+Works on **X**, **Bluesky** and **Threads**.
+
+---
+
+## What it actually does
+
+Click any post in your feed. Instead of taking over the page, it opens next to your feed. Click
+another one and it takes the same place. Close it and your timeline is untouched — you never left.
+
+That's the whole idea. No new app, no account, no different website. You stay logged in as you
+are, and the post renders exactly the way your site renders it: threads, images, video, polls and
+replies all included.
+
+- **You decide what opens in the column.** Turn it off for profiles, hashtags and searches and
+  only posts open this way, if you prefer.
+- **You decide how wide it gets.** Anything from 320 to 1200 pixels, so it fits your window.
+- **You decide how much room your navigation takes.** Slim it down to an icon rail, or leave it
+  alone.
+- **Four languages.** English, 简体中文, 繁體中文, 日本語 — or just follow your browser.
+
+## Where it works
+
+**On X and Bluesky**, Side View draws the column itself and puts it beside your feed. You can have
+it take over the right sidebar, or sit next to the sidebar with both visible.
+
+**On Threads**, there's no sidebar to take over, so Side View reuses Threads' own column feature —
+one native column, saved to your Threads account, reused every time you open a post. It behaves
+like any other Threads column: you can move it, resize it, or scroll it the way you already know
+how.
+
+![The post opens beside the feed on Bluesky](assets/store/screenshots/02-bluesky-sidebar.jpg)
+
+![On Threads, the post opens in Threads' own column](assets/store/screenshots/03-threads-native-column.jpg)
+
+## Getting started
+
+1. Install Side View from the Chrome Web Store. *(The link goes here as soon as the listing is
+   live.)*
+2. Open X, Bluesky or Threads as usual. Nothing else to configure.
+3. Click a post. It opens beside your timeline.
+
+If you want the post on its own instead, every detail panel has an "open in a new tab" button.
+
+## Your settings
+
+Open the settings page from your browser's extension menu. It has its own tab, so it never gets in
+the way, and everything saves as you go.
+
+![The Side View settings page](assets/store/screenshots/04-settings.png)
+
+## Your privacy
+
+Side View has no server, no account, and no analytics. It reads the post you clicked from the page
+you're already looking at, shows it in the column, and forgets about it. Your settings stay in your
+browser. Nothing is collected, sold, or sent anywhere.
+
+One thing worth knowing: the Threads column is created by Threads and stored **in your Threads
+account** — that's Threads' own doing, not ours. Turning Side View off, or removing it, won't
+delete it. Removing it is a two-click job in Threads' own column menu, and there's more detail in
+[the privacy policy](docs/privacy-policy.md).
+
+## Good to know
+
+- **Side View is an independent extension.** It isn't affiliated with, endorsed by, or sponsored by
+  X, Bluesky, or Meta.
+- **Sites change.** Side View attaches to each site's own layout, so when a site redesigns, things
+  can stop working until an update lands. We're on it — [tell us when something breaks](docs/support.md).
+- **No account, ever.** There's nothing to sign up for and nothing to pay — Side View is a browser
+  extension that you install and use.
+- **Your timeline is never modified.** Side View doesn't reorder, hide, or rewrite anything. Close
+  it and the page is exactly as it was.
+
+## Get help
+
+Bug reports, feature requests and questions all go to the same place:
+**[GitHub Issues](https://github.com/YoungSx/side-view/issues)**. There's a short checklist of what
+to include in [docs/support.md](docs/support.md), and an email address if you'd rather not post
+publicly.
+
+## Build it yourself
+
+Side View is open source. Node 22+ and pnpm 10:
 
 ```bash
-pnpm install          # runs `wxt prepare`
-pnpm dev              # dev build + HMR (Chrome)
-pnpm build            # production build -> .output/chrome-mv3
-pnpm compile          # tsc --noEmit
-pnpm check            # biome format + lint (writes)
-pnpm test             # vitest
+git clone https://github.com/YoungSx/side-view.git
+cd side-view
+pnpm install
+pnpm dev      # development build with hot reload
+pnpm build    # production build → .output/chrome-mv3
+pnpm test     # run the test suite
 ```
 
-Load `.output/chrome-mv3` as an unpacked extension at `chrome://extensions`.
-
-The packaged extension includes 16/32/48/128px PNG icons. See
-[icon source, export steps and store requirements](assets/icon/README.md).
-
-## Runtime verification checklist
-
-Selectors and the framing/CSP conclusion are derived from X's historically-stable DOM but **must be
-confirmed against a live, logged-in x.com tab** — see `VERIFICATION.md`.
-
-
-## Threads
-
-Threads uses its own saved columns, router, renderer, menus and scrolling. Side-view creates one
-native detail column and reuses its server ID when another post is clicked. Remove it using the
-native column menu. It persists in the Threads account until removed; disabling side-view stops
-interception without deleting the saved column. No iframe, column CSS, or frame-header rules are
-used on Threads. Native integration depends on a narrow, runtime-checked compatibility boundary
-around the site's router and mounted column actions; unsupported site changes fall back to native
-click handling. X/Bluesky layout and compact-navigation settings do not override Threads' layout.
-
-## Settings
-
-Open **Extension options** from the browser's extension menu (or **Details → Extension options**
-in Chrome's extension manager). Settings open in their own full browser tab.
-
-The settings page uses shadcn/ui with the existing neutral theme and follows the system color scheme.
-General switches save immediately; width changes use **Apply**, and advanced selector overrides use
-**Save selectors**. Failed saves show an error and keep the last saved setting. Reload X or Bluesky
-after changing the main enable switch, and reload X after saving selector overrides.
-
-## Localization
-
-UI copy lives in `src/locales/<lang>.json` (`en` is the source of truth, plus `zh_CN`, `zh_TW`, `ja`).
-Call `i18n.t('options.general.title')` from `#i18n`; the `@wxt-dev/i18n` module converts nested keys
-to `_locales/*/messages.json` at build time (dots become underscores, e.g. `options_general_title`).
-The language follows the browser UI language — there is no in-extension switcher.
-
-To add a language: copy `en.json` to the new code, translate every value (keep `$1` placeholders),
-then build and check `.output/chrome-mv3/_locales/<lang>/messages.json`. `src/locales/parity.test.ts`
-fails the suite if any key set drifts from `en`.
+Load `.output/chrome-mv3` as an unpacked extension at `chrome://extensions`. Architecture notes,
+the localization guide and the runtime verification checklist live in
+[docs/development.md](docs/development.md).
