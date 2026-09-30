@@ -1,4 +1,8 @@
 {
+  "extName": {
+    "message": "Side View — Social Post Sidebar",
+    "description": "Extension name shown in the Chrome Web Store listing and in chrome://extensions."
+  },
   "extDescription": {
     "message": "Open X, Bluesky and Threads post detail in a side column instead of navigating away.",
     "description": "Chrome Web Store listing description."
