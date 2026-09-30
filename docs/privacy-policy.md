@@ -115,6 +115,6 @@ Questions or concerns: please open an issue at
 
 ---
 
-*This policy describes the behaviour of Side View version 0.1.0. It was written to match the
+*This policy describes the behaviour of Side View version 0.1.1. It was written to match the
 source code in the repository it links to. If you find a discrepancy between this policy and what
 the extension actually does, that is a bug — please report it.*
