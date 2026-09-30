@@ -61,7 +61,7 @@ it('keeps width edits local until applied and validates selector overrides', asy
 
 it('switches the interface language and persists the choice', async () => {
   render(<App />);
-  await screen.findByRole('switch', { name: 'Enable side-view' });
+  await screen.findByRole('switch', { name: 'Enable Side View' });
   fireEvent.click(screen.getByLabelText('简体中文'));
   await screen.findByText('更改已保存');
   expect(settings.uiLanguage.setValue).toHaveBeenCalledWith('zh_CN');
