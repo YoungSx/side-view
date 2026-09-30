@@ -100,28 +100,7 @@ function onThreads(pathname: string) {
     pathname,
   });
 }
-it('leaves clicks on routes that cannot open a column to native navigation', () => {
-  onThreads('/me'); // Threads only mounts the passthrough column effect on its home route
-  install();
-  configure(null);
-  expect(trustedClick('/@a/post/one')).toBe(false);
-  expect(createNativeColumn).not.toHaveBeenCalled();
-  vi.unstubAllGlobals();
-});
-it('opens a column from the home route', () => {
-  onThreads('/');
-  vi.mocked(createNativeColumn).mockReturnValue(true);
-  install();
-  configure(null);
-  expect(trustedClick('/@a/post/one')).toBe(true);
-  expect(createNativeColumn).toHaveBeenCalledWith(
-    expect.anything(),
-    '/@a/post/one',
-    expect.any(String),
-  );
-  vi.unstubAllGlobals();
-});
-it('reuses an existing column on any route instead of opening a second one', () => {
+it('reuses an existing column instead of opening a second one', () => {
   onThreads('/me');
   const element = document.createElement('div');
   element.scrollIntoView = vi.fn();
@@ -133,6 +112,29 @@ it('reuses an existing column on any route instead of opening a second one', () 
   configure('123');
   expect(trustedClick('/@a/post/one')).toBe(true);
   expect(updateNativeColumn).toHaveBeenCalledWith(expect.anything(), '/@a/post/one');
+  expect(createNativeColumn).not.toHaveBeenCalled();
+  vi.unstubAllGlobals();
+});
+it('opens a column from the activity feed, which Threads supports like any other feed', () => {
+  // Threads' own "Add a column" menu offers Activity alongside Search/Profile/Insights and
+  // always hands the request to the feed route, so /me is a first-class column source.
+  onThreads('/me');
+  vi.mocked(createNativeColumn).mockReturnValue(true);
+  install();
+  configure(null);
+  expect(trustedClick('/@a/post/one')).toBe(true);
+  expect(createNativeColumn).toHaveBeenCalledWith(
+    expect.anything(),
+    '/@a/post/one',
+    expect.any(String),
+  );
+  vi.unstubAllGlobals();
+});
+it('leaves the click alone when our recorded column is gone rather than opening a duplicate', () => {
+  onThreads('/');
+  install();
+  configure('123'); // we owned a column that is no longer in the deck
+  expect(trustedClick('/@a/post/one')).toBe(false);
   expect(createNativeColumn).not.toHaveBeenCalled();
   vi.unstubAllGlobals();
 });
