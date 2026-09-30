@@ -31,6 +31,8 @@ function substitute(message: string, subs: string[]): string {
   );
 }
 
+fakeBrowser.i18n.getUILanguage = (() => 'en-US') as typeof fakeBrowser.i18n.getUILanguage;
+
 fakeBrowser.i18n.getMessage = ((key: string, subs?: string | string[]) => {
   const message = flat.get(key) ?? '';
   const list = subs === undefined ? [] : Array.isArray(subs) ? subs : [subs];
