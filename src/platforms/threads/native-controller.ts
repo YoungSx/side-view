@@ -9,10 +9,24 @@ export interface NativeConfig {
 export const NATIVE_CHANNEL = 'side-view:threads-native:v1';
 const INTERACTIVE =
   'button,[role="button"],[role="menuitem"],input,textarea,select,video,[contenteditable="true"]';
+// ponytail: fixed settle window. A column that has not materialised (or changed URL) by then is
+// treated as unsupported by this route — e.g. Threads routes that ignore the column passthrough
+// props — and the click is replayed natively instead of being swallowed. Raise only if slow
+// devices show false fallbacks.
+const SETTLE_MS = 1500;
+const pathOf = (value: string): string => {
+  try {
+    const url = new URL(value, location.origin);
+    return url.pathname + url.search;
+  } catch {
+    return value;
+  }
+};
 export function installThreadsNative(): () => void {
   let config: NativeConfig | null = null;
   let pending: { requestId: string; url: string; before: Set<string> } | null = null;
-  let timer: ReturnType<typeof setTimeout> | null = null;
+  let settleTimer: ReturnType<typeof setTimeout> | null = null;
+  let servedCheck: (() => boolean) | null = null;
   let knownOwned: HTMLElement | null = null;
   let removalTimer: ReturnType<typeof setTimeout> | null = null;
   const observer = new MutationObserver(() => checkPending());
@@ -36,20 +50,38 @@ export function installThreadsNative(): () => void {
     window.postMessage({ channel: NATIVE_CHANNEL, type: 'owned', columnId }, location.origin);
   const clear = () => {
     observer.disconnect();
-    if (timer !== null) clearTimeout(timer);
-    timer = null;
+    if (settleTimer !== null) clearTimeout(settleTimer);
+    settleTimer = null;
+    servedCheck = null;
     pending = null;
   };
+  // A click is only ever swallowed when the column really shows the target. `createNativeColumn`
+  // and `updateNativeColumn` merely report that a dispatcher existed, so this is the only place
+  // that can tell "supported" from "Threads ignored us".
+  const armSettle = (url: string, served: () => boolean) => {
+    if (settleTimer !== null) clearTimeout(settleTimer);
+    servedCheck = served;
+    settleTimer = setTimeout(() => {
+      const check = servedCheck;
+      servedCheck = null;
+      settleTimer = null;
+      if (check && !check()) location.assign(url);
+    }, SETTLE_MS);
+  };
+  const columnUrl = (id: string): string => nativeColumns().find((c) => c.id === id)?.url ?? '';
   const checkPending = () => {
     if (!pending || !config) return;
     const column = nativeColumns().find((c) => c.relayId === pending?.requestId);
     if (!column || !/^\d+$/.test(column.id) || pending.before.has(column.id)) return;
+    const url = pending.url;
     config.columnId = column.id;
     knownOwned = column.element;
     report(column.id);
-    const url = pending.url;
     clear();
-    if (column.url !== url) updateNativeColumn(column, url);
+    if (pathOf(column.url) !== pathOf(url) && !updateNativeColumn(column, url)) {
+      location.assign(url); // our column cannot show the target; let the page navigate
+      return;
+    }
     column.element.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' });
   };
   const message = (event: MessageEvent) => {
@@ -117,14 +149,11 @@ export function installThreadsNative(): () => void {
         observer.observe(document.body, { childList: true, subtree: true });
         accepted = createNativeColumn(target, relative, requestId);
         if (!accepted) clear();
-        else
-          timer = setTimeout(() => {
-            const fallback = pending?.url;
-            clear();
-            if (fallback) location.assign(fallback);
-          }, 15000);
       }
       if (!accepted) return;
+      if (pending) armSettle(pending.url, () => pending === null);
+      else if (owned) armSettle(relative, () => pathOf(columnUrl(owned.id)) === pathOf(relative));
+      else return;
       event.preventDefault();
       event.stopImmediatePropagation();
     } catch {
