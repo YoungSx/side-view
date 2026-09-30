@@ -34,6 +34,9 @@ pnpm test             # vitest
 
 Load `.output/chrome-mv3` as an unpacked extension at `chrome://extensions`.
 
+The packaged extension includes 16/32/48/128px PNG icons. See
+[icon source, export steps and store requirements](assets/icon/README.md).
+
 ## Runtime verification checklist
 
 Selectors and the framing/CSP conclusion are derived from X's historically-stable DOM but **must be

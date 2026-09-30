@@ -1,4 +1,3 @@
-import { PanelsTopLeft } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import {
   Accordion,
@@ -134,7 +133,7 @@ export function App() {
           className="flex items-center gap-3 text-xl font-semibold tracking-tight"
           href="#settings"
         >
-          <PanelsTopLeft className="size-6" aria-hidden="true" />
+          <img src="/icons/128.png" alt="" width={32} height={32} className="size-8 shrink-0" />
           side-view
         </a>
         <nav

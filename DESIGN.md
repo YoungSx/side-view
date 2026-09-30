@@ -9,6 +9,10 @@ description: A neutral shadcn settings interface for the browser extension.
 
 The settings page uses shadcn's **new-york / neutral** system, Tailwind layout utilities, and Lucide icons. Familiar form controls, clear section headings, and short explanations support occasional preference changes. Product copy is English.
 
+The product mark uses the approved PNG in `assets/icon/source.png`, exported to
+`public/icons/`. It appears in the extension manifest, settings brand link and
+page favicon. Lucide remains the component icon system.
+
 ## Colors
 
 Semantic CSS variables in `src/entrypoints/options/style.css` define both themes. Light and dark follow the system preference. Background, foreground, muted, accent, border, input, and ring roles come from the neutral palette; destructive colors identify errors. Primary colors emphasize actions and the detail pane in layout illustrations.

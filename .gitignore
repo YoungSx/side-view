@@ -8,6 +8,8 @@ stats.html
 web-ext.config.ts
 
 # Build / logs
+output/
+__pycache__/
 *.log
 npm-debug.log*
 pnpm-debug.log*
