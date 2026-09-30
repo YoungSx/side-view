@@ -12,7 +12,7 @@
 - MV3；lint、类型检查、53 项测试通过；已有 X / Bluesky / Threads 的实机记录。
 - `pnpm zip` 可生成 `.output/side-view-0.1.0-chrome.zip`，manifest 位于 ZIP 根目录。
 - 图标已接入：`public/icons/` 包含 16/32/48/128px 透明 PNG，manifest 声明 `icons`；源图和导出说明见 `assets/icon/README.md`。
-- 隐私政策已产出：[docs/privacy-policy.md](docs/privacy-policy.md)。商店后台"隐私政策"字段填 `https://github.com/YoungSx/side-view/blob/main/docs/privacy-policy.md`（GitHub 原生渲染 Markdown，无需自建托管）。该网址依赖文件已进入 `main`，合入前不可用。尚缺标准尺寸截图、专门审核指引和正式支持页面。
+- 隐私政策已产出：[docs/privacy-policy.md](docs/privacy-policy.md)。商店后台"隐私政策"字段填 `https://github.com/YoungSx/side-view/blob/main/docs/privacy-policy.md`（GitHub 原生渲染 Markdown，无需自建托管）。该网址依赖文件已进入 `main`，合入前不可用。尚缺专门审核指引和正式支持页面。
 - 自动化测试和当前机器验收不能代替全新配置、商店安装版、多账户及平台变更后的验证。
 
 ## P0：送审前完成
@@ -41,7 +41,8 @@ Threads 调用第一方页面内部动作，以及 X 去除 CSP 的范围，是�
 
 - 图标文件已完成：包内 128×128 PNG 使用 96px 内容框和透明边距，并提供 16、32、48px 版本及 manifest `icons`。当前选定图案引用旧 Twitter 鸟标；发布前需确认使用权及非官方身份表达，尺寸合规不代表商标使用已获许可或商店审核已通过。见 [图标说明](assets/icon/README.md)。
 - 必需的 440×280 小宣传图已完成：[assets/store/small-promo-440x280.png](assets/store/small-promo-440x280.png)，440×280 PNG、无 alpha 通道、136 KB，导出与使用说明见 [assets/store/README.md](assets/store/README.md)。该图为设计稿而非界面截图，画面为抽象的浏览器窗口加侧栏示意，不含任何平台商标。1400×560 大宣传图可后续补。
-- 准备 3–5 张 1280×800 截图（官方允许 640×400；至少 1 张）：X 原生顶栏融合、Bluesky 原按钮让位、Threads 真原生多列、设置页。使用自有或获许可的中性演示内容，避免暴露私人消息、账号详情或不适合商店展示的动态流内容。
+- 截图已齐备：[assets/store/screenshots/](assets/store/screenshots/) 四张，均为 1280×800，覆盖 X 顶栏融合、Bluesky 按钮让位、Threads 真原生多列、设置页。X 那张的登录账号行已用导航栏自身底色填平（像素级验证：处理前该区域 2137 个非背景像素，处理后为 0），原图未进仓库；生成与校验方式见 [assets/store/README.md](assets/store/README.md) 和 `scripts/prepare-store-screenshots.py`。原始截图保存在仓库外，脚本可重复生成。
+- 界面品牌已统一为 `Side View`（原为 `side-view`）：商店标题、manifest 与界面文案现在一致。截图公开后两者并排出现会读作自相矛盾，故一并修正。内部标识（日志前缀、CSS 类名、带版本号的 `side-view:threads-native:v1` 消息通道）保持原样，非用户可见，且改通道名可能使已保存的 Threads 原生列失配。
 - 商店标题已定：`Side View — Social Post Sidebar`（中文 `Side View — 社交动态侧栏`）。标题无独立字段，取自 `manifest.name`，已改为 `__MSG_extName__` 按四语言本地化；平台名放在 description，不进标题以规避商标风险。
 - 单一用途草案：`Read social posts beside the feed without losing your place.`
 - 简述草案：`Read X and Bluesky posts beside your feed, and open Threads posts in a reusable native column.`（manifest description 上限 132 字符。）
