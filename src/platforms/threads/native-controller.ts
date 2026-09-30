@@ -1,3 +1,4 @@
+import type { NativeColumn } from './native-runtime';
 import { createNativeColumn, nativeColumns, updateNativeColumn } from './native-runtime';
 import { resolveThreadsUrl } from './url';
 
@@ -9,12 +10,16 @@ export interface NativeConfig {
 export const NATIVE_CHANNEL = 'side-view:threads-native:v1';
 const INTERACTIVE =
   'button,[role="button"],[role="menuitem"],input,textarea,select,video,[contenteditable="true"]';
+const SCROLL: ScrollIntoViewOptions = { block: 'nearest', inline: 'nearest', behavior: 'auto' };
 // ponytail: fixed settle window. A column that has not materialised (or changed URL) by then is
 // treated as unsupported by this route — e.g. Threads routes that ignore the column passthrough
 // props — and the click is replayed natively instead of being swallowed. Raise only if slow
 // devices show false fallbacks.
 const SETTLE_MS = 1500;
+
+/** Path + query, so Threads' column uri compares equal whether it is stored absolute or relative. */
 const pathOf = (value: string): string => {
+  if (!value) return '';
   try {
     const url = new URL(value, location.origin);
     return url.pathname + url.search;
@@ -25,8 +30,7 @@ const pathOf = (value: string): string => {
 export function installThreadsNative(): () => void {
   let config: NativeConfig | null = null;
   let pending: { requestId: string; url: string; before: Set<string> } | null = null;
-  let settleTimer: ReturnType<typeof setTimeout> | null = null;
-  let servedCheck: (() => boolean) | null = null;
+  let settle: { timer: ReturnType<typeof setTimeout>; served: () => boolean } | null = null;
   let knownOwned: HTMLElement | null = null;
   let removalTimer: ReturnType<typeof setTimeout> | null = null;
   const observer = new MutationObserver(() => checkPending());
@@ -50,25 +54,28 @@ export function installThreadsNative(): () => void {
     window.postMessage({ channel: NATIVE_CHANNEL, type: 'owned', columnId }, location.origin);
   const clear = () => {
     observer.disconnect();
-    if (settleTimer !== null) clearTimeout(settleTimer);
-    settleTimer = null;
-    servedCheck = null;
+    if (settle !== null) clearTimeout(settle.timer);
+    settle = null;
     pending = null;
   };
-  // A click is only ever swallowed when the column really shows the target. `createNativeColumn`
-  // and `updateNativeColumn` merely report that a dispatcher existed, so this is the only place
-  // that can tell "supported" from "Threads ignored us".
+  /**
+   * The one exit for a click we could not serve.
+   *
+   * Threads' runtime only reports that a React dispatcher existed, never that it honoured the
+   * request, so a swallowed click must be proven served before the settle window closes. `served`
+   * is therefore always the same question — "does the column we asked for now show the target?" —
+   * and it is asked again at the deadline rather than trusted at request time.
+   */
   const armSettle = (url: string, served: () => boolean) => {
-    if (settleTimer !== null) clearTimeout(settleTimer);
-    servedCheck = served;
-    settleTimer = setTimeout(() => {
-      const check = servedCheck;
-      servedCheck = null;
-      settleTimer = null;
-      if (check && !check()) location.assign(url);
+    if (settle !== null) clearTimeout(settle.timer);
+    const timer = setTimeout(() => {
+      if (settle?.timer === timer) settle = null;
+      if (!served()) location.assign(url);
     }, SETTLE_MS);
+    settle = { timer, served };
   };
-  const columnUrl = (id: string): string => nativeColumns().find((c) => c.id === id)?.url ?? '';
+  const showsTarget = (match: (column: NativeColumn) => boolean, wanted: string) => () =>
+    pathOf(nativeColumns().find(match)?.url ?? '') === wanted;
   const checkPending = () => {
     if (!pending || !config) return;
     const column = nativeColumns().find((c) => c.relayId === pending?.requestId);
@@ -77,12 +84,15 @@ export function installThreadsNative(): () => void {
     config.columnId = column.id;
     knownOwned = column.element;
     report(column.id);
-    clear();
-    if (pathOf(column.url) !== pathOf(url) && !updateNativeColumn(column, url)) {
-      location.assign(url); // our column cannot show the target; let the page navigate
+    clear(); // drops the settle, so a later failure below is the only remaining way out
+    if (pathOf(column.url) === pathOf(url)) {
+      column.element.scrollIntoView(SCROLL);
       return;
     }
-    column.element.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' });
+    // Threads opened the column but ignored the requested url, and the column update is the only
+    // way left to land on the target. When that is impossible the page navigates, never silence.
+    if (!updateNativeColumn(column, url)) location.assign(url);
+    else column.element.scrollIntoView(SCROLL);
   };
   const message = (event: MessageEvent) => {
     const data = event.data;
@@ -133,29 +143,34 @@ export function installThreadsNative(): () => void {
     if (!link) return;
     const intent = resolveThreadsUrl(link.getAttribute('href') ?? '', new URL(location.href));
     if (!intent || (intent.kind !== 'status' && !config.includeProfiles)) return;
-    const url = new URL(intent.url);
-    const relative = url.pathname + url.search;
+    const relative = pathOf(intent.url);
     try {
-      let accepted = false;
+      // Each branch answers the same question — which column should now show `relative`? — and
+      // returns how to check it. A click is swallowed only after a branch produced a predicate.
+      let served: (() => boolean) | null = null;
       if (pending) {
-        pending.url = relative;
-        accepted = true;
-      } else if (owned) accepted = updateNativeColumn(owned, relative);
-      else {
+        const { requestId } = pending; // the in-flight column, identified by value not by ref
+        pending.url = relative; // a column is already on its way; retarget it
+        served = showsTarget((c) => c.relayId === requestId, relative);
+      } else if (owned) {
+        const { id } = owned;
+        if (!updateNativeColumn(owned, relative)) return;
+        served = showsTarget((c) => c.id === id, relative);
+      } else {
         // Never create a duplicate just because an existing deck is absent on a standalone route.
         if (config.columnId && !document.querySelector('[data-deck-column]')) return;
         const requestId = crypto.randomUUID();
         pending = { requestId, url: relative, before: new Set(nativeColumns().map((c) => c.id)) };
         observer.observe(document.body, { childList: true, subtree: true });
-        accepted = createNativeColumn(target, relative, requestId);
-        if (!accepted) clear();
+        if (!createNativeColumn(target, relative, requestId)) {
+          clear();
+          return;
+        }
+        served = showsTarget((c) => c.relayId === requestId, relative);
       }
-      if (!accepted) return;
-      if (pending) armSettle(pending.url, () => pending === null);
-      else if (owned) armSettle(relative, () => pathOf(columnUrl(owned.id)) === pathOf(relative));
-      else return;
       event.preventDefault();
       event.stopImmediatePropagation();
+      armSettle(relative, served);
     } catch {
       clear();
     } // untouched original click follows Threads when capability probing fails
