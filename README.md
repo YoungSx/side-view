@@ -49,3 +49,13 @@ interception without deleting the saved column. No iframe, column CSS, or frame-
 used on Threads. Native integration depends on a narrow, runtime-checked compatibility boundary
 around the site's router and mounted column actions; unsupported site changes fall back to native
 click handling. X/Bluesky layout and compact-navigation settings do not override Threads' layout.
+
+## Settings
+
+Open **Extension options** from the browser's extension menu (or **Details → Extension options**
+in Chrome's extension manager). Settings open in their own full browser tab.
+
+The settings page uses shadcn/ui with the existing neutral theme and follows the system color scheme.
+General switches save immediately; width changes use **Apply**, and advanced selector overrides use
+**Save selectors**. Failed saves show an error and keep the last saved setting. Reload X or Bluesky
+after changing the main enable switch, and reload X after saving selector overrides.
