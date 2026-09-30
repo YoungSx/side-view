@@ -31,13 +31,14 @@ listener is click-only and the shadow root isolates its own key events.
 
 ## 3. Same-origin framing (the load-bearing assumption)
 
-If the detail column renders the thread, framing works with **no** header changes — done. If it
-stays **blank**, X is blocking the frame (`X-Frame-Options` / CSP). Turn on **Options → Bypass
-frame headers**; the background worker enables the scoped `declarativeNetRequest` ruleset
-(`public/rules/frame-headers.json`, sub_frame + initiator x.com only) that strips `X-Frame-Options`.
-Reload. Still blank? In DevTools → Network, open the `/{handle}/status/{id}` document request and read
-its response `content-security-policy` — if `frame-ancestors` is stricter than `'self'`, add a
-second `responseHeaders` entry removing `content-security-policy` to that ruleset.
+If the detail column renders the thread, framing works — done. If it stays **blank**, X is blocking
+the frame (`X-Frame-Options` / CSP). The scoped `declarativeNetRequest` ruleset
+(`public/rules/frame-headers.json`, sub_frame + initiator x.com/twitter.com) strips
+`x-frame-options`, `content-security-policy` and `content-security-policy-report-only`, and ships
+**enabled straight from the manifest** — there is no toggle to flip, so if it is not taking effect,
+confirm the extension is enabled and reload the tab. Still blank? In DevTools → Network, open the
+`/{handle}/status/{id}` document request and read what actually came back; add a matching
+`responseHeaders` entry to that ruleset for any header still blocking the frame.
 
 ## 4. Chrome-stripping inside the frame
 

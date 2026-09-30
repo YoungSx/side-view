@@ -94,9 +94,9 @@ export function App() {
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">side-view</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Side View</h1>
         <p className="text-sm text-muted-foreground">
-          Open a tweet's detail beside the timeline instead of navigating away.
+          Read a tweet's thread in a side column instead of losing your place in the timeline.
         </p>
       </header>
 
