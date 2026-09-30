@@ -12,7 +12,7 @@
 - MV3；lint、类型检查、53 项测试通过；已有 X / Bluesky / Threads 的实机记录。
 - `pnpm zip` 可生成 `.output/side-view-0.1.0-chrome.zip`，manifest 位于 ZIP 根目录。
 - 图标已接入：`public/icons/` 包含 16/32/48/128px 透明 PNG，manifest 声明 `icons`；源图和导出说明见 `assets/icon/README.md`。
-- 隐私政策已产出：[docs/privacy-policy.md](docs/privacy-policy.md)。尚缺商店宣传图、标准尺寸截图、专门审核指引和正式支持页面，以及隐私政策的公开 HTTPS 托管地址。
+- 隐私政策已产出：[docs/privacy-policy.md](docs/privacy-policy.md)。商店后台"隐私政策"字段填 `https://github.com/YoungSx/side-view/blob/main/docs/privacy-policy.md`（GitHub 原生渲染 Markdown，无需自建托管）。该网址依赖文件已进入 `main`，合入前不可用。尚缺商店宣传图、标准尺寸截图、专门审核指引和正式支持页面。
 - 自动化测试和当前机器验收不能代替全新配置、商店安装版、多账户及平台变更后的验证。
 
 ## P0：送审前完成
