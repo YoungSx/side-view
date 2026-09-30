@@ -162,8 +162,9 @@ or native-node relocation. Only the added group and stylesheet are removed at te
 
 Icon color is sampled from the nearest native button's painted SVG path (stroke or fill), excluding
 extension icons. Native DOM/style changes and system color-scheme changes resynchronize it. X and
-Bluesky can therefore retain their different icon palettes. Loading/error or missing-header states
-retain a small fallback action group, not another title bar.
+Bluesky can therefore retain their different icon palettes. Recovery controls appear only within
+the loading/error state. A missing native header does not create a
+floating fallback toolbar: iframe `load` can precede the platform's async header render.
 
 Native Chrome verified X's single Post header with native-colored open/close icons and successful
 close. Bluesky showed its gray-blue thread-options icon followed by matching open/close icons;
@@ -180,3 +181,27 @@ frame border 0px, zero `.sv-bar` / `.sv-title` / `.sv-fallback-actions` nodes, a
 actions group. Loading/error recovery now uses explicit text actions within its state panel;
 there is no legacy floating icon toolbar. The action dimensions/radius/icon size are sampled from
 the nearest native button rather than a fixed extension size.
+
+## Loading-stage toolbar removal (2026-09-30)
+
+Native Chrome over CDP, with the updated unpacked build: opened one X post and switched to
+another while the top-level URL remained `https://x.com/home`. Across 1,336 samples, the
+floating toolbar never appeared. Five samples captured the exact intermediate condition:
+iframe document complete and visible, but native header actions not yet mounted; none had
+outer recovery controls. The final post rendered with exactly one native action group and no
+loading error. Component coverage also verifies a delayed header after the load event and
+preserves the canonical fallback link on actual frame failure.
+
+## Fresh post content, shared static resources (2026-09-30)
+
+Post switches use document navigation to request post content again. The extension adds no
+tweet-content cache and leaves normal browser caching of static assets enabled.
+CDP verified A -> B -> A after reloading the production extension: all three navigations had
+distinct performance.timeOrigin values and each requested TweetDetail from the network with
+its original no-store response policy. Script cache hits were 99/100, 107/108 and 96/97.
+The stale-document visibility guard, loading surface correction and toolbar removal remain.
+
+Dark-theme loading was also verified in native Chrome: across 109 loading-state samples,
+the page, column and loading panel all computed to rgb(0, 0, 0), with readable light text.
+Regression tests distinguish opaque black RGB from transparent RGBA and cover dark, light
+and transparent-body/root-background combinations.

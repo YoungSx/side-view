@@ -19,7 +19,6 @@ it('appends actions after Bluesky native controls and restores them unchanged on
   cleanup = installDetailActions(document, findBlueskyDetailHeader, {
     href: () => href,
     onClose: close,
-    onMounted: vi.fn(),
   });
   const actions = header?.lastElementChild;
   expect(actions?.hasAttribute('data-sv-detail-actions')).toBe(true);
@@ -46,7 +45,6 @@ it('reattaches exactly once when X replaces its native header', async () => {
   cleanup = installDetailActions(document, findXDetailHeader, {
     href: () => 'https://x.com/a/status/1',
     onClose: vi.fn(),
-    onMounted: vi.fn(),
   });
   expect(document.querySelectorAll('[data-sv-detail-actions]')).toHaveLength(1);
   document.body.innerHTML = html;
@@ -61,17 +59,16 @@ it('reattaches exactly once when X replaces its native header', async () => {
   );
 });
 it('waits for a late native header instead of manufacturing a second title bar', async () => {
-  const mounted = vi.fn();
   cleanup = installDetailActions(document, findBlueskyDetailHeader, {
     href: () => 'https://bsky.app/',
     onClose: vi.fn(),
-    onMounted: mounted,
   });
   expect(document.querySelector('[data-sv-detail-actions]')).toBeNull();
   document.body.innerHTML =
     '<main role="main"><div style="position:sticky;flex-direction:row;min-height:52px"><button>Back</button><span>Post</span></div></main>';
-  await vi.waitFor(() => expect(mounted).toHaveBeenCalledWith(true));
-  expect(document.querySelectorAll('[data-sv-detail-actions]')).toHaveLength(1);
+  await vi.waitFor(() =>
+    expect(document.querySelectorAll('[data-sv-detail-actions]')).toHaveLength(1),
+  );
 });
 
 it('matches the nearest native painted icon and reacts to platform theme changes', async () => {
@@ -82,7 +79,6 @@ it('matches the nearest native painted icon and reacts to platform theme changes
   cleanup = installDetailActions(document, findBlueskyDetailHeader, {
     href: () => 'https://bsky.app/',
     onClose: vi.fn(),
-    onMounted: vi.fn(),
   });
   const actions = document.querySelector<HTMLElement>('[data-sv-detail-actions]');
   expect(actions?.style.getPropertyValue('--sv-native-icon-color')).toBe('rgb(142, 158, 177)');
@@ -105,7 +101,6 @@ it('matches the native button hit area, corner radius and icon size', () => {
   cleanup = installDetailActions(document, findBlueskyDetailHeader, {
     href: () => 'https://x.com/a/status/1',
     onClose: vi.fn(),
-    onMounted: vi.fn(),
   });
   const actions = document.querySelector<HTMLElement>('[data-sv-detail-actions]');
   expect(actions?.style.getPropertyValue('--sv-native-button-width')).toBe('36px');
@@ -123,7 +118,6 @@ it('coalesces a burst of subtree mutations into one header reconcile per frame',
   cleanup = installDetailActions(document, finder, {
     href: () => 'https://bsky.app/',
     onClose: vi.fn(),
-    onMounted: vi.fn(),
   });
   // Drain the synchronous first reconcile and every frame its own DOM writes scheduled.
   await vi.runAllTimersAsync();
@@ -149,7 +143,6 @@ it('never reconciles after cleanup, even with a frame already pending', async ()
   const teardown = installDetailActions(document, finder, {
     href: () => 'https://bsky.app/',
     onClose: vi.fn(),
-    onMounted: vi.fn(),
   });
   await vi.runAllTimersAsync();
   finder.mockClear();
