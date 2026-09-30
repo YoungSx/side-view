@@ -7,11 +7,11 @@ import { defineConfig } from 'wxt';
 // explicitly from '#imports' so the codebase stays greppable rather than leaning on injected globals.
 export default defineConfig({
   srcDir: 'src',
-  modules: ['@wxt-dev/module-react'],
+  modules: ['@wxt-dev/module-react', '@wxt-dev/i18n/module'],
   manifest: {
     name: 'side-view',
-    description:
-      'Open X, Bluesky and Threads post detail in a side column instead of navigating away.',
+    default_locale: 'en',
+    description: '__MSG_extDescription__',
     icons: {
       16: 'icons/16.png',
       32: 'icons/32.png',

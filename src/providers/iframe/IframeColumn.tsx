@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
+import { i18n } from '#i18n';
 import type { DetailIntent } from '@/core/types';
 import { installDetailActions } from './detail-actions';
 
@@ -121,35 +122,39 @@ export function IframeColumn({ intent, frameName, frameUrl, onClose, findHeader 
     };
   }, [frameUrl, frameName, intent.url, findHeader]);
 
+  const closeLabel = i18n.t('common.close');
+  const openLabel = i18n.t('common.openInNewTab');
+
   return (
     <div className="sv-column">
       <div className="sv-body" aria-busy={loadState === 'loading'}>
         {loadState === 'loading' && (
           <div className="sv-loading" role="status">
-            <span>Loading…</span>
+            <span>{i18n.t('detail.loading')}</span>
             <div className="sv-status-actions">
-              <button type="button" title="Close" onClick={onClose}>
-                Close
+              <button type="button" title={closeLabel} onClick={onClose}>
+                {closeLabel}
               </button>
             </div>
           </div>
         )}
         {loadState === 'error' && (
           <div className="sv-error" role="alert">
-            <span>Couldn’t load this view here.</span>
+            <span>{i18n.t('detail.loadError')}</span>
             <div className="sv-status-actions">
               <a href={intent.url} target="_blank" rel="noopener noreferrer">
-                Open in a new tab
+                {openLabel}
               </a>
-              <button type="button" title="Close" onClick={onClose}>
-                Close
+              <button type="button" title={closeLabel} onClick={onClose}>
+                {closeLabel}
               </button>
             </div>
           </div>
         )}
+
         <iframe
           ref={frameRef}
-          title="side-view detail"
+          title={i18n.t('detail.frameTitle')}
           className="sv-frame"
           style={{ visibility: loadState === 'ready' ? 'visible' : 'hidden' }}
           onLoad={() => onLoadRef.current()}

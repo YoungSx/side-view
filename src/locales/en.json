@@ -1,0 +1,80 @@
+{
+  "extDescription": {
+    "message": "Open X, Bluesky and Threads post detail in a side column instead of navigating away.",
+    "description": "Chrome Web Store listing description."
+  },
+  "common": {
+    "close": "Close",
+    "openInNewTab": "Open in a new tab"
+  },
+  "detail": {
+    "frameTitle": "side-view detail",
+    "actionsLabel": "Detail actions",
+    "loading": "Loading…",
+    "loadError": "Couldn’t load this view here."
+  },
+  "options": {
+    "title": "side-view · settings",
+    "skipToSettings": "Skip to settings",
+    "brandTagline": "Your timeline. A little more room.",
+    "sectionsNav": "Settings sections",
+    "heading": "Settings",
+    "subtitle": "Make room for the way you read.",
+    "statusDefault": "Preferences sync with your browser account.",
+    "statusSaving": "Saving…",
+    "statusSaved": "Changes saved",
+    "statusLoadFailed": "Reopen this page to try again. Your saved preferences haven’t changed.",
+    "loadErrorTitle": "Settings couldn’t load",
+    "saveErrorTitle": "Change not saved",
+    "saveError": "Couldn’t save this change. Please try again.",
+    "loading": "Loading your preferences…",
+    "general": {
+      "title": "General",
+      "subtitle": "Stay in your timeline while you explore.",
+      "enableTitle": "Enable side-view",
+      "enableHint": "Open details beside your timeline. Reload X or Bluesky after changing this setting; Threads updates live.",
+      "interceptTitle": "Open profiles, hashtags & searches",
+      "interceptHint": "Include these links in the detail column. Turn off to open only posts."
+    },
+    "layout": {
+      "title": "Layout",
+      "subtitle": "For X and Bluesky. Threads manages its own columns.",
+      "whereLegend": "Where details open",
+      "whereLabel": "Where details open",
+      "replaceSidebar": "Replace sidebar",
+      "replaceSidebarHint": "Give the right sidebar to the detail view.",
+      "insertColumn": "Keep sidebar",
+      "insertColumnHint": "Add a detail column beside the sidebar.",
+      "widthTitle": "Maximum detail width",
+      "widthHint": "320–1200 px. Fits the available space.",
+      "widthUnit": "px",
+      "widthApply": "Apply",
+      "widthError": "Enter a whole number from 320 to 1200.",
+      "compactTitle": "Compact navigation",
+      "compactHint": "Keep the left navigation as a slim icon rail, even after closing a detail.",
+      "diagramTimeline": "Timeline",
+      "diagramDetail": "Detail"
+    },
+    "platforms": {
+      "title": "Platforms",
+      "subtitle": "One reading habit, three different homes.",
+      "xBlueskyNote": "Use the layout and navigation preferences above. Changes apply live, except the main enable switch.",
+      "threadsNote": "Reuses one native column saved to your Threads account. Manage its width, order and scrolling in Threads. To remove it, use the native column menu; disabling side-view won’t delete it.",
+      "xBlueskyTitle": "X & Bluesky",
+      "threadsTitle": "Threads"
+    },
+    "advanced": {
+      "title": "Advanced",
+      "subtitle": "For troubleshooting changes to X’s page structure.",
+      "overridesTrigger": "Selector overrides",
+      "customSelectors": "Custom selectors",
+      "overridesHint": "A JSON object mapping selector keys to CSS selectors. Leave it empty to use built-in selectors. Reload X after saving.",
+      "overridesError": "Use a JSON object with selector names and CSS selectors.",
+      "overridesErrorNotString": "“$1” must contain a CSS selector string.",
+      "overridesErrorInvalidSelector": "“$1” is not a valid CSS selector.",
+      "overridesErrorFallback": "Check your JSON and try again.",
+      "saveSelectors": "Save selectors"
+    },
+    "footer": "side-view · Open a little wider."
+  }
+}
