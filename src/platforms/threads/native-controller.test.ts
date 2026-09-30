@@ -93,64 +93,46 @@ function trustedClick(href: string): boolean {
   } as unknown as MouseEvent);
   return prevented;
 }
-it('replays the click natively when Threads never creates the requested column', async () => {
-  vi.useFakeTimers();
-  const assign = vi.fn();
+function onThreads(pathname: string) {
   vi.stubGlobal('location', {
     origin: 'https://www.threads.com',
-    href: 'https://www.threads.com/',
-    assign,
+    href: `https://www.threads.com${pathname}`,
+    pathname,
   });
-  vi.mocked(createNativeColumn).mockReturnValue(true); // dispatcher found, column never appears
+}
+it('leaves clicks on routes that cannot open a column to native navigation', () => {
+  onThreads('/me'); // Threads only mounts the passthrough column effect on its home route
+  install();
+  configure(null);
+  expect(trustedClick('/@a/post/one')).toBe(false);
+  expect(createNativeColumn).not.toHaveBeenCalled();
+  vi.unstubAllGlobals();
+});
+it('opens a column from the home route', () => {
+  onThreads('/');
+  vi.mocked(createNativeColumn).mockReturnValue(true);
   install();
   configure(null);
   expect(trustedClick('/@a/post/one')).toBe(true);
-  await vi.advanceTimersByTimeAsync(1501);
-  expect(assign).toHaveBeenCalledWith('/@a/post/one');
+  expect(createNativeColumn).toHaveBeenCalledWith(
+    expect.anything(),
+    '/@a/post/one',
+    expect.any(String),
+  );
   vi.unstubAllGlobals();
 });
-it('keeps the click when the column does materialise with the requested url', async () => {
-  vi.useFakeTimers();
-  const assign = vi.fn();
-  vi.stubGlobal('location', {
-    origin: 'https://www.threads.com',
-    href: 'https://www.threads.com/',
-    assign,
-  });
-  const element = document.createElement('div');
-  element.scrollIntoView = vi.fn();
-  vi.mocked(createNativeColumn).mockImplementation((_source, _url, requestId) => {
-    vi.mocked(nativeColumns).mockReturnValue([
-      { id: '123', relayId: requestId, url: '/@a/post/one', element, update: null },
-    ]);
-    return true;
-  });
-  install();
-  configure(null);
-  expect(trustedClick('/@a/post/one')).toBe(true);
-  document.body.appendChild(element); // let the observer see Threads' new column
-  await vi.advanceTimersByTimeAsync(1501);
-  expect(assign).not.toHaveBeenCalled();
-  vi.unstubAllGlobals();
-});
-it('replays the click natively when the existing column never changes url', async () => {
-  vi.useFakeTimers();
-  const assign = vi.fn();
-  vi.stubGlobal('location', {
-    origin: 'https://www.threads.com',
-    href: 'https://www.threads.com/',
-    assign,
-  });
+it('reuses an existing column on any route instead of opening a second one', () => {
+  onThreads('/me');
   const element = document.createElement('div');
   element.scrollIntoView = vi.fn();
   vi.mocked(nativeColumns).mockReturnValue([
-    { id: '123', relayId: 'r', url: '/@a/post/stale', element, update: vi.fn() },
+    { id: '123', relayId: 'r', url: '/@a/post/old', element, update: vi.fn() },
   ]);
-  vi.mocked(updateNativeColumn).mockReturnValue(true); // accepted, but Threads never navigated
+  vi.mocked(updateNativeColumn).mockReturnValue(true);
   install();
   configure('123');
   expect(trustedClick('/@a/post/one')).toBe(true);
-  await vi.advanceTimersByTimeAsync(1501);
-  expect(assign).toHaveBeenCalledWith('/@a/post/one');
+  expect(updateNativeColumn).toHaveBeenCalledWith(expect.anything(), '/@a/post/one');
+  expect(createNativeColumn).not.toHaveBeenCalled();
   vi.unstubAllGlobals();
 });
