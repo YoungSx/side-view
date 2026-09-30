@@ -18,6 +18,37 @@
     "loading": "加载中…",
     "loadError": "无法在此处加载该视图。"
   },
+  "popup": {
+    "title": "Side View",
+    "loading": "正在读取当前标签页…",
+    "allSettings": "全部设置…",
+    "saveError": "此次更改未能保存，请重试。",
+    "enableTitle": "启用 Side View",
+    "compactTitle": "紧凑导航",
+    "interceptTitle": "打开个人主页、话题标签和搜索",
+    "threadsOwnsColumn": "Threads 使用它自己保存的栏目，因此宽度和位置在此不适用。",
+    "reloadHint": "此标签页加载于 Side View 启动之前。",
+    "reloadAction": "重新加载标签页",
+    "platform": {
+      "X": "X",
+      "Bluesky": "Bluesky",
+      "Threads": "Threads"
+    },
+    "status": {
+      "active": "运行中",
+      "inactive": "已停用",
+      "needsReload": "需刷新",
+      "unsupported": "此处不适用",
+      "format": "$1 · $2"
+    },
+    "layoutLegend": "详情打开的位置",
+    "widthTitle": "详情栏宽度",
+    "widthValue": "$1 像素",
+    "layout": {
+      "replaceSidebar": "替换侧栏",
+      "insertColumn": "保留侧栏"
+    }
+  },
   "options": {
     "title": "Side View · 设置",
     "skipToSettings": "跳到设置",

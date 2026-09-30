@@ -9,6 +9,6 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     environmentOptions: { jsdom: { url: 'https://x.com/home' } },
-    setupFiles: ['./src/test-utils/i18n.ts'],
+    setupFiles: ['./src/test-utils/setup.ts', './src/test-utils/i18n.ts'],
   },
 });

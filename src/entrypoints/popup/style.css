@@ -1,0 +1,13 @@
+/* Popup layout only. Tokens and the Tailwind base layer come from the shared theme. */
+@import "../../ui/styles/theme.css";
+
+/*
+ * The popup is a fixed 360px surface, so the page must never be scrollable or resizable by the
+ * browser. `overflow-hidden` on the root plus an explicit width keeps the chrome at exactly the
+ * designed size; the body is the flex column the App lays out into.
+ */
+html,
+body {
+  width: 360px;
+  overflow: hidden;
+}

@@ -1,4 +1,5 @@
 import { defineContentScript, storage } from '#imports';
+import { servePing } from '@/core/messaging';
 import { NATIVE_CHANNEL } from '@/platforms/threads/native-controller';
 import { settings } from '@/settings/storage';
 
@@ -9,6 +10,13 @@ export default defineContentScript({
   matches: ['https://*.threads.com/*', 'https://*.threads.net/*'],
   runAt: 'document_idle',
   async main(ctx) {
+    // The popup's status line. `columnOpen` is always false here and that is honest, not a stub:
+    // Threads renders details in a native column that has no open/closed state we can observe
+    // from this isolated world, so the popup simply does not show a column indicator for it.
+    servePing(
+      () => ({ kind: 'ready', platform: 'threads', columnOpen: false }),
+      (cleanup) => ctx.onInvalidated(cleanup),
+    );
     let sequence = 0;
     const send = async () => {
       const request = ++sequence;

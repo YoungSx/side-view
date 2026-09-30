@@ -1,6 +1,7 @@
 import type { ContentScriptContext } from '#imports';
 import { ClickRouter, type InterceptPolicy } from '@/core/click-router';
 import { log } from '@/core/log';
+import { servePing } from '@/core/messaging';
 import { observeRoute } from '@/core/route-observer';
 import { applyStoredLanguage, setUiLanguage } from '@/i18n/runtime';
 import { ShadowLayoutController } from '@/layout/shadow-layout-controller';
@@ -54,6 +55,13 @@ export async function startSideView(ctx: ContentScriptContext): Promise<void> {
 
   // Route events provide an additional opportunity to reconcile the column.
   observeRoute(ctx, () => layout.reattachIfDetached());
+
+  // Answer the toolbar popup. Registered only on the path where the engine actually started, so a
+  // ping that goes unanswered is itself the signal that this tab needs a reload.
+  servePing(
+    () => ({ kind: 'ready', platform: adapter.id, columnOpen: layout.isColumnVisible() }),
+    (cleanup) => ctx.onInvalidated(cleanup),
+  );
 
   // Live settings — the options page can retune the running content script.
   ctx.onInvalidated(settings.layoutMode.watch((mode) => layout.setMode(mode)));
