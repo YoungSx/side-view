@@ -9,18 +9,19 @@ export default defineContentScript({
   matches: ['*://x.com/*', '*://twitter.com/*', 'https://bsky.app/*'],
   allFrames: true,
   runAt: 'document_start',
-  main() {
+  main(ctx) {
     const adapter = pickAdapter(new URL(location.href));
     if (!adapter) return;
     if (window.top === window.self) return;
     // Chrome can clear window.name on navigation; the same-origin iframe element keeps its name.
     const frameName = window.frameElement?.getAttribute('name') ?? window.name;
     if (frameName !== adapter.detailFrameName) return;
-    installChromeStripper(adapter.detailFrameCss());
+    // Disconnect the re-inject observer when the extension context goes away (update/disable).
+    ctx.onInvalidated(installChromeStripper(adapter.detailFrameCss()));
   },
 });
 
-function installChromeStripper(css: string): void {
+function installChromeStripper(css: string): () => void {
   const ensure = (): void => {
     if (document.getElementById(SV_DETAIL_FRAME_STYLE_ID)) return;
     const style = document.createElement('style');
@@ -29,8 +30,7 @@ function installChromeStripper(css: string): void {
     (document.head ?? document.documentElement).appendChild(style);
   };
   ensure();
-  new MutationObserver(ensure).observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-  });
+  const observer = new MutationObserver(ensure);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  return () => observer.disconnect();
 }

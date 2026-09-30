@@ -115,9 +115,29 @@ export function installDetailActions(
     if (group.parentElement !== header || header.lastElementChild !== group) header.append(group);
     report(true);
   };
+  // Bluesky mutates class/style on its subtree constantly; coalesce those bursts into one reconcile
+  // per frame so the header scan doesn't run on every attribute tick. The FIRST reconcile below
+  // stays synchronous so the actions mount immediately when the header already exists.
+  // Call rAF as an unqualified global, not a detached reference: `const raf = requestAnimationFrame;
+  // raf(cb)` loses the window receiver and throws "Illegal invocation" in real browsers. rAF is
+  // absent under jsdom, so fall back to a macrotask there.
+  const scheduleFrame =
+    typeof requestAnimationFrame === 'function'
+      ? (cb: () => void): void => void requestAnimationFrame(cb)
+      : (cb: () => void): void => void setTimeout(cb, 0);
+  let scheduled = false;
+  let disposed = false;
+  const scheduleReconcile = (): void => {
+    if (scheduled || disposed) return;
+    scheduled = true;
+    scheduleFrame(() => {
+      scheduled = false;
+      if (!disposed) reconcile();
+    });
+  };
   const observer = new MutationObserver((records) => {
     if (records.some((record) => !group.contains(record.target) && record.target !== style))
-      reconcile();
+      scheduleReconcile();
   });
   observer.observe(doc.documentElement, {
     childList: true,
@@ -126,11 +146,12 @@ export function installDetailActions(
     attributeFilter: ['class', 'style', 'fill', 'stroke', 'data-theme'],
   });
   const theme = doc.defaultView?.matchMedia?.('(prefers-color-scheme: dark)');
-  theme?.addEventListener?.('change', reconcile);
+  theme?.addEventListener?.('change', scheduleReconcile);
   reconcile();
   return () => {
+    disposed = true;
     observer.disconnect();
-    theme?.removeEventListener?.('change', reconcile);
+    theme?.removeEventListener?.('change', scheduleReconcile);
     header?.removeAttribute(HEADER);
     group.remove();
     style.remove();
