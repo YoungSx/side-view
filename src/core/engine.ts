@@ -2,6 +2,7 @@ import type { ContentScriptContext } from '#imports';
 import { ClickRouter, type InterceptPolicy } from '@/core/click-router';
 import { log } from '@/core/log';
 import { observeRoute } from '@/core/route-observer';
+import { applyStoredLanguage, setUiLanguage } from '@/i18n/runtime';
 import { ShadowLayoutController } from '@/layout/shadow-layout-controller';
 import { pickAdapter } from '@/platforms/registry';
 import { IframeColumnProvider } from '@/providers/iframe/iframe-provider';
@@ -18,6 +19,8 @@ function makePolicy(includeProfilesAndTags: boolean): InterceptPolicy {
  * app re-renders. Every listener/observer/watcher registers its cleanup through `ctx`.
  */
 export async function startSideView(ctx: ContentScriptContext): Promise<void> {
+  // Before the first i18n.t() so the detail column's labels render in the stored language.
+  await applyStoredLanguage();
   const snapshot = await loadSettings();
   if (!snapshot.enabled) return;
 
@@ -60,5 +63,12 @@ export async function startSideView(ctx: ContentScriptContext): Promise<void> {
   );
   ctx.onInvalidated(
     settings.interceptProfilesAndTags.watch((v) => router.setPolicy(makePolicy(v))),
+  );
+  // Labels are baked in at render time, so a language change needs the column redrawn.
+  ctx.onInvalidated(
+    settings.uiLanguage.watch(async (language) => {
+      await setUiLanguage(language);
+      provider.refreshLabels();
+    }),
   );
 }

@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { setUiLanguage } from '@/i18n/runtime';
 import { settings } from '@/settings/storage';
 import { App } from './App';
 
@@ -11,6 +12,7 @@ vi.mock('@/settings/storage', () => {
     compactNavigation: false,
     interceptProfilesAndTags: true,
     selectorOverrides: {},
+    uiLanguage: 'auto',
   };
   return {
     loadSettings: vi.fn(async () => defaults),
@@ -55,4 +57,15 @@ it('keeps width edits local until applied and validates selector overrides', asy
   await waitFor(() =>
     expect(settings.selectorOverrides.setValue).toHaveBeenCalledWith({ timeline: 'main' }),
   );
+});
+
+it('switches the interface language and persists the choice', async () => {
+  render(<App />);
+  await screen.findByRole('switch', { name: 'Enable side-view' });
+  fireEvent.click(screen.getByLabelText('简体中文'));
+  await screen.findByText('更改已保存');
+  expect(settings.uiLanguage.setValue).toHaveBeenCalledWith('zh_CN');
+  // The page must actually re-render in the new language, not merely persist the choice.
+  await screen.findByRole('heading', { name: '设置', level: 1 });
+  await setUiLanguage('auto');
 });

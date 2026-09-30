@@ -38,7 +38,14 @@
       "enableTitle": "side-view を有効にする",
       "enableHint": "タイムラインの横に詳細を開きます。変更後、X または Bluesky を再読み込みしてください。Threads は即時反映されます。",
       "interceptTitle": "プロフィール・ハッシュタグ・検索を開く",
-      "interceptHint": "これらのリンクも詳細カラムで開きます。オフにすると投稿のみ開きます。"
+      "interceptHint": "これらのリンクも詳細カラムで開きます。オフにすると投稿のみ開きます。",
+      "languageTitle": "表示言語",
+      "languageHint": "設定ページと詳細カラムに適用されます。「ブラウザーに合わせる」を選ぶと、ブラウザー自身の言語になります。",
+      "languageAuto": "ブラウザーに合わせる",
+      "languageEn": "English",
+      "languageZhCN": "简体中文",
+      "languageZhTW": "繁體中文",
+      "languageJa": "日本語"
     },
     "layout": {
       "title": "レイアウト",

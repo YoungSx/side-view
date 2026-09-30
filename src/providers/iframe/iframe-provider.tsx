@@ -45,6 +45,12 @@ export class IframeColumnProvider implements DetailColumnProvider {
     this.intent = null;
   }
 
+  /** Re-render the open column so it picks up text read from i18n at render time (e.g. a
+   * language change). No-op when nothing is open. */
+  refreshLabels(): void {
+    this.render();
+  }
+
   private readonly clear = (): void => {
     this.intent = null;
     this.onClose();
