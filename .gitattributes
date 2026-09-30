@@ -1,0 +1,15 @@
+# Normalize line endings in the repository, not per machine.
+#
+# Without this, `core.autocrlf=true` on Windows rewrites LF to CRLF on checkout
+# and the Biome formatter rejects every text file it is asked to check, so
+# `pnpm lint` fails on files nobody touched. Declaring the endings here makes
+# the working tree match what is stored regardless of each machine's config.
+* text=auto eol=lf
+
+# Binary assets: never touch, never let git try to normalize them.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.webp binary
+*.zip binary

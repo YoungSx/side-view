@@ -7,18 +7,19 @@
     "message": "在侧栏中打开 X、Bluesky 和 Threads 的帖子详情，无需离开当前时间线。",
     "description": "Chrome Web Store listing description."
   },
+  "brand": "Side View",
   "common": {
     "close": "关闭",
     "openInNewTab": "在新标签页打开"
   },
   "detail": {
-    "frameTitle": "side-view 详情",
+    "frameTitle": "Side View 详情",
     "actionsLabel": "详情操作",
     "loading": "加载中…",
     "loadError": "无法在此处加载该视图。"
   },
   "options": {
-    "title": "side-view · 设置",
+    "title": "Side View · 设置",
     "skipToSettings": "跳到设置",
     "brandTagline": "你的时间线，多一点空间。",
     "sectionsNav": "设置分区",
@@ -35,7 +36,7 @@
     "general": {
       "title": "常规",
       "subtitle": "在浏览时留在你的时间线里。",
-      "enableTitle": "启用 side-view",
+      "enableTitle": "启用 Side View",
       "enableHint": "在时间线旁打开详情。更改此设置后请重新加载 X 或 Bluesky；Threads 会实时生效。",
       "interceptTitle": "打开个人主页、话题标签和搜索",
       "interceptHint": "让这些链接也在详情栏中打开。关闭后仅打开帖子。",
@@ -72,7 +73,7 @@
       "xBlueskyTitle": "X 与 Bluesky",
       "xBlueskyNote": "沿用上方的布局与导航偏好。除总开关外，更改即时生效。",
       "threadsTitle": "Threads",
-      "threadsNote": "复用保存到你 Threads 账号的一个原生栏。宽度、顺序和滚动请在 Threads 中管理。要移除它，请使用原生栏目菜单；关闭 side-view 不会删除它。"
+      "threadsNote": "复用保存到你 Threads 账号的一个原生栏。宽度、顺序和滚动请在 Threads 中管理。要移除它，请使用原生栏目菜单；关闭 Side View 不会删除它。"
     },
     "advanced": {
       "title": "高级",
@@ -86,6 +87,6 @@
       "overridesErrorFallback": "请检查 JSON 后重试。",
       "saveSelectors": "保存选择器"
     },
-    "footer": "side-view · 看得更宽一点。"
+    "footer": "Side View · 看得更宽一点。"
   }
 }

@@ -26,7 +26,7 @@ afterEach(cleanup);
 
 it('opens a page with labelled sections and saves a switch only after storage succeeds', async () => {
   render(<App />);
-  const toggle = await screen.findByRole('switch', { name: 'Enable side-view' });
+  const toggle = await screen.findByRole('switch', { name: 'Enable Side View' });
   vi.mocked(settings.enabled.setValue).mockRejectedValueOnce(new Error('storage unavailable'));
   fireEvent.click(toggle);
   await screen.findByText('Couldn’t save this change. Please try again.');

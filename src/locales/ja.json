@@ -7,18 +7,19 @@
     "message": "X・Bluesky・Threads の投稿詳細をタイムラインから離れずにサイドカラムで開きます。",
     "description": "Chrome Web Store listing description."
   },
+  "brand": "Side View",
   "common": {
     "close": "閉じる",
     "openInNewTab": "新しいタブで開く"
   },
   "detail": {
-    "frameTitle": "side-view 詳細",
+    "frameTitle": "Side View 詳細",
     "actionsLabel": "詳細の操作",
     "loading": "読み込み中…",
     "loadError": "このビューをここで読み込めませんでした。"
   },
   "options": {
-    "title": "side-view · 設定",
+    "title": "Side View · 設定",
     "skipToSettings": "設定へスキップ",
     "brandTagline": "あなたのタイムラインを、もう少し広く。",
     "sectionsNav": "設定セクション",
@@ -35,7 +36,7 @@
     "general": {
       "title": "一般",
       "subtitle": "閲覧中もタイムラインにとどまります。",
-      "enableTitle": "side-view を有効にする",
+      "enableTitle": "Side View を有効にする",
       "enableHint": "タイムラインの横に詳細を開きます。変更後、X または Bluesky を再読み込みしてください。Threads は即時反映されます。",
       "interceptTitle": "プロフィール・ハッシュタグ・検索を開く",
       "interceptHint": "これらのリンクも詳細カラムで開きます。オフにすると投稿のみ開きます。",
@@ -72,7 +73,7 @@
       "xBlueskyTitle": "X と Bluesky",
       "xBlueskyNote": "上のレイアウトとナビゲーションの設定を使います。メインのスイッチ以外の変更は即時反映されます。",
       "threadsTitle": "Threads",
-      "threadsNote": "Threads アカウントに保存されたネイティブカラムを 1 つ再利用します。幅・順序・スクロールは Threads 側で管理してください。削除するにはネイティブのカラムメニューを使用します。side-view を無効にしても削除はされません。"
+      "threadsNote": "Threads アカウントに保存されたネイティブカラムを 1 つ再利用します。幅・順序・スクロールは Threads 側で管理してください。削除するにはネイティブのカラムメニューを使用します。Side View を無効にしても削除はされません。"
     },
     "advanced": {
       "title": "詳細設定",
@@ -86,6 +87,6 @@
       "overridesErrorFallback": "JSON を確認してもう一度お試しください。",
       "saveSelectors": "セレクターを保存"
     },
-    "footer": "side-view · もう少し広く開く。"
+    "footer": "Side View · もう少し広く開く。"
   }
 }

@@ -7,18 +7,19 @@
     "message": "在側欄開啟 X、Bluesky 和 Threads 的貼文詳情，不必離開目前的時間軸。",
     "description": "Chrome Web Store listing description."
   },
+  "brand": "Side View",
   "common": {
     "close": "關閉",
     "openInNewTab": "在新分頁開啟"
   },
   "detail": {
-    "frameTitle": "side-view 詳情",
+    "frameTitle": "Side View 詳情",
     "actionsLabel": "詳情操作",
     "loading": "載入中…",
     "loadError": "無法在此處載入該檢視。"
   },
   "options": {
-    "title": "side-view · 設定",
+    "title": "Side View · 設定",
     "skipToSettings": "跳到設定",
     "brandTagline": "你的時間軸，多一點空間。",
     "sectionsNav": "設定分區",
@@ -35,7 +36,7 @@
     "general": {
       "title": "一般",
       "subtitle": "瀏覽時留在你的時間軸裡。",
-      "enableTitle": "啟用 side-view",
+      "enableTitle": "啟用 Side View",
       "enableHint": "在時間軸旁開啟詳情。變更此設定後請重新載入 X 或 Bluesky；Threads 會即時生效。",
       "interceptTitle": "開啟個人檔案、主題標籤和搜尋",
       "interceptHint": "讓這些連結也在詳情欄開啟。關閉後僅開啟貼文。",
@@ -72,7 +73,7 @@
       "xBlueskyTitle": "X 與 Bluesky",
       "xBlueskyNote": "沿用上方的版面與導覽偏好。除總開關外，變更即時生效。",
       "threadsTitle": "Threads",
-      "threadsNote": "重複使用儲存到你 Threads 帳號的一個原生欄。寬度、順序和捲動請在 Threads 中管理。要移除它，請使用原生欄位選單；停用 side-view 不會刪除它。"
+      "threadsNote": "重複使用儲存到你 Threads 帳號的一個原生欄。寬度、順序和捲動請在 Threads 中管理。要移除它，請使用原生欄位選單；停用 Side View 不會刪除它。"
     },
     "advanced": {
       "title": "進階",
@@ -86,6 +87,6 @@
       "overridesErrorFallback": "請檢查 JSON 後再試一次。",
       "saveSelectors": "儲存選擇器"
     },
-    "footer": "side-view · 看得更寬一點。"
+    "footer": "Side View · 看得更寬一點。"
   }
 }
