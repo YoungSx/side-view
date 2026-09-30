@@ -1,0 +1,80 @@
+{
+  "extDescription": {
+    "message": "在侧栏中打开 X、Bluesky 和 Threads 的帖子详情，无需离开当前时间线。",
+    "description": "Chrome Web Store listing description."
+  },
+  "common": {
+    "close": "关闭",
+    "openInNewTab": "在新标签页打开"
+  },
+  "detail": {
+    "frameTitle": "side-view 详情",
+    "actionsLabel": "详情操作",
+    "loading": "加载中…",
+    "loadError": "无法在此处加载该视图。"
+  },
+  "options": {
+    "title": "side-view · 设置",
+    "skipToSettings": "跳到设置",
+    "brandTagline": "你的时间线，多一点空间。",
+    "sectionsNav": "设置分区",
+    "heading": "设置",
+    "subtitle": "为你的阅读方式腾出空间。",
+    "statusDefault": "偏好设置会通过浏览器账号同步。",
+    "statusSaving": "保存中…",
+    "statusSaved": "更改已保存",
+    "statusLoadFailed": "重新打开此页面重试。你已保存的偏好没有变化。",
+    "loadErrorTitle": "设置加载失败",
+    "saveErrorTitle": "更改未保存",
+    "saveError": "此次更改未能保存，请重试。",
+    "loading": "正在加载你的偏好设置…",
+    "general": {
+      "title": "常规",
+      "subtitle": "在浏览时留在你的时间线里。",
+      "enableTitle": "启用 side-view",
+      "enableHint": "在时间线旁打开详情。更改此设置后请重新加载 X 或 Bluesky；Threads 会实时生效。",
+      "interceptTitle": "打开个人主页、话题标签和搜索",
+      "interceptHint": "让这些链接也在详情栏中打开。关闭后仅打开帖子。"
+    },
+    "layout": {
+      "title": "布局",
+      "subtitle": "适用于 X 和 Bluesky。Threads 自行管理栏目。",
+      "whereLegend": "详情打开的位置",
+      "whereLabel": "详情打开的位置",
+      "diagramTimeline": "时间线",
+      "diagramDetail": "详情",
+      "replaceSidebar": "替换侧栏",
+      "replaceSidebarHint": "把右侧边栏让给详情视图。",
+      "insertColumn": "保留侧栏",
+      "insertColumnHint": "在侧栏旁增加一个详情栏。",
+      "widthTitle": "详情栏最大宽度",
+      "widthHint": "320–1200 像素，会自动适应可用空间。",
+      "widthUnit": "px",
+      "widthApply": "应用",
+      "widthError": "请输入 320 到 1200 之间的整数。",
+      "compactTitle": "紧凑导航",
+      "compactHint": "即使关闭详情后，也将左侧导航保持为纤细的图标栏。"
+    },
+    "platforms": {
+      "title": "平台",
+      "subtitle": "同一种阅读习惯，三个不同的家。",
+      "xBlueskyTitle": "X 与 Bluesky",
+      "xBlueskyNote": "沿用上方的布局与导航偏好。除总开关外，更改即时生效。",
+      "threadsTitle": "Threads",
+      "threadsNote": "复用保存到你 Threads 账号的一个原生栏。宽度、顺序和滚动请在 Threads 中管理。要移除它，请使用原生栏目菜单；关闭 side-view 不会删除它。"
+    },
+    "advanced": {
+      "title": "高级",
+      "subtitle": "用于排查 X 页面结构变化导致的问题。",
+      "overridesTrigger": "选择器覆盖",
+      "customSelectors": "自定义选择器",
+      "overridesHint": "一个 JSON 对象，将选择器键名映射到 CSS 选择器。留空则使用内置选择器。保存后请重新加载 X。",
+      "overridesError": "请使用 JSON 对象，键为选择器名称，值为 CSS 选择器。",
+      "overridesErrorNotString": "“$1”的值必须是 CSS 选择器字符串。",
+      "overridesErrorInvalidSelector": "“$1”不是有效的 CSS 选择器。",
+      "overridesErrorFallback": "请检查 JSON 后重试。",
+      "saveSelectors": "保存选择器"
+    },
+    "footer": "side-view · 看得更宽一点。"
+  }
+}

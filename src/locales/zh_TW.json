@@ -1,0 +1,80 @@
+{
+  "extDescription": {
+    "message": "在側欄開啟 X、Bluesky 和 Threads 的貼文詳情，不必離開目前的時間軸。",
+    "description": "Chrome Web Store listing description."
+  },
+  "common": {
+    "close": "關閉",
+    "openInNewTab": "在新分頁開啟"
+  },
+  "detail": {
+    "frameTitle": "side-view 詳情",
+    "actionsLabel": "詳情操作",
+    "loading": "載入中…",
+    "loadError": "無法在此處載入該檢視。"
+  },
+  "options": {
+    "title": "side-view · 設定",
+    "skipToSettings": "跳到設定",
+    "brandTagline": "你的時間軸，多一點空間。",
+    "sectionsNav": "設定分區",
+    "heading": "設定",
+    "subtitle": "為你的閱讀方式騰出空間。",
+    "statusDefault": "偏好設定會透過瀏覽器帳號同步。",
+    "statusSaving": "儲存中…",
+    "statusSaved": "變更已儲存",
+    "statusLoadFailed": "重新開啟此頁面再試一次。你已儲存的偏好沒有變更。",
+    "loadErrorTitle": "設定無法載入",
+    "saveErrorTitle": "變更未儲存",
+    "saveError": "此次變更未能儲存，請再試一次。",
+    "loading": "正在載入你的偏好設定…",
+    "general": {
+      "title": "一般",
+      "subtitle": "瀏覽時留在你的時間軸裡。",
+      "enableTitle": "啟用 side-view",
+      "enableHint": "在時間軸旁開啟詳情。變更此設定後請重新載入 X 或 Bluesky；Threads 會即時生效。",
+      "interceptTitle": "開啟個人檔案、主題標籤和搜尋",
+      "interceptHint": "讓這些連結也在詳情欄開啟。關閉後僅開啟貼文。"
+    },
+    "layout": {
+      "title": "版面配置",
+      "subtitle": "適用於 X 和 Bluesky。Threads 自行管理欄位。",
+      "whereLegend": "詳情開啟的位置",
+      "whereLabel": "詳情開啟的位置",
+      "diagramTimeline": "時間軸",
+      "diagramDetail": "詳情",
+      "replaceSidebar": "取代側欄",
+      "replaceSidebarHint": "把右側邊欄讓給詳情檢視。",
+      "insertColumn": "保留側欄",
+      "insertColumnHint": "在側欄旁新增一個詳情欄。",
+      "widthTitle": "詳情欄最大寬度",
+      "widthHint": "320–1200 像素，會自動適應可用空間。",
+      "widthUnit": "px",
+      "widthApply": "套用",
+      "widthError": "請輸入 320 到 1200 之間的整數。",
+      "compactTitle": "精簡導覽",
+      "compactHint": "即使關閉詳情後，也將左側導覽保持為纖細的圖示列。"
+    },
+    "platforms": {
+      "title": "平台",
+      "subtitle": "同一種閱讀習慣，三個不同的家。",
+      "xBlueskyTitle": "X 與 Bluesky",
+      "xBlueskyNote": "沿用上方的版面與導覽偏好。除總開關外，變更即時生效。",
+      "threadsTitle": "Threads",
+      "threadsNote": "重複使用儲存到你 Threads 帳號的一個原生欄。寬度、順序和捲動請在 Threads 中管理。要移除它，請使用原生欄位選單；停用 side-view 不會刪除它。"
+    },
+    "advanced": {
+      "title": "進階",
+      "subtitle": "用於排查 X 頁面結構變更造成的問題。",
+      "overridesTrigger": "選擇器覆寫",
+      "customSelectors": "自訂選擇器",
+      "overridesHint": "一個 JSON 物件，將選擇器鍵名對應到 CSS 選擇器。留空則使用內建選擇器。儲存後請重新載入 X。",
+      "overridesError": "請使用 JSON 物件，鍵為選擇器名稱，值為 CSS 選擇器。",
+      "overridesErrorNotString": "「$1」的值必須是 CSS 選擇器字串。",
+      "overridesErrorInvalidSelector": "「$1」不是有效的 CSS 選擇器。",
+      "overridesErrorFallback": "請檢查 JSON 後再試一次。",
+      "saveSelectors": "儲存選擇器"
+    },
+    "footer": "side-view · 看得更寬一點。"
+  }
+}

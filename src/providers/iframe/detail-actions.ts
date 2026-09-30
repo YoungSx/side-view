@@ -1,3 +1,5 @@
+import { i18n } from '#i18n';
+
 const ACTIONS = 'data-sv-detail-actions';
 const HEADER = 'data-sv-detail-header';
 const STYLE = 'sv-detail-actions-style';
@@ -27,11 +29,11 @@ export function installDetailActions(
   const group = doc.createElement('div');
   group.setAttribute(ACTIONS, '');
   group.setAttribute('role', 'group');
-  group.setAttribute('aria-label', 'Detail actions');
+  group.setAttribute('aria-label', i18n.t('detail.actionsLabel'));
   const open = doc.createElement('a');
   open.target = '_blank';
   open.rel = 'noopener noreferrer';
-  open.title = 'Open in a new tab';
+  open.title = i18n.t('common.openInNewTab');
   open.setAttribute('aria-label', open.title);
   open.href = options.href();
   open.append(
@@ -43,8 +45,8 @@ export function installDetailActions(
   });
   const close = doc.createElement('button');
   close.type = 'button';
-  close.title = 'Close';
-  close.setAttribute('aria-label', 'Close');
+  close.title = i18n.t('common.close');
+  close.setAttribute('aria-label', i18n.t('common.close'));
   close.append(icon(doc, 'M6 6l12 12 M18 6 6 18'));
   close.addEventListener('click', (event) => {
     event.stopPropagation();

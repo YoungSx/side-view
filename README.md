@@ -62,3 +62,14 @@ The settings page uses shadcn/ui with the existing neutral theme and follows the
 General switches save immediately; width changes use **Apply**, and advanced selector overrides use
 **Save selectors**. Failed saves show an error and keep the last saved setting. Reload X or Bluesky
 after changing the main enable switch, and reload X after saving selector overrides.
+
+## Localization
+
+UI copy lives in `src/locales/<lang>.json` (`en` is the source of truth, plus `zh_CN`, `zh_TW`, `ja`).
+Call `i18n.t('options.general.title')` from `#i18n`; the `@wxt-dev/i18n` module converts nested keys
+to `_locales/*/messages.json` at build time (dots become underscores, e.g. `options_general_title`).
+The language follows the browser UI language — there is no in-extension switcher.
+
+To add a language: copy `en.json` to the new code, translate every value (keep `$1` placeholders),
+then build and check `.output/chrome-mv3/_locales/<lang>/messages.json`. `src/locales/parity.test.ts`
+fails the suite if any key set drifts from `en`.
