@@ -63,3 +63,73 @@ it('ignores synthetic clicks rather than letting page scripts create saved colum
     ?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
   expect(createNativeColumn).not.toHaveBeenCalled();
 });
+let clickListener: ((event: MouseEvent) => void) | null = null;
+// jsdom hard-codes `isTrusted` to false and it is not redefinable, so drive the registered
+// capture listener with a stand-in event instead of a dispatched one.
+function install(): void {
+  const spy = vi.spyOn(document, 'addEventListener');
+  dispose = installThreadsNative();
+  clickListener = spy.mock.calls.find(([type]) => type === 'click')?.[1] as (
+    event: MouseEvent,
+  ) => void;
+  spy.mockRestore();
+}
+function trustedClick(href: string): boolean {
+  document.body.innerHTML = `<div data-column-scrollable><a href="${href}">Post</a></div>`;
+  let prevented = false;
+  clickListener?.({
+    isTrusted: true,
+    defaultPrevented: false,
+    button: 0,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    altKey: false,
+    target: document.querySelector('a'),
+    preventDefault: () => {
+      prevented = true;
+    },
+    stopImmediatePropagation: () => {},
+  } as unknown as MouseEvent);
+  return prevented;
+}
+it('replays the click natively when Threads never creates the requested column', async () => {
+  vi.useFakeTimers();
+  const assign = vi.fn();
+  vi.stubGlobal('location', {
+    origin: 'https://www.threads.com',
+    href: 'https://www.threads.com/',
+    assign,
+  });
+  vi.mocked(createNativeColumn).mockReturnValue(true); // dispatcher found, column never appears
+  install();
+  configure(null);
+  expect(trustedClick('/@a/post/one')).toBe(true);
+  await vi.advanceTimersByTimeAsync(1501);
+  expect(assign).toHaveBeenCalledWith('/@a/post/one');
+  vi.unstubAllGlobals();
+});
+it('keeps the click when the column does materialise with the requested url', async () => {
+  vi.useFakeTimers();
+  const assign = vi.fn();
+  vi.stubGlobal('location', {
+    origin: 'https://www.threads.com',
+    href: 'https://www.threads.com/',
+    assign,
+  });
+  const element = document.createElement('div');
+  element.scrollIntoView = vi.fn();
+  vi.mocked(createNativeColumn).mockImplementation((_source, _url, requestId) => {
+    vi.mocked(nativeColumns).mockReturnValue([
+      { id: '123', relayId: requestId, url: '/@a/post/one', element, update: null },
+    ]);
+    return true;
+  });
+  install();
+  configure(null);
+  expect(trustedClick('/@a/post/one')).toBe(true);
+  document.body.appendChild(element); // let the observer see Threads' new column
+  await vi.advanceTimersByTimeAsync(1501);
+  expect(assign).not.toHaveBeenCalled();
+  vi.unstubAllGlobals();
+});
