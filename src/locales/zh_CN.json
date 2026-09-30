@@ -1,4 +1,8 @@
 {
+  "extName": {
+    "message": "Side View — 社交动态侧栏",
+    "description": "Extension name shown in the Chrome Web Store listing and in chrome://extensions."
+  },
   "extDescription": {
     "message": "在侧栏中打开 X、Bluesky 和 Threads 的帖子详情，无需离开当前时间线。",
     "description": "Chrome Web Store listing description."

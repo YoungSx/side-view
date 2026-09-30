@@ -9,7 +9,7 @@ export default defineConfig({
   srcDir: 'src',
   modules: ['@wxt-dev/module-react', '@wxt-dev/i18n/module'],
   manifest: {
-    name: 'side-view',
+    name: '__MSG_extName__',
     default_locale: 'en',
     description: '__MSG_extDescription__',
     icons: {
