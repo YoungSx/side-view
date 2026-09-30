@@ -138,3 +138,16 @@ it('leaves the click alone when our recorded column is gone rather than opening 
   expect(createNativeColumn).not.toHaveBeenCalled();
   vi.unstubAllGlobals();
 });
+it('sends the click on its way when Threads never opens the column we asked for', async () => {
+  vi.useFakeTimers();
+  const assign = vi.fn();
+  onThreads('/me');
+  window.location.assign = assign;
+  vi.mocked(createNativeColumn).mockReturnValue(true); // dispatcher found, column never appears
+  install();
+  configure(null);
+  expect(trustedClick('/@a/post/one')).toBe(true);
+  await vi.advanceTimersByTimeAsync(1501);
+  expect(assign).toHaveBeenCalledWith('/@a/post/one');
+  vi.unstubAllGlobals();
+});

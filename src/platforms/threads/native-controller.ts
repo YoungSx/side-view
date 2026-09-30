@@ -10,10 +10,17 @@ export const NATIVE_CHANNEL = 'side-view:threads-native:v1';
 const INTERACTIVE =
   'button,[role="button"],[role="menuitem"],input,textarea,select,video,[contenteditable="true"]';
 const SCROLL: ScrollIntoViewOptions = { block: 'nearest', inline: 'nearest', behavior: 'auto' };
+// ponytail: fallback deadline for opening a column, and nothing else. `createNativeColumn`
+// returns true as soon as it finds a dispatcher, never on proof that Threads honoured the
+// passthrough props, so this is the only thing standing between a click that was swallowed and a
+// click that goes nowhere. Reusing a column needs no deadline — `updateAction` fails closed, which
+// leaves the click to Threads. Delete once column opening can be confirmed synchronously.
+const OPEN_FALLBACK_MS = 1500;
 
 export function installThreadsNative(): () => void {
   let config: NativeConfig | null = null;
   let pending: { requestId: string; url: string; before: Set<string> } | null = null;
+  let openFallback: ReturnType<typeof setTimeout> | null = null;
   let knownOwned: HTMLElement | null = null;
   let removalTimer: ReturnType<typeof setTimeout> | null = null;
   const observer = new MutationObserver(() => checkPending());
@@ -37,6 +44,8 @@ export function installThreadsNative(): () => void {
     window.postMessage({ channel: NATIVE_CHANNEL, type: 'owned', columnId }, location.origin);
   const clear = () => {
     observer.disconnect();
+    if (openFallback !== null) clearTimeout(openFallback);
+    openFallback = null;
     pending = null;
   };
   const checkPending = () => {
@@ -119,6 +128,13 @@ export function installThreadsNative(): () => void {
           clear();
           return;
         }
+        // Nothing above proves Threads opened anything. If the column has not turned up by the
+        // deadline, send the click where it was always headed instead of dropping it.
+        openFallback = setTimeout(() => {
+          const url = pending?.url;
+          clear();
+          if (url) location.assign(url);
+        }, OPEN_FALLBACK_MS);
       }
       event.preventDefault();
       event.stopImmediatePropagation();
