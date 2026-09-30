@@ -22,7 +22,7 @@ function icon(doc: Document, path: string): SVGElement {
 export function installDetailActions(
   doc: Document,
   findHeader: (doc: Document) => HTMLElement | null,
-  options: { href: () => string; onClose: () => void; onMounted: (mounted: boolean) => void },
+  options: { href: () => string; onClose: () => void },
 ): () => void {
   const group = doc.createElement('div');
   group.setAttribute(ACTIONS, '');
@@ -55,13 +55,6 @@ export function installDetailActions(
   style.id = STYLE;
   style.textContent = css;
   let header: HTMLElement | null = null;
-  let mounted = false;
-  const report = (next: boolean) => {
-    if (next !== mounted) {
-      mounted = next;
-      options.onMounted(next);
-    }
-  };
   const reconcile = () => {
     const next = findHeader(doc);
     if (header !== next) {
@@ -69,10 +62,7 @@ export function installDetailActions(
       group.remove();
       header = next;
     }
-    if (!header) {
-      report(false);
-      return;
-    }
+    if (!header) return;
     if (!style.isConnected) (doc.head ?? doc.documentElement).append(style);
     if (!header.hasAttribute(HEADER)) header.setAttribute(HEADER, '');
     // Match the native action nearest our group (Bluesky's preferences button), never our
@@ -113,7 +103,6 @@ export function installDetailActions(
       group.style.setProperty('--sv-native-icon-color', color);
     }
     if (group.parentElement !== header || header.lastElementChild !== group) header.append(group);
-    report(true);
   };
   // Bluesky mutates class/style on its subtree constantly; coalesce those bursts into one reconcile
   // per frame so the header scan doesn't run on every attribute tick. The FIRST reconcile below

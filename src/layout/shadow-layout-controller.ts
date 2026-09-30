@@ -252,7 +252,10 @@ export class ShadowLayoutController implements LayoutController {
     const view = document.defaultView;
     if (!view) return;
     const opaque = (color: string): boolean =>
-      color !== '' && color !== 'transparent' && !/,\s*0\)\s*$/.test(color);
+      color !== '' &&
+      color !== 'transparent' &&
+      // Only rgba's fourth channel is alpha; rgb(0, 0, 0) is opaque black.
+      !/^rgba\([^)]*,\s*0(?:\.0+)?\s*\)$/i.test(color);
     let background = '';
     for (const el of [document.body, document.documentElement]) {
       if (!el) continue;

@@ -230,14 +230,32 @@ it('holds a fixed column in place instead of snapping to the left edge when the 
   expect(host()?.style.left).toBe('900px');
 });
 
-it('tints the column with the host page surface so the loading state is not a hardcoded block', async () => {
+it.each([
+  ['rgb(0, 0, 0)', 'rgb(231, 233, 234)'],
+  ['rgb(21, 32, 43)', 'rgb(231, 233, 234)'],
+  ['rgb(255, 255, 255)', 'rgb(15, 20, 25)'],
+])('tints the column with the host page surface %s', async (background, foreground) => {
   addAnchor();
-  document.body.style.backgroundColor = 'rgb(21, 32, 43)';
-  document.body.style.color = 'rgb(231, 233, 234)';
+  document.body.style.backgroundColor = background;
+  document.body.style.color = foreground;
   await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
   expect(layout.open()).toBe(true);
-  expect(host()?.style.getPropertyValue('--sv-surface')).toBe('rgb(21, 32, 43)');
-  expect(host()?.style.getPropertyValue('--sv-on-surface')).toBe('rgb(231, 233, 234)');
+  expect(host()?.style.getPropertyValue('--sv-surface')).toBe(background);
+  expect(host()?.style.getPropertyValue('--sv-on-surface')).toBe(foreground);
   document.body.style.backgroundColor = '';
   document.body.style.color = '';
+});
+
+it('skips transparent body backgrounds and samples the opaque root background', async () => {
+  addAnchor();
+  document.body.style.backgroundColor = 'rgba(255, 255, 255, 0)';
+  document.documentElement.style.backgroundColor = 'rgb(0, 0, 0)';
+  try {
+    await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+    expect(layout.open()).toBe(true);
+    expect(host()?.style.getPropertyValue('--sv-surface')).toBe('rgb(0, 0, 0)');
+  } finally {
+    document.body.style.backgroundColor = '';
+    document.documentElement.style.backgroundColor = '';
+  }
 });
