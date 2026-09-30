@@ -18,6 +18,37 @@
     "loading": "載入中…",
     "loadError": "無法在此處載入該檢視。"
   },
+  "popup": {
+    "title": "Side View",
+    "loading": "正在讀取目前分頁…",
+    "allSettings": "全部設定…",
+    "saveError": "此次變更未能儲存，請重試。",
+    "enableTitle": "啟用 Side View",
+    "compactTitle": "緊湊導覽",
+    "interceptTitle": "開啟個人頁面、話題標籤和搜尋",
+    "threadsOwnsColumn": "Threads 使用它自己儲存的欄位，因此寬度和位置在此不適用。",
+    "reloadHint": "此分頁載入於 Side View 啟動之前。",
+    "reloadAction": "重新載入分頁",
+    "platform": {
+      "X": "X",
+      "Bluesky": "Bluesky",
+      "Threads": "Threads"
+    },
+    "status": {
+      "active": "執行中",
+      "inactive": "已停用",
+      "needsReload": "需重新載入",
+      "unsupported": "此處不適用",
+      "format": "$1 · $2"
+    },
+    "layoutLegend": "詳情開啟的位置",
+    "widthTitle": "詳情欄寬度",
+    "widthValue": "$1 像素",
+    "layout": {
+      "replaceSidebar": "取代側欄",
+      "insertColumn": "保留側欄"
+    }
+  },
   "options": {
     "title": "Side View · 設定",
     "skipToSettings": "跳到設定",

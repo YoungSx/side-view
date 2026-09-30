@@ -18,7 +18,10 @@ export default defineConfig({
       48: 'icons/48.png',
       128: 'icons/128.png',
     },
-    permissions: ['storage', 'declarativeNetRequestWithHostAccess'],
+    // `activeTab` is the only permission the toolbar popup needs: clicking the action grants
+    // temporary host access to that tab, which is enough to read its URL and ping its content
+    // script. `tabs` would grant the same reads permanently across every tab the user visits.
+    permissions: ['storage', 'activeTab', 'declarativeNetRequestWithHostAccess'],
     host_permissions: [
       '*://x.com/*',
       '*://twitter.com/*',

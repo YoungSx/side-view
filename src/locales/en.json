@@ -18,6 +18,37 @@
     "loading": "Loading…",
     "loadError": "Couldn’t load this view here."
   },
+  "popup": {
+    "title": "Side View",
+    "loading": "Reading this tab…",
+    "allSettings": "All settings…",
+    "saveError": "Couldn’t save this change. Please try again.",
+    "enableTitle": "Enable Side View",
+    "compactTitle": "Compact navigation",
+    "interceptTitle": "Open profiles, hashtags & searches",
+    "threadsOwnsColumn": "Threads uses its own saved column, so width and placement don’t apply here.",
+    "reloadHint": "This tab loaded before Side View started.",
+    "reloadAction": "Reload tab",
+    "platform": {
+      "X": "X",
+      "Bluesky": "Bluesky",
+      "Threads": "Threads"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Off",
+      "needsReload": "Reload",
+      "unsupported": "Not here",
+      "format": "$1 · $2"
+    },
+    "layoutLegend": "Where details open",
+    "widthTitle": "Detail width",
+    "widthValue": "$1 px",
+    "layout": {
+      "replaceSidebar": "Replace sidebar",
+      "insertColumn": "Keep sidebar"
+    }
+  },
   "options": {
     "title": "Side View · settings",
     "skipToSettings": "Skip to settings",

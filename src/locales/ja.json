@@ -18,6 +18,37 @@
     "loading": "読み込み中…",
     "loadError": "このビューをここで読み込めませんでした。"
   },
+  "popup": {
+    "title": "Side View",
+    "loading": "このタブを確認しています…",
+    "allSettings": "すべての設定…",
+    "saveError": "この変更を保存できませんでした。もう一度お試しください。",
+    "enableTitle": "Side View を有効にする",
+    "compactTitle": "コンパクトナビゲーション",
+    "interceptTitle": "プロフィール・ハッシュタグ・検索を開く",
+    "threadsOwnsColumn": "Threads は保存済みのカラムを使うため、幅と配置はここで適用されません。",
+    "reloadHint": "このタブは Side View の起動より前に読み込まれました。",
+    "reloadAction": "タブを再読み込み",
+    "platform": {
+      "X": "X",
+      "Bluesky": "Bluesky",
+      "Threads": "Threads"
+    },
+    "status": {
+      "active": "稼働中",
+      "inactive": "オフ",
+      "needsReload": "再読み込み",
+      "unsupported": "対象外",
+      "format": "$1 · $2"
+    },
+    "layoutLegend": "詳細を開く場所",
+    "widthTitle": "詳細の幅",
+    "widthValue": "$1 px",
+    "layout": {
+      "replaceSidebar": "サイドバーを置き換える",
+      "insertColumn": "サイドバーを残す"
+    }
+  },
   "options": {
     "title": "Side View · 設定",
     "skipToSettings": "設定へスキップ",

@@ -62,11 +62,49 @@ General switches save immediately; width changes use **Apply**, and advanced sel
 **Save selectors**. Failed saves show an error and keep the last saved setting. Reload X or Bluesky
 after changing the main enable switch, and reload X after saving selector overrides.
 
+## Toolbar popup
+
+Clicking the toolbar icon opens a 360px popup scoped to the current tab. It carries the master
+enable switch, placement, width, compact navigation and link interception, plus a link out to the
+settings tab.
+
+Every control completes in one interaction. The width slider writes through as it moves rather than
+offering an Apply button, and there are no multi-step flows, hover panels or tooltips — a popup
+closes the moment it loses focus, so anything that must be understood has to be visible at rest.
+
+The status Badge in the header answers "why did nothing happen?":
+
+| Status | Meaning |
+| --- | --- |
+| `X · Active` | The engine is running on this tab. |
+| `X · Off` | side-view is switched off. |
+| `X · Reload` | A supported page with no content script — the tab predates the install. A Reload button appears. |
+| `Not here` | A site side-view does not handle. Nothing to do. |
+
+Telling the last two apart is the point. A ping alone cannot distinguish a wrong website from a
+stale tab, and that difference decides whether a Reload button is offered, so `PingResult` stays a
+single liveness signal while `deriveTabState` (`src/entrypoints/popup/tab-state.ts`) combines it
+with the tab URL.
+
+`enabled` is the one setting the engine cannot apply to a live tab, so the popup re-derives its
+status after that switch. The other four apply live — that contrast is why they belong here.
+
+`src/core/messaging.ts` is the entire contract: one `sv:ping` command, two result shapes, and the
+platform lookup. The engine registers a responder only on the path where it actually started, so an
+unanswered ping is itself the signal that a tab needs a reload. Nothing in the popup knows any
+platform. The popup requests only the `activeTab` permission and never throws — every failure
+resolves to `Not here`.
+
+On Threads the placement and width controls are replaced by a note: Threads renders into a native
+column it owns, so those settings do not apply there.
+
 ## Localization
 
 UI copy lives in `src/locales/<lang>.json` (`en` is the source of truth, plus `zh_CN`, `zh_TW`, `ja`).
 Call `i18n.t('options.general.title')` from `#i18n`; the `@wxt-dev/i18n` module converts nested keys
 to `_locales/*/messages.json` at build time (dots become underscores, e.g. `options_general_title`).
+Keys are namespaced by surface: `options.*`, `popup.*`, `detail.*`, `common.*`, plus the top-level
+`brand` wordmark.
 Users pick a language in Settings; **Follow browser** (the default) uses the browser UI language.
 
 To add a language: copy `en.json` to the new code, translate every value (keep `$1` placeholders),
@@ -77,7 +115,7 @@ fails the suite if any key set drifts from `en`.
 
 | Doc | What it covers |
 | --- | --- |
-| [DESIGN.md](../DESIGN.md) | Settings page design system (shadcn new-york / neutral) |
+| [DESIGN.md](../DESIGN.md) | Design system for both surfaces (shadcn new-york / neutral) |
 | [PRODUCT.md](../PRODUCT.md) | Product purpose, capabilities, brand commitments |
 | [VERIFICATION.md](../VERIFICATION.md) | Runtime checks that selectors and CSP handling need |
 | [CWS_RELEASE_PLAN.md](../CWS_RELEASE_PLAN.md) | Store review, packaging and rollout plan |
