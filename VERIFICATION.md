@@ -111,7 +111,7 @@ tabs (layout mode, width, profile/hashtag interception); **Enabled** requires a 
 
 **Not yet fully verified:** the functional `insert-column`
 layout (the mode + CSS exist; verify placement when enabled), and a drag-to-resize handle (width is
-set via Options). See `README.md` for architecture.
+set via Options). See [docs/development.md](docs/development.md) for architecture.
 
 
 ## Bluesky adapter verification (2026-09-29)
