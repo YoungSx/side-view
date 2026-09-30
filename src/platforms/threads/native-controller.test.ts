@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { installThreadsNative, NATIVE_CHANNEL } from './native-controller';
-import { createNativeColumn, nativeColumns } from './native-runtime';
+import { createNativeColumn, nativeColumns, updateNativeColumn } from './native-runtime';
 
 vi.mock('./native-runtime', () => ({
   nativeColumns: vi.fn(() => []),
@@ -131,5 +131,26 @@ it('keeps the click when the column does materialise with the requested url', as
   document.body.appendChild(element); // let the observer see Threads' new column
   await vi.advanceTimersByTimeAsync(1501);
   expect(assign).not.toHaveBeenCalled();
+  vi.unstubAllGlobals();
+});
+it('replays the click natively when the existing column never changes url', async () => {
+  vi.useFakeTimers();
+  const assign = vi.fn();
+  vi.stubGlobal('location', {
+    origin: 'https://www.threads.com',
+    href: 'https://www.threads.com/',
+    assign,
+  });
+  const element = document.createElement('div');
+  element.scrollIntoView = vi.fn();
+  vi.mocked(nativeColumns).mockReturnValue([
+    { id: '123', relayId: 'r', url: '/@a/post/stale', element, update: vi.fn() },
+  ]);
+  vi.mocked(updateNativeColumn).mockReturnValue(true); // accepted, but Threads never navigated
+  install();
+  configure('123');
+  expect(trustedClick('/@a/post/one')).toBe(true);
+  await vi.advanceTimersByTimeAsync(1501);
+  expect(assign).toHaveBeenCalledWith('/@a/post/one');
   vi.unstubAllGlobals();
 });
