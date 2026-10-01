@@ -62,6 +62,15 @@ General switches save immediately; width changes use **Apply**, and advanced sel
 **Save selectors**. Failed saves show an error and keep the last saved setting. Reload X or Bluesky
 after changing the main enable switch, and reload X after saving selector overrides.
 
+Compact navigation uses the sites' native renderers through `compact-native.content.ts` in the
+MAIN world. X acquires/releases its native collapse counter; Bluesky updates only the mounted
+left navigation's structurally validated responsive state and reconciles it after resize and
+navigation changes. Disabling restores the current native breakpoint. There is no compact CSS,
+global media-query override, replacement icon or fallback layout. These are private capabilities:
+if their runtime shape is missing/ambiguous, the feature is unavailable and the popup hides it.
+Threads also hides the compact control. Turning the master switch off releases compact navigation
+immediately, even though other engine changes still require a reload.
+
 ## Toolbar popup
 
 Clicking the toolbar icon opens a 360px popup scoped to the current tab. It carries the master

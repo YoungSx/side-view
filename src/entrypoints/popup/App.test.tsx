@@ -80,20 +80,20 @@ it('re-derives the status when the extension is switched on', async () => {
   expect(settings.enabled.setValue).toHaveBeenLastCalledWith(true);
 });
 
-it('hides width and placement on Threads, which owns its own column', async () => {
+it('hides width, placement and compact navigation on Threads', async () => {
   stubTab({ answer: { kind: 'ready', platform: 'threads', columnOpen: false } });
   render(<App />);
   await screen.findByText('Threads · Active');
   expect(screen.getByText(/Threads uses native columns/)).toBeDefined();
   expect(screen.queryByRole('slider')).toBeNull();
-  // The switches below still apply everywhere.
-  expect(screen.getByRole('switch', { name: 'Compact navigation' })).toBeDefined();
+  expect(screen.queryByRole('switch', { name: 'Compact navigation' })).toBeNull();
 });
 
 it('shows width and placement on X, and writes them straight through', async () => {
   stubTab({ answer: { kind: 'ready', platform: 'x', columnOpen: false } });
   render(<App />);
   await screen.findByText('X · Active');
+  expect(screen.getByRole('switch', { name: 'Compact navigation' })).toBeDefined();
   const slider = screen.getByRole('slider', { name: 'Detail width' });
   // A popup has no Apply affordance worth the extra click, so the write happens on commit.
   fireEvent.keyDown(slider, { key: 'ArrowRight' });
@@ -110,4 +110,25 @@ it('reports a failed write instead of silently reverting', async () => {
   vi.mocked(settings.enabled.setValue).mockRejectedValueOnce(new Error('storage unavailable'));
   fireEvent.click(screen.getByRole('switch', { name: 'Enable Side View' }));
   await screen.findByText('Couldn’t save this change. Please try again.');
+});
+
+it('hides compact navigation when the native bridge reports it unavailable', async () => {
+  stubTab({
+    answer: {
+      kind: 'ready',
+      platform: 'bluesky',
+      columnOpen: false,
+      compactNavigationAvailable: false,
+    },
+  });
+  render(<App />);
+  await screen.findByText('Bluesky · Active');
+  expect(screen.queryByRole('switch', { name: 'Compact navigation' })).toBeNull();
+});
+
+it('hides compact navigation on Threads even before its content script starts', async () => {
+  stubTab({ url: 'https://www.threads.com/', reject: true });
+  render(<App />);
+  await screen.findByText('Threads · Reload');
+  expect(screen.queryByRole('switch', { name: 'Compact navigation' })).toBeNull();
 });

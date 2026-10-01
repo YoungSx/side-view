@@ -111,3 +111,18 @@ it('does not install UI or navigation preferences after startup is invalidated',
   expect(document.body.classList.contains('sv-compact-nav')).toBe(false);
   await settings.compactNavigation.setValue(false);
 });
+
+it('releases native compact navigation when the master switch is disabled', async () => {
+  await act(async () => {
+    await settings.compactNavigation.setValue(true);
+  });
+  expect(document.documentElement.getAttribute('data-sideview-compact-request')).toBe('true');
+  await act(async () => {
+    await settings.enabled.setValue(false);
+  });
+  expect(document.documentElement.getAttribute('data-sideview-compact-request')).toBe('false');
+  await act(async () => {
+    await settings.enabled.setValue(true);
+  });
+  expect(document.documentElement.getAttribute('data-sideview-compact-request')).toBe('true');
+});

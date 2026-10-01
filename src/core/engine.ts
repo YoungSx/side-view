@@ -5,6 +5,7 @@ import { servePing } from '@/core/messaging';
 import { observeRoute } from '@/core/route-observer';
 import { applyStoredLanguage, setUiLanguage } from '@/i18n/runtime';
 import { ShadowLayoutController } from '@/layout/shadow-layout-controller';
+import { COMPACT_STATUS } from '@/platforms/compact/protocol';
 import { pickAdapter } from '@/platforms/registry';
 import { installXMainBack } from '@/platforms/x/main-back';
 import { IframeColumnProvider } from '@/providers/iframe/iframe-provider';
@@ -67,15 +68,33 @@ export async function startSideView(ctx: ContentScriptContext): Promise<void> {
   // Answer the toolbar popup. Registered only on the path where the engine actually started, so a
   // ping that goes unanswered is itself the signal that this tab needs a reload.
   servePing(
-    () => ({ kind: 'ready', platform: adapter.id, columnOpen: layout.isColumnVisible() }),
+    () => ({
+      kind: 'ready',
+      platform: adapter.id,
+      columnOpen: layout.isColumnVisible(),
+      compactNavigationAvailable: ['available', 'active'].includes(
+        document.documentElement.getAttribute(COMPACT_STATUS) ?? '',
+      ),
+    }),
     (cleanup) => ctx.onInvalidated(cleanup),
   );
 
   // Live settings — the options page can retune the running content script.
   ctx.onInvalidated(settings.layoutMode.watch((mode) => layout.setMode(mode)));
   ctx.onInvalidated(settings.columnWidth.watch((px) => layout.setWidth(px)));
+  let compactRequested = snapshot.compactNavigation;
+  let enabled: boolean = snapshot.enabled;
   ctx.onInvalidated(
-    settings.compactNavigation.watch((enabled) => layout.setCompactNavigation(enabled)),
+    settings.compactNavigation.watch((value) => {
+      compactRequested = value;
+      layout.setCompactNavigation(enabled && compactRequested);
+    }),
+  );
+  ctx.onInvalidated(
+    settings.enabled.watch((value) => {
+      enabled = value;
+      layout.setCompactNavigation(enabled && compactRequested);
+    }),
   );
   ctx.onInvalidated(
     settings.interceptProfilesAndTags.watch((v) => router.setPolicy(makePolicy(v))),

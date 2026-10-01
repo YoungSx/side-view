@@ -2,8 +2,6 @@
 export const SV_ACTIVE_CLASS = 'sv-active';
 export const SV_HOST_ATTR = 'data-sideview-host';
 export const SV_LAYOUT_STYLE_ID = 'sv-layout-style';
-export const SV_NAV_STYLE_ID = 'sv-navigation-style';
-export const SV_COMPACT_NAV_CLASS = 'sv-compact-nav';
 
 /**
  * Minimum viewport width (CSS px) at which the detail column is shown. Below this the column is

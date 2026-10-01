@@ -18,7 +18,12 @@ export type TabState =
   /** A content script answered but the engine is not running: the extension is switched off. */
   | { readonly kind: 'inactive'; readonly platform: PlatformId }
   /** The extension is live on this tab. */
-  | { readonly kind: 'active'; readonly platform: PlatformId; readonly columnOpen: boolean }
+  | {
+      readonly kind: 'active';
+      readonly platform: PlatformId;
+      readonly columnOpen: boolean;
+      readonly compactNavigationAvailable?: boolean;
+    }
   /** Supported site, enabled, but the content script is not in this tab — a reload will fix it. */
   | { readonly kind: 'needs-reload'; readonly platform: PlatformId };
 
@@ -34,7 +39,14 @@ export type TabState =
 export function deriveTabState(ping: PingResult, url: string | null, enabled: boolean): TabState {
   if (ping.kind === 'ready') {
     return enabled
-      ? { kind: 'active', platform: ping.platform, columnOpen: ping.columnOpen }
+      ? {
+          kind: 'active',
+          platform: ping.platform,
+          columnOpen: ping.columnOpen,
+          ...(ping.compactNavigationAvailable === undefined
+            ? {}
+            : { compactNavigationAvailable: ping.compactNavigationAvailable }),
+        }
       : { kind: 'inactive', platform: ping.platform };
   }
   // A supported host with no listener. With the extension on, the engine should be running, so the

@@ -1,7 +1,7 @@
 import type { DetailIntent, IntentKind, LayoutMode, PlatformAdapter } from '@/core/types';
 import { findXDetailHeader } from '@/platforms/detail-headers';
 import { buildDetailFrameCss } from './detail-frame-css';
-import { buildCompactNavigationCss, buildLayoutCss } from './layout-css';
+import { buildLayoutCss } from './layout-css';
 import {
   resolveSelectors,
   X_DEFAULT_SELECTORS,
@@ -77,10 +77,6 @@ export class XAdapter implements PlatformAdapter {
 
   layoutCss(mode: LayoutMode): string {
     return buildLayoutCss(mode, this.s);
-  }
-
-  compactNavigationCss(): string {
-    return buildCompactNavigationCss(this.s);
   }
 
   detailHeader(doc: Document): HTMLElement | null {

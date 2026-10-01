@@ -33,6 +33,7 @@ export type PingResult =
       readonly platform: PlatformId;
       /** Whether a detail view is currently mounted and visible in the column. */
       readonly columnOpen: boolean;
+      readonly compactNavigationAvailable?: boolean;
     };
 
 /** The only message the popup sends. */
@@ -52,12 +53,19 @@ export function isPopupCommand(value: unknown): value is PopupCommand {
  */
 export function isPingResult(value: unknown): value is PingResult {
   if (typeof value !== 'object' || value === null) return false;
-  const record = value as { kind?: unknown; platform?: unknown; columnOpen?: unknown };
+  const record = value as {
+    kind?: unknown;
+    platform?: unknown;
+    columnOpen?: unknown;
+    compactNavigationAvailable?: unknown;
+  };
   if (record.kind === 'unsupported') return true;
   return (
     record.kind === 'ready' &&
     (record.platform === 'x' || record.platform === 'bluesky' || record.platform === 'threads') &&
-    typeof record.columnOpen === 'boolean'
+    typeof record.columnOpen === 'boolean' &&
+    (record.compactNavigationAvailable === undefined ||
+      typeof record.compactNavigationAvailable === 'boolean')
   );
 }
 
