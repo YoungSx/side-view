@@ -7,6 +7,9 @@ afterEach(() => {
   cleanup?.();
   cleanup = undefined;
   document.body.innerHTML = '';
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 it('appends actions after Bluesky native controls and restores them unchanged on teardown', () => {
   document.body.innerHTML =
@@ -158,9 +161,10 @@ it('never reconciles after cleanup, even with a frame already pending', async ()
 it('closes only X root-level back while leaving deeper native returns untouched', () => {
   const doc = document.implementation.createHTMLDocument();
   Object.defineProperty(doc, 'defaultView', { value: window });
-  const entry = vi.spyOn(window.history, 'state', 'get').mockReturnValue({ key: 'root' });
+  const navigation = { currentEntry: { key: 'root' } };
+  vi.stubGlobal('navigation', navigation);
   doc.body.innerHTML =
-    '<header id="header"><button data-testid="app-bar-back"><span>Back</span></button></header>';
+    '<header id="header" data-testid="primaryColumn"><button data-testid="app-bar-back"><span>Back</span></button></header>';
   let current = 'https://x.com/a/status/1';
   const close = vi.fn();
   const dispose = installDetailActions(doc, () => doc.getElementById('header'), {
@@ -179,11 +183,65 @@ it('closes only X root-level back while leaving deeper native returns untouched'
   expect(click().defaultPrevented).toBe(false);
   expect(close).toHaveBeenCalledOnce();
   current = 'https://x.com/a/status/1';
-  entry.mockReturnValue({ key: 'revisit', state: { fromApp: true } });
+  navigation.currentEntry = { key: 'revisit' };
   expect(click().defaultPrevented).toBe(false);
-  entry.mockReturnValue({ key: 'root' });
+  navigation.currentEntry = { key: 'root' };
   expect(click().defaultPrevented).toBe(true);
   expect(close).toHaveBeenCalledTimes(2);
   dispose();
   expect(click().defaultPrevented).toBe(false);
+});
+
+it('recognizes the original navigation entry after X rewrites its private history state', () => {
+  vi.stubGlobal('navigation', { currentEntry: { key: 'browser-root' } });
+  document.body.innerHTML =
+    '<header data-testid="primaryColumn"><button data-testid="app-bar-back">Back</button></header>';
+  const close = vi.fn();
+  cleanup = installDetailActions(document, () => document.querySelector('header'), {
+    href: () => 'https://x.com/a/status/1',
+    rootUrl: 'https://x.com/a/status/1',
+    onClose: close,
+  });
+  window.history.replaceState({ key: 'changed-by-x', state: { fromApp: true } }, '');
+  document.querySelector<HTMLButtonElement>('[data-testid="app-bar-back"]')?.click();
+  expect(close).toHaveBeenCalledOnce();
+});
+
+it('handles root Back before the native header layout is ready for action placement', () => {
+  vi.stubGlobal('navigation', { currentEntry: { key: 'root-before-styles' } });
+  document.body.innerHTML =
+    '<div data-testid="primaryColumn"><button data-testid="app-bar-back">Back</button></div>';
+  const close = vi.fn();
+  cleanup = installDetailActions(document, () => null, {
+    href: () => 'https://x.com/a/status/1',
+    rootUrl: 'https://x.com/a/status/1',
+    onClose: close,
+  });
+  document.querySelector<HTMLButtonElement>('[data-testid="app-bar-back"]')?.click();
+  expect(close).toHaveBeenCalledOnce();
+});
+
+it('retains the reading root across Document replacement without mistaking a deeper revisit for root', () => {
+  const navigation = { currentEntry: { key: 'original' } };
+  vi.stubGlobal('navigation', navigation);
+  const root = { key: null };
+  const close = vi.fn();
+  const install = () =>
+    installDetailActions(document, () => document.querySelector('header'), {
+      href: () => 'https://x.com/a/status/1',
+      rootUrl: 'https://x.com/a/status/1',
+      root,
+      onClose: close,
+    });
+  document.body.innerHTML =
+    '<header data-testid="primaryColumn"><button data-testid="app-bar-back">Back</button></header>';
+  install()();
+  navigation.currentEntry = { key: 'deeper-revisit' };
+  cleanup = install();
+  const back = document.querySelector<HTMLButtonElement>('[data-testid="app-bar-back"]');
+  back?.click();
+  expect(close).not.toHaveBeenCalled();
+  navigation.currentEntry = { key: 'original' };
+  back?.click();
+  expect(close).toHaveBeenCalledOnce();
 });

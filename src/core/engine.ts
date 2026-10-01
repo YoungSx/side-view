@@ -6,6 +6,7 @@ import { observeRoute } from '@/core/route-observer';
 import { applyStoredLanguage, setUiLanguage } from '@/i18n/runtime';
 import { ShadowLayoutController } from '@/layout/shadow-layout-controller';
 import { pickAdapter } from '@/platforms/registry';
+import { installXMainBack } from '@/platforms/x/main-back';
 import { IframeColumnProvider } from '@/providers/iframe/iframe-provider';
 import { loadSettings, settings } from '@/settings/storage';
 
@@ -53,8 +54,15 @@ export async function startSideView(ctx: ContentScriptContext): Promise<void> {
   router.install(ctx);
   ctx.onInvalidated(() => provider.destroy());
 
-  // Route events provide an additional opportunity to reconcile the column.
-  observeRoute(ctx, () => layout.reattachIfDetached());
+  const closeReading = (): void => {
+    layout.close();
+    provider.destroy();
+  };
+  if (adapter.id === 'x') {
+    ctx.onInvalidated(installXMainBack(document, () => layout.isColumnVisible(), closeReading));
+  }
+  // A reading belongs to its source page. Do not remount an iframe across main-page navigation.
+  observeRoute(ctx, closeReading);
 
   // Answer the toolbar popup. Registered only on the path where the engine actually started, so a
   // ping that goes unanswered is itself the signal that this tab needs a reload.
