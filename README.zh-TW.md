@@ -9,6 +9,11 @@
 
 **看貼文，不弄丟時間軸。**
 
+[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-available-4285F4?logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/side-view-%E2%80%94-social-post-s/hbplammjgakmogfiaobijlngllblpjhm)
+[![Manifest V3](https://img.shields.io/badge/Manifest-V3-4285F4?logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop/migrate)
+[![Chrome](https://img.shields.io/badge/browser-Chrome%20%7C%20Chromium-4285F4?logo=googlechrome&logoColor=white)](https://www.google.com/chrome/)
+[![last commit](https://img.shields.io/github/last-commit/YoungSx/side-view?label=last%20commit&logo=github)](https://github.com/YoungSx/side-view/commits/main)
+
 ![Side View 在 X 上把貼文開在時間軸旁邊](assets/store/screenshots/01-x-sidebar.jpg)
 
 你一定也有過這種經驗：正看到一半，某則貼文吸引了你的目光，你點下去——整個動態就這樣不見了。
@@ -52,7 +57,7 @@ Side View 會把這則貼文**開在時間軸旁邊的側欄裡**。你的動態
 
 ## 開始使用
 
-1. 從 Chrome 應用程式商店安裝 Side View。*（商店連結會在通過審核後補在這裡。）*
+1. 從 [Chrome 應用程式商店](https://chromewebstore.google.com/detail/side-view-%E2%80%94-social-post-s/hbplammjgakmogfiaobijlngllblpjhm)安裝 Side View。
 2. 像平常一樣打開 X、Bluesky 或 Threads，其他都不用設定。
 3. 點一則貼文，它就在時間軸旁邊打開了。
 

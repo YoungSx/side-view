@@ -9,6 +9,11 @@
 
 **看帖子，别丢了时间线。**
 
+[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-available-4285F4?logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/side-view-%E2%80%94-social-post-s/hbplammjgakmogfiaobijlngllblpjhm)
+[![Manifest V3](https://img.shields.io/badge/Manifest-V3-4285F4?logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop/migrate)
+[![Chrome](https://img.shields.io/badge/browser-Chrome%20%7C%20Chromium-4285F4?logo=googlechrome&logoColor=white)](https://www.google.com/chrome/)
+[![last commit](https://img.shields.io/github/last-commit/YoungSx/side-view?label=last%20commit&logo=github)](https://github.com/YoungSx/side-view/commits/main)
+
 ![Side View 在 X 上把帖子开在时间线旁边](assets/store/screenshots/01-x-sidebar.jpg)
 
 你肯定有过这种体验：正刷到一半，一条帖子吸引了你的目光，你点进去——整个信息流瞬间没了。想
@@ -52,7 +57,7 @@ Side View 会把这条帖子**开在时间线旁边的侧栏里**。你的动态
 
 ## 上手
 
-1. 从 Chrome 应用商店安装 Side View。*（商店链接会在上架通过后补在这里。）*
+1. 从 [Chrome 应用商店](https://chromewebstore.google.com/detail/side-view-%E2%80%94-social-post-s/hbplammjgakmogfiaobijlngllblpjhm)安装 Side View。
 2. 照常打开 X、Bluesky 或 Threads，别的都不用配置。
 3. 点一条帖子，它就在时间线旁边打开了。
 

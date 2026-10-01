@@ -9,6 +9,11 @@
 
 **投稿は読む。タイムラインはそのまま。**
 
+[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-available-4285F4?logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/side-view-%E2%80%94-social-post-s/hbplammjgakmogfiaobijlngllblpjhm)
+[![Manifest V3](https://img.shields.io/badge/Manifest-V3-4285F4?logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop/migrate)
+[![Chrome](https://img.shields.io/badge/browser-Chrome%20%7C%20Chromium-4285F4?logo=googlechrome&logoColor=white)](https://www.google.com/chrome/)
+[![last commit](https://img.shields.io/github/last-commit/YoungSx/side-view?label=last%20commit&logo=github)](https://github.com/YoungSx/side-view/commits/main)
+
 ![Side View は X で投稿をタイムラインの横に開きます](assets/store/screenshots/01-x-sidebar.jpg)
 
 こういう体験、あるはずです。タイムラインの中ほどまで読んでいたとき、目を引いた投稿をクリック
@@ -59,7 +64,7 @@ Threads のアカウントに保存される 1 本のネイティブカラムで
 
 ## はじめかた
 
-1. Chrome ウェブストアから Side View をインストールします。ストアのリンクは公開後、ここに追加
+1. [Chrome ウェブストア](https://chromewebstore.google.com/detail/side-view-%E2%80%94-social-post-s/hbplammjgakmogfiaobijlngllblpjhm)から Side View をインストールします。
    されます。
 2. X、Bluesky、Threads を普段どおり開くだけです。それ以上の設定はありません。
 3. 投稿をクリックします。タイムラインの横に開きます。

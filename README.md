@@ -9,6 +9,11 @@
 
 **Read the post. Keep your timeline.**
 
+[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-available-4285F4?logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/side-view-%E2%80%94-social-post-s/hbplammjgakmogfiaobijlngllblpjhm)
+[![Manifest V3](https://img.shields.io/badge/Manifest-V3-4285F4?logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop/migrate)
+[![Chrome](https://img.shields.io/badge/browser-Chrome%20%7C%20Chromium-4285F4?logo=googlechrome&logoColor=white)](https://www.google.com/chrome/)
+[![last commit](https://img.shields.io/github/last-commit/YoungSx/side-view?label=last%20commit&logo=github)](https://github.com/YoungSx/side-view/commits/main)
+
 ![Side View opens a post beside the timeline on X](assets/store/screenshots/01-x-sidebar.jpg)
 
 You know the feeling. You're halfway down your timeline, a post catches your eye, you click it —
@@ -59,8 +64,7 @@ is unavailable or there is insufficient room, clicks keep their normal behavior.
 
 ## Getting started
 
-1. Install Side View from the Chrome Web Store. *(The link goes here as soon as the listing is
-   live.)*
+1. Install Side View from the [Chrome Web Store](https://chromewebstore.google.com/detail/side-view-%E2%80%94-social-post-s/hbplammjgakmogfiaobijlngllblpjhm).
 2. Open X, Bluesky or Threads as usual. Nothing else to configure.
 3. Click a post. It opens beside your timeline.
 

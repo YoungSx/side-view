@@ -1,8 +1,17 @@
 # Chrome Web Store 发布计划
 
-更新：2026-09-30。代码基线：`9a4fd98`。这是上架准备计划，不是已送审或已获批准的声明。
+更新：2026-10-01。代码基线：`9a4fd98`。**已通过 Chrome Web Store 审核并上架**，条目地址：
+<https://chromewebstore.google.com/detail/side-view-%E2%80%94-social-post-s/hbplammjgakmogfiaobijlngllblpjhm>
 
-## 当前结论
+本文保留为发布过程记录与后续更新依据；下列各阶段是首次发布时的准备清单，不代表当前待办。
+
+## 发布结果
+
+- 审核已通过，商店条目 `hbplammjgakmogfiaobijlngllblpjhm` 标题为 `Side View — Social Post Sidebar`。
+- README 顶部已加商店 badge 与安装链接。
+- 首次发布版本号、实际上架日期和商店可见性（Public / Unlisted）以商店后台为准，本文件不代为断言。
+
+## 首次发布准备时的结论
 
 建议先完成下列 P0，再以同一个商店条目的 Unlisted 或 Private 可见性进行小范围测试，稳定后转 Public。
 这些可见性均需要同样的审核，不能借此绕过政策。全功能版本可以作为目标，但 Threads 原生接入需要单独说明其可审查性和稳定性。
