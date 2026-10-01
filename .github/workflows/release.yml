@@ -1,0 +1,99 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: cws
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      # Fail before spending a store upload on a commit that does not pass.
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm compile
+      - run: pnpm test
+
+      # The tag is the single source of truth for the version. A mismatch means the
+      # artifact would be uploaded under a number nobody intended, so stop here.
+      - name: Verify tag matches package.json version
+        env:
+          TAG_VERSION: ${{ github.ref_name }}
+        run: |
+          pkg_version=$(node -p "require('./package.json').version")
+          tag_version="${TAG_VERSION#v}"
+          if [ "$pkg_version" != "$tag_version" ]; then
+            echo "::error::Tag $TAG_VERSION does not match package.json version $pkg_version"
+            exit 1
+          fi
+          echo "Version $pkg_version confirmed by $TAG_VERSION"
+
+      - run: pnpm zip
+
+      - name: Collect the packaged ZIP
+        id: package
+        run: |
+          zip=$(ls .output/*-chrome.zip)
+          if [ "$(printf '%s\n' $zip | wc -l)" -ne 1 ]; then
+            echo "::error::Expected exactly one Chrome zip in .output, found: $zip"
+            exit 1
+          fi
+          echo "path=$zip" >> "$GITHUB_OUTPUT"
+          sha=$(sha256sum "$zip" | cut -d' ' -f1)
+          echo "sha256=$sha" >> "$GITHUB_OUTPUT"
+          echo "### SHA-256" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "$sha" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      # Archive the exact bytes we shipped, so a rebuilt zip can never be swapped for
+      # this release later.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extension-zip
+          path: ${{ steps.package.outputs.path }}
+          if-no-files-found: error
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.package.outputs.path }}
+          generate_release_notes: true
+
+      # The `upload` subcommand uploads without publishing; only the bare form (or `publish`)
+      # calls the publish API. The new version therefore waits in the Chrome Web Store
+      # dashboard until a human presses Publish.
+      - name: Upload to Chrome Web Store as a draft
+        env:
+          CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+          EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+          PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+        run: |
+          npx --yes chrome-webstore-upload-cli@4 \
+            upload \
+            --source "${{ steps.package.outputs.path }}"
+
+      - name: Remind the operator to publish
+        run: |
+          {
+            echo "## Draft uploaded to the Chrome Web Store"
+            echo
+            echo "Version ${{ github.ref_name }} is sitting in the dashboard as a draft."
+            echo "Review it, then press **Publish** to send it to review."
+            echo
+            echo "SHA-256 \`${{ steps.package.outputs.sha256 }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

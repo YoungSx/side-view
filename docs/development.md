@@ -128,6 +128,7 @@ fails the suite if any key set drifts from `en`.
 | [PRODUCT.md](../PRODUCT.md) | Product purpose, capabilities, brand commitments |
 | [VERIFICATION.md](../VERIFICATION.md) | Runtime checks that selectors and CSP handling need |
 | [CWS_RELEASE_PLAN.md](../CWS_RELEASE_PLAN.md) | Store review, packaging and rollout plan |
+| [releasing.md](releasing.md) | Store secrets and the tag-driven release flow |
 | [docs/review-notes.md](review-notes.md) | Chrome Web Store review notes and permission rationale |
 | [docs/privacy-policy.md](privacy-policy.md) | Public privacy policy |
 | [docs/support.md](support.md) | Public support page |
