@@ -3,6 +3,7 @@ import {
   createNativeColumn,
   findDispatcher,
   nativeColumns,
+  nativeContexts,
   updateNativeColumn,
 } from './native-runtime';
 
@@ -16,6 +17,28 @@ function update(args: { columnID: string; relativeURL: string; relayRecordID: st
 const globalGo = vi.fn(),
   localGo = vi.fn();
 const created = vi.fn();
+const resetCalls = vi.fn();
+function reset(relativeURL: string) {
+  resetCalls({ type: 'reset', url: relativeURL });
+}
+
+it('bridges nearest providers including the app router above deeply nested route trees', () => {
+  const el = document.createElement('div');
+  const context = { $$typeof: Symbol.for('react.context') };
+  const routeContext = { $$typeof: Symbol.for('react.context') };
+  let parent: Record<string, unknown> = {
+    type: routeContext,
+    memoizedProps: { value: 'route-store' },
+  };
+  parent = { type: context, memoizedProps: { value: 'outer' }, return: parent };
+  for (let i = 0; i < 250; i++) parent = { return: parent };
+  parent = { type: context, memoizedProps: { value: 'nearest' }, return: parent };
+  Object.assign(el, { __reactFiber$test: { return: parent } });
+  const values = nativeContexts(el);
+  expect(values.get(context)).toBe('nearest');
+  expect(values.get(routeContext)).toBe('route-store');
+  expect(values.size).toBe(2);
+});
 function create(url: string, requestId: string) {
   // Contract-shaped fixture for the mounted native callback; no network is involved.
   created({
@@ -37,6 +60,7 @@ function fixture() {
   Object.assign(el, { __reactFiber$test: { return: root } });
   Object.assign(link, {
     __reactFiber$test: {
+      updateQueue: { memoCache: { data: [[reset]] } },
       dependencies: { firstContext: { context, memoizedValue: { go: localGo } } },
       return: root,
     },
@@ -49,6 +73,7 @@ beforeEach(() => {
   globalGo.mockReset();
   localGo.mockReset();
   created.mockReset();
+  resetCalls.mockReset();
   Object.defineProperty(Element.prototype, 'checkVisibility', {
     configurable: true,
     value: function (this: Element) {
@@ -84,7 +109,8 @@ it('updates the same saved column and routes within it without adding a second c
   expect(calls).toEqual([
     { columnID: '123', relayRecordID: 'relay-123', relativeURL: '/@bob/post/two' },
   ]);
-  expect(localGo).toHaveBeenCalledWith('/@bob/post/two', { replace: true });
+  expect(resetCalls).toHaveBeenCalledWith({ type: 'reset', url: '/@bob/post/two' });
+  expect(localGo).not.toHaveBeenCalled();
   expect(globalGo).not.toHaveBeenCalled();
   expect(document.querySelectorAll('[data-deck-column]')).toHaveLength(1);
   expect(el.style.cssText).toBe('');
@@ -128,4 +154,14 @@ it('refuses ambiguous native creation callbacks', () => {
   root.updateQueue.memoCache.data.push([duplicate]);
   expect(createNativeColumn(link, '/@bob/post/two', 'request-id')).toBe(false);
   expect(created).not.toHaveBeenCalled();
+});
+
+it('does not mutate a saved column if its native history reset callback is unavailable', () => {
+  const { link, root } = fixture();
+  Object.assign(link, { __reactFiber$test: { return: root } });
+  const column = nativeColumns()[0];
+  if (!column) throw new Error('Column missing');
+  expect(updateNativeColumn(column, '/@bob/post/two')).toBe(false);
+  expect(calls).toEqual([]);
+  expect(globalGo).not.toHaveBeenCalled();
 });

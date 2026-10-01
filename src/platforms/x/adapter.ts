@@ -30,7 +30,7 @@ const RESERVED_HANDLES = new Set([
 ]);
 
 const HOST_RE = /(^|\.)(x|twitter)\.com$/i;
-const STATUS_RE = /^\/([^/]+)\/status\/(\d+)/;
+const STATUS_RE = /^\/([A-Za-z0-9_]{1,15}|i)\/status\/(\d+)\/?$/;
 const HANDLE_RE = /^\/([A-Za-z0-9_]{1,15})\/?$/;
 
 /** x.com / twitter.com adapter. Holds ALL platform-specific DOM knowledge. */
@@ -64,7 +64,11 @@ export class XAdapter implements PlatformAdapter {
   }
 
   getPrimaryColumn(): HTMLElement | null {
-    return document.querySelector<HTMLElement>(this.s.primaryColumn);
+    return (
+      [...document.querySelectorAll<HTMLElement>(this.s.primaryColumn)].find(
+        (element) => element.checkVisibility?.() !== false,
+      ) ?? null
+    );
   }
 
   getSidebarColumn(): HTMLElement | null {
@@ -115,6 +119,13 @@ export class XAdapter implements PlatformAdapter {
   private classify(target: Element): DetailIntent | null {
     const primary = this.getPrimaryColumn();
     if (!primary?.contains(target)) return null;
+    if (target.closest('[role="dialog"],[aria-modal="true"],nav,[role="tablist"]')) return null;
+    const destination = target.closest<HTMLAnchorElement>('a[href]');
+    if (
+      destination?.hasAttribute('download') ||
+      (destination?.target && destination.target !== '_self')
+    )
+      return null;
 
     // 1. Media / action controls keep their native behaviour (lightbox, like, menu, ...).
     if (target.closest(X_INTERACTIVE_WITHIN_TWEET)) return null;
@@ -182,7 +193,7 @@ export class XAdapter implements PlatformAdapter {
     const m = url.pathname.match(STATUS_RE);
     const handle = m?.[1];
     const statusId = m?.[2];
-    if (!handle || !statusId) return { kind: 'status', url: url.href };
+    if (!handle || !statusId) return null;
     return {
       kind: 'status',
       url: `${location.origin}/${handle}/status/${statusId}`,

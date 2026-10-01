@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { installThreadsNative, NATIVE_CHANNEL } from './native-controller';
+import { ThreadsNativePanel } from './native-panel';
 import {
   createNativeColumn,
   type NativeColumn,
@@ -11,6 +12,7 @@ vi.mock('./native-runtime', () => ({
   nativeColumns: vi.fn(() => []),
   createNativeColumn: vi.fn(),
   updateNativeColumn: vi.fn(),
+  findDispatcher: vi.fn(() => null),
 }));
 let dispose: (() => void) | undefined;
 let click: (event: MouseEvent) => void;
@@ -107,6 +109,27 @@ it('reuses a visible owned column', () => {
   vi.mocked(updateNativeColumn).mockReturnValue(true);
   expect(trustedClick().preventDefault).toHaveBeenCalledOnce();
   expect(updateNativeColumn).toHaveBeenCalledWith(owned, '/@a/post/one');
+  expect(createNativeColumn).not.toHaveBeenCalled();
+});
+
+it('opens standalone details only after the local native panel accepts the click', () => {
+  source.removeAttribute('data-deck-column');
+  source.id = 'barcelona-page-layout';
+  vi.stubGlobal('location', new URL('https://www.threads.com/activity'));
+  const open = vi.spyOn(ThreadsNativePanel.prototype, 'open').mockReturnValue(false);
+  configure('saved-home-detail');
+  expect(trustedClick().preventDefault).not.toHaveBeenCalled();
+  open.mockReturnValue(true);
+  expect(trustedClick().preventDefault).toHaveBeenCalledOnce();
+  expect(open).toHaveBeenLastCalledWith(link.parentElement, '/@a/post/one');
+  expect(createNativeColumn).not.toHaveBeenCalled();
+  expect(updateNativeColumn).not.toHaveBeenCalled();
+});
+
+it('leaves explicit new-tab destinations native', () => {
+  configure(null);
+  link.target = '_blank';
+  expect(trustedClick().preventDefault).not.toHaveBeenCalled();
   expect(createNativeColumn).not.toHaveBeenCalled();
 });
 it('does not intercept a click inside its detail column', () => {

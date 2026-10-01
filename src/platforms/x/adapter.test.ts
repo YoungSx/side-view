@@ -76,6 +76,28 @@ describe('XAdapter.resolveIntent', () => {
     // reach the iframe sink.
     expect(adapter.resolveIntent(clickOn(byId('external')))).toBeNull();
   });
+
+  it.each([
+    '/jack/status/123/photo/1',
+    '/jack/status/123/analytics',
+    '/jack/status/123/retweets',
+    '/other/status/no-id',
+  ])('leaves the unsupported destination %s to X', (href) => {
+    byId('perma').setAttribute('href', href);
+    expect(adapter.resolveIntent(clickOn(byId('perma')))).toBeNull();
+  });
+
+  it('preserves explicit new-tab, download and tab-navigation links', () => {
+    const link = byId('name');
+    link.setAttribute('target', '_blank');
+    expect(adapter.resolveIntent(clickOn(link))).toBeNull();
+    link.removeAttribute('target');
+    link.setAttribute('download', '');
+    expect(adapter.resolveIntent(clickOn(link))).toBeNull();
+    link.removeAttribute('download');
+    link.parentElement?.setAttribute('role', 'tablist');
+    expect(adapter.resolveIntent(clickOn(link))).toBeNull();
+  });
 });
 
 describe('XAdapter.detailFrameUrl', () => {

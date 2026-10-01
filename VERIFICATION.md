@@ -245,3 +245,102 @@ Dark-theme loading was also verified in native Chrome: across 109 loading-state 
 the page, column and loading panel all computed to rgb(0, 0, 0), with readable light text.
 Regression tests distinguish opaque black RGB from transparent RGBA and cover dark, light
 and transparent-body/root-background combinations.
+
+## Standalone native Threads columns and cross-platform coverage (2026-10-01)
+
+Extends the visible-deck boundary above. Home continues to use its saved native column.
+Supported standalone `/activity`, `/following`, `/saved`, `/liked`, `/for_you`, `/archive`,
+`/custom_feed/:id` and `/search?q=...` routes now mount an ephemeral `BarcelonaRoutedColumn`
+next to the current content. There is no navigation to home, iframe, account column creation,
+manual GraphQL request, click deadline or timeout fallback.
+
+The compatibility boundary reads the nearest provider values from the mounted page's React
+ancestors and bridges them into a separate root using Threads' own React and ReactDOM. It
+requires the native route store, router UI context and dispatcher before accepting a click.
+The native route-code preloader loads the home column implementation without navigating.
+Unavailable modules or contexts preserve the original click. Rendering failures expose an
+explicit original link and Close action. This still uses internal site interfaces, not a
+supported public extension API; a Threads release can require compatibility updates.
+
+The temporary host lives inside the source page so native menu/dialog portals remain above
+it. Its layout stylesheet and source marker are removed on close, disable, source removal,
+route change or insufficient room for two 640px columns plus the measured native navigation.
+Native column menus and in-column navigation remain owned by Threads. No saved home-column
+ownership is changed by this path.
+
+Authenticated Windows Chrome, using a persistent CDP connection and the rebuilt production
+MAIN script injected into the existing Threads tab:
+
+- Real mouse clicks opened native post content on activity, following, liked, for-you,
+  custom-feed and tag-search pages while retaining the source URL and query parameters.
+- Repeated activity clicks reused one temporary host with different post content.
+- The native Remove column menu closed the temporary host and removed the source layout marker.
+- SPA navigation removed the temporary host and restored the previous page layout.
+- A fresh direct activity document initially had no native routed-column module. Injecting
+  the new production script preloaded it, and a real click rendered the thread without
+  first visiting home. DOM inspection found no iframe and no saved deck column.
+- Resizing to 1200 CSS pixels removed the panel and layout marker without navigating;
+  the original device metrics were then restored.
+- At 1600 CSS pixels the source occupied x=260..900 and the panel x=916..1556, clear of
+  the navigation ending at x=215. Disabling the controller immediately removed the panel
+  and layout marker; the original configuration and device metrics were restored.
+- A screenshot of the following page confirmed separate source and native detail columns.
+- Saved and archive were empty in this account. Their visible scroll-container structure
+  and empty states were inspected; actual post-click E2E on those two routes remains unverified.
+
+X and Bluesky checks used the newly bundled adapters against the authenticated live DOM,
+plus unit and layout regression tests; they did not replace the installed isolated-world
+extension engine. X home still resolves canonical statuses while `/photo/1` and `/analytics`
+links remain native; notification settings and tabs also remain native. Bluesky notification
+and search pages now resolve their visible 600px content column instead of a hidden cached
+home feed. Search result bodies without home-feed test IDs resolve the same canonical post
+as their timestamps. New-tab/download destinations, dialogs, tabs and interactive controls
+are excluded. The installed extension on disk has not been replaced by these injected checks.
+
+Final checks: 134 tests passed; TypeScript, Biome, production build and `git diff --check` passed.
+
+## Reading-session and document-navigation boundaries (2026-10-01)
+
+Each main-page X/Bluesky selection now mounts a fresh iframe reading context, including
+reselecting the same original URL after navigating within the pane. Ordinary label refreshes
+retain the current frame. Closing still discards the reading context. Internal platform
+navigation is not replaced by an extension router.
+
+The iframe load handler tracks Document identity rather than a single lifetime `settled` bit.
+A new same-origin Document gets its own native-header controls, and the previous Document's
+observer/actions are disposed. Repeated load events for the same Document do not duplicate
+controls. Cross-origin/blocked loads enter recovery; returning to a readable Document restores
+controls. Initial-document stale-load and initial readiness checks remain intact.
+
+X root-level native Back closes the pane when both the canonical root URL and the original
+native history entry key match. A deeper visit to the same URL does not count as root. Missing
+native history identity leaves the control native. Other platforms' Back controls are unchanged.
+
+Threads saved-column retargeting now invokes the mounted native
+`useBarcelonaColumnRouterReset` callback instead of replacing only the current history entry.
+The reset capability is checked before any saved-column update; if it is missing, the original
+click remains native. Temporary standalone columns already start a new native reading tree.
+
+Live checks use a temporary harness bundling the actual new iframe provider/components and X
+adapter, with only translation strings substituted, in the authenticated X page. This exercises
+the changed renderer and the installed frame CSS/DNR without replacing the installed engine.
+An internal profile navigation stayed in the frame; a forced full-document same-origin
+navigation produced one action group in the new Document and zero in the old Document, with
+the main URL remaining `/home`. Threads native state inspection confirmed a two-entry history
+stack reset to one entry, retaining the saved column ID and top-level `/`; the original saved
+column URL was restored.
+
+Validation correction: the first renderer harness was mounted in the user's existing X tab
+alongside the installed extension's open panel. That produced two visible detail hosts and
+was not a valid whole-page visual acceptance test. The temporary harness was removed and
+the original tab was checked to contain one extension host and one iframe. Follow-up checks
+use a separate disposable tab with a guard refusing to mount if any detail host already exists.
+In that tab, A -> profile -> selecting A again replaced the iframe, disconnected the old
+instance, and retained exactly one detail host. This is renderer-level verification, not a
+claim that the installed extension was updated.
+
+In the disposable tab, X root-level native Back removed the sole test detail host while the
+main URL remained `/home`. The disposable tab was closed; the original user tab retained
+one installed-extension host and no test host. Final reading-boundary checks: 138 tests,
+TypeScript, Biome, production build and `git diff --check` passed. Installed-extension E2E
+acceptance remains outstanding; renderer/adapter checks above are explicitly narrower.

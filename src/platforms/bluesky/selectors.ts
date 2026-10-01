@@ -1,10 +1,11 @@
 /** Verified against Bluesky's public Discover DOM and the official social-app source. */
 export const BLUESKY_SELECTORS = {
   main: 'main[role="main"]',
-  primaryColumn: 'main [data-testid$="-flatlist"] > div, main #content > div',
+  primaryColumn:
+    'main [data-testid$="-flatlist"] > div, main #content > div, main [data-testid="notifsFeed"] > div, main [data-testid="searchScreen"] [style*="max-width"]',
   sidebarColumn: 'main ~ nav[role="navigation"] + div',
   navigation: 'main ~ nav[role="navigation"]',
-  post: '[data-testid^="feedItem-by-"], [data-testid^="postThreadItem-by-"]',
+  post: '[data-testid^="feedItem-by-"], [data-testid^="postThreadItem-by-"], [data-testid="searchScreen"] div[role="link"]:has(a[href^="/profile/"][href*="/post/"])',
   permalink: 'a[href^="/profile/"][href*="/post/"]',
 } as const;
 

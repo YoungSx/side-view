@@ -43,9 +43,8 @@ We cannot read this storage, and neither can anyone else.
 
 ## Important: the Threads native column
 
-Threads does not offer a way to open a post in a side panel. To provide the same feature on
-Threads, the extension creates and reuses **one native Threads column**, using Threads' own
-built-in functionality.
+On Threads home, the extension creates and reuses **one native Threads column**, using
+Threads' own built-in functionality.
 
 Because that column belongs to Threads, its configuration is **saved to your Threads account by
 Threads itself**, not by this extension.
@@ -58,6 +57,10 @@ This means:
 
 If you want it gone, open Threads and remove the column using Threads' own "remove column"
 control.
+
+On supported standalone feed and search pages, the extension instead renders a temporary
+native detail column in the current page. It does not create or save a column in your account.
+Closing it, leaving the page, or disabling the extension removes that temporary view.
 
 This is the one place where activity related to your use of the extension is stored by a third
 party. We have no access to it.

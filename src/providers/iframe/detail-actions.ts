@@ -24,7 +24,7 @@ function icon(doc: Document, path: string): SVGElement {
 export function installDetailActions(
   doc: Document,
   findHeader: (doc: Document) => HTMLElement | null,
-  options: { href: () => string; onClose: () => void },
+  options: { href: () => string; onClose: () => void; rootUrl?: string },
 ): () => void {
   const group = doc.createElement('div');
   group.setAttribute(ACTIONS, '');
@@ -53,6 +53,38 @@ export function installDetailActions(
     options.onClose();
   });
   group.append(open, close);
+  const historyEntry = () =>
+    doc.defaultView?.history.state as
+      | { key?: unknown; state?: { fromApp?: boolean } }
+      | null
+      | undefined;
+  let rootEntry: string | null = null;
+  const rootBack = (event: MouseEvent): void => {
+    if (
+      !options.rootUrl ||
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    const target = event.target as Element | null;
+    // X's explicit native back control, never its menus or arbitrary first header button.
+    if (!target?.closest?.('[data-testid="app-bar-back"]')) return;
+    if (!header?.contains(target)) return;
+    // The same post can be revisited deeper in a reading. URL equality alone is insufficient.
+    if (rootEntry === null || historyEntry()?.key !== rootEntry) return;
+    const current = new URL(options.href()),
+      root = new URL(options.rootUrl);
+    current.hash = root.hash = '';
+    if (current.href !== root.href) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    options.onClose();
+  };
+  doc.addEventListener('click', rootBack, true);
   const style = doc.createElement('style');
   style.id = STYLE;
   style.textContent = css;
@@ -65,6 +97,15 @@ export function installDetailActions(
       header = next;
     }
     if (!header) return;
+    const entry = historyEntry();
+    if (
+      rootEntry === null &&
+      options.rootUrl &&
+      options.href() === options.rootUrl &&
+      typeof entry?.key === 'string' &&
+      entry.state?.fromApp !== true
+    )
+      rootEntry = entry.key;
     if (!style.isConnected) (doc.head ?? doc.documentElement).append(style);
     if (!header.hasAttribute(HEADER)) header.setAttribute(HEADER, '');
     // Match the native action nearest our group (Bluesky's preferences button), never our
@@ -140,6 +181,7 @@ export function installDetailActions(
   theme?.addEventListener?.('change', scheduleReconcile);
   reconcile();
   return () => {
+    doc.removeEventListener('click', rootBack, true);
     disposed = true;
     observer.disconnect();
     theme?.removeEventListener?.('change', scheduleReconcile);

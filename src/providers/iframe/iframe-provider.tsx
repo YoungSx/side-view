@@ -3,14 +3,15 @@ import type { DetailColumnProvider, DetailIntent, PlatformAdapter } from '@/core
 import { IframeColumn } from './IframeColumn';
 
 /**
- * Renders the detail column with a reused same-origin `<iframe>` that shows the platform's own
- * native thread/profile/search view. Intent state lives here (not in the layout), so it survives
+ * Each main-page selection starts a new same-origin iframe reading context, even for the same URL.
+ * Internal navigation remains native. Intent state lives here (not in the layout), so it survives
  * the shadow host being re-mounted after a host-page re-render: `mount()` gets a fresh container
  * each time and re-renders the current intent.
  */
 export class IframeColumnProvider implements DetailColumnProvider {
   private root: Root | null = null;
   private intent: DetailIntent | null = null;
+  private reading = 0;
 
   constructor(
     private readonly adapter: PlatformAdapter,
@@ -28,6 +29,7 @@ export class IframeColumnProvider implements DetailColumnProvider {
 
   open(intent: DetailIntent): void {
     this.intent = intent;
+    this.reading++;
     this.render();
   }
 
@@ -63,6 +65,7 @@ export class IframeColumnProvider implements DetailColumnProvider {
     if (!this.intent) return;
     this.root?.render(
       <IframeColumn
+        key={this.reading}
         intent={this.intent}
         frameName={this.adapter.detailFrameName}
         frameUrl={this.adapter.detailFrameUrl(this.intent.url)}

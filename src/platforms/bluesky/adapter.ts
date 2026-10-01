@@ -33,7 +33,9 @@ export class BlueskyAdapter implements PlatformAdapter {
 
   getPrimaryColumn(): HTMLElement | null {
     const candidates = [...document.querySelectorAll<HTMLElement>(this.s.primaryColumn)].filter(
-      (el) => el.querySelector(this.s.post),
+      (el) =>
+        el.checkVisibility?.() !== false &&
+        el.querySelector(`${this.s.post}, a[href^="/profile/"]`),
     );
     return candidates.find((el) => el.getBoundingClientRect().width > 0) ?? candidates[0] ?? null;
   }
@@ -85,9 +87,13 @@ export class BlueskyAdapter implements PlatformAdapter {
     try {
       if (!document.querySelector(this.s.main)?.contains(target) || target.closest(INTERACTIVE))
         return null;
+      if (target.closest('[role="dialog"],[aria-modal="true"],nav,[role="tablist"]')) return null;
       // Links (including external cards) own their own destination; never fall back to their post.
       const link = target.closest<HTMLAnchorElement>('a[href]');
-      if (link) return this.fromHref(link.getAttribute('href') ?? '');
+      if (link) {
+        if (link.hasAttribute('download') || (link.target && link.target !== '_self')) return null;
+        return this.fromHref(link.getAttribute('href') ?? '');
+      }
       const post = target.closest(this.s.post);
       if (!post) return null;
       const quoted = target.closest('[role="link"]');
