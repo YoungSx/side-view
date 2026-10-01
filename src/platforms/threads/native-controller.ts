@@ -10,55 +10,44 @@ export const NATIVE_CHANNEL = 'side-view:threads-native:v1';
 const INTERACTIVE =
   'button,[role="button"],[role="menuitem"],input,textarea,select,video,[contenteditable="true"]';
 const SCROLL: ScrollIntoViewOptions = { block: 'nearest', inline: 'nearest', behavior: 'auto' };
-// ponytail: fallback deadline for opening a column, and nothing else. `createNativeColumn`
-// returns true as soon as it finds a dispatcher, never on proof that Threads honoured the
-// passthrough props, so this is the only thing standing between a click that was swallowed and a
-// click that goes nowhere. Reusing a column needs no deadline — `updateAction` fails closed, which
-// leaves the click to Threads. Delete once column opening can be confirmed synchronously.
-const OPEN_FALLBACK_MS = 1500;
-
 export function installThreadsNative(): () => void {
   let config: NativeConfig | null = null;
-  let pending: { requestId: string; url: string; before: Set<string> } | null = null;
-  let openFallback: ReturnType<typeof setTimeout> | null = null;
+  let pending: { requestId: string; optimistic: HTMLElement | null } | null = null;
   let knownOwned: HTMLElement | null = null;
-  let removalTimer: ReturnType<typeof setTimeout> | null = null;
-  const observer = new MutationObserver(() => checkPending());
-  const removalObserver = new MutationObserver(() => {
-    if (!knownOwned || knownOwned.isConnected || pending || removalTimer !== null) return;
-    removalTimer = setTimeout(() => {
-      removalTimer = null;
-      const current = nativeColumns().find((c) => c.id === config?.columnId);
-      if (current) {
-        knownOwned = current.element;
-        return;
-      }
-      if (location.pathname === '/' && config && knownOwned && !knownOwned.isConnected) {
-        config.columnId = null;
-        knownOwned = null;
-        report(null);
-      }
-    }, 700);
-  });
+  const observer = new MutationObserver(() => reconcile());
   const report = (columnId: string | null) =>
     window.postMessage({ channel: NATIVE_CHANNEL, type: 'owned', columnId }, location.origin);
-  const clear = () => {
-    observer.disconnect();
-    if (openFallback !== null) clearTimeout(openFallback);
-    openFallback = null;
-    pending = null;
-  };
-  const checkPending = () => {
-    if (!pending || !config) return;
-    const column = nativeColumns().find((c) => c.relayId === pending?.requestId);
-    if (!column || !/^\d+$/.test(column.id) || pending.before.has(column.id)) return;
-    const url = pending.url;
+  const reconcile = () => {
+    if (!config) return;
+    // Feed mutations are frequent; inspect native React actions only while ownership changes.
+    if (!pending && (knownOwned?.isConnected || !config.columnId)) return;
+    const columns = nativeColumns();
+    const columnId = config.columnId;
+    const current = columns.find((c) => c.id === columnId);
+    if (current) knownOwned = current.element;
+    else if (
+      knownOwned &&
+      !knownOwned.isConnected &&
+      columns.some((c) => c.element.checkVisibility())
+    ) {
+      config.columnId = null;
+      knownOwned = null;
+      report(null);
+    }
+    if (!pending) return;
+    const column = columns.find((c) => c.relayId === pending?.requestId);
+    if (!column) {
+      // A native mutation failure removes its optimistic column and shows Threads' own toast.
+      if (pending.optimistic && columns.length > 0) pending = null;
+      return;
+    }
+    pending.optimistic = column.element;
+    if (!/^\d+$/.test(column.id)) return;
     config.columnId = column.id;
     knownOwned = column.element;
+    pending = null;
     report(column.id);
-    clear();
-    if (column.url !== url) updateNativeColumn(column, url);
-    column.element.scrollIntoView(SCROLL);
+    if (column.element.checkVisibility()) column.element.scrollIntoView(SCROLL);
   };
   const message = (event: MessageEvent) => {
     const data = event.data;
@@ -80,7 +69,8 @@ export function installThreadsNative(): () => void {
       includeProfiles: data.includeProfiles,
       columnId: data.columnId,
     };
-    knownOwned = nativeColumns().find((c) => c.id === data.columnId)?.element ?? knownOwned;
+    knownOwned = nativeColumns().find((c) => c.id === data.columnId)?.element ?? null;
+    if (!config.enabled) pending = null;
   };
   const click = (event: MouseEvent) => {
     if (
@@ -97,8 +87,13 @@ export function installThreadsNative(): () => void {
     const target = event.target;
     if (!(target instanceof Element) || target.closest(INTERACTIVE)) return;
     if (!target.closest('[data-column-scrollable]')) return;
+    // Standalone routes retain hidden home columns in the DOM. Only a visible deck can
+    // serve a side-by-side detail; otherwise leave the original native click untouched.
+    const source = target.closest('[data-deck-column]');
+    if (!source?.checkVisibility()) return;
     const selection = window.getSelection();
     if (selection && !selection.isCollapsed) return;
+    reconcile();
     const owned = nativeColumns().find((c) => c.id === config?.columnId);
     if (owned?.element.contains(target)) return; // native interactions inside the detail remain native
     let link = target.closest<HTMLAnchorElement>('a[href]');
@@ -109,47 +104,38 @@ export function installThreadsNative(): () => void {
     if (!link) return;
     const intent = resolveThreadsUrl(link.getAttribute('href') ?? '', new URL(location.href));
     if (!intent || (intent.kind !== 'status' && !config.includeProfiles)) return;
-    // Threads takes the passthrough url and its column router relative to the current origin.
+    // Native column actions and routing take a path relative to the current origin.
     const { pathname, search } = new URL(intent.url);
     const relative = pathname + search;
     try {
       if (pending) {
-        pending.url = relative; // a column is already opening; retarget it
+        return; // no confirmed detail to retarget yet; let Threads handle this click
       } else if (owned) {
         if (!updateNativeColumn(owned, relative)) return;
       } else {
         // Refuse before swallowing when a recorded column is gone: recreating it here would open
         // a duplicate the user never asked for.
-        if (config.columnId && !document.querySelector('[data-deck-column]')) return;
+        if (config.columnId) return;
         const requestId = crypto.randomUUID();
-        pending = { requestId, url: relative, before: new Set(nativeColumns().map((c) => c.id)) };
-        observer.observe(document.body, { childList: true, subtree: true });
+        pending = { requestId, optimistic: null };
         if (!createNativeColumn(target, relative, requestId)) {
-          clear();
+          pending = null;
           return;
         }
-        // Nothing above proves Threads opened anything. If the column has not turned up by the
-        // deadline, send the click where it was always headed instead of dropping it.
-        openFallback = setTimeout(() => {
-          const url = pending?.url;
-          clear();
-          if (url) location.assign(url);
-        }, OPEN_FALLBACK_MS);
       }
       event.preventDefault();
       event.stopImmediatePropagation();
     } catch {
-      clear();
+      pending = null;
     } // untouched original click follows Threads when capability probing fails
   };
-  removalObserver.observe(document.body, { childList: true, subtree: true });
+  observer.observe(document.body, { childList: true, subtree: true });
   window.addEventListener('message', message);
   document.addEventListener('click', click, true);
   window.postMessage({ channel: NATIVE_CHANNEL, type: 'ready' }, location.origin);
   return () => {
-    clear();
-    removalObserver.disconnect();
-    if (removalTimer !== null) clearTimeout(removalTimer);
+    pending = null;
+    observer.disconnect();
     window.removeEventListener('message', message);
     document.removeEventListener('click', click, true);
   };
