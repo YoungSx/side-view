@@ -1,4 +1,10 @@
 import { i18n } from '#i18n';
+import { frameNavigation } from '@/core/navigation';
+
+/** Owned by the reading, not by a particular Document or native header. */
+export interface ReadingRoot {
+  key: string | null;
+}
 
 const ACTIONS = 'data-sv-detail-actions';
 const HEADER = 'data-sv-detail-header';
@@ -24,7 +30,7 @@ function icon(doc: Document, path: string): SVGElement {
 export function installDetailActions(
   doc: Document,
   findHeader: (doc: Document) => HTMLElement | null,
-  options: { href: () => string; onClose: () => void; rootUrl?: string },
+  options: { href: () => string; onClose: () => void; rootUrl?: string; root?: ReadingRoot },
 ): () => void {
   const group = doc.createElement('div');
   group.setAttribute(ACTIONS, '');
@@ -53,12 +59,8 @@ export function installDetailActions(
     options.onClose();
   });
   group.append(open, close);
-  const historyEntry = () =>
-    doc.defaultView?.history.state as
-      | { key?: unknown; state?: { fromApp?: boolean } }
-      | null
-      | undefined;
-  let rootEntry: string | null = null;
+  const rootEntry = options.root ?? { key: null };
+  const entryKey = () => frameNavigation(doc.defaultView)?.currentEntry?.key;
   const rootBack = (event: MouseEvent): void => {
     if (
       !options.rootUrl ||
@@ -72,10 +74,10 @@ export function installDetailActions(
       return;
     const target = event.target as Element | null;
     // X's explicit native back control, never its menus or arbitrary first header button.
-    if (!target?.closest?.('[data-testid="app-bar-back"]')) return;
-    if (!header?.contains(target)) return;
+    if (!target?.closest?.('[data-testid="primaryColumn"] [data-testid="app-bar-back"]')) return;
+    if (target.closest('[role="dialog"]')) return;
     // The same post can be revisited deeper in a reading. URL equality alone is insufficient.
-    if (rootEntry === null || historyEntry()?.key !== rootEntry) return;
+    if (rootEntry.key === null || entryKey() !== rootEntry.key) return;
     const current = new URL(options.href()),
       root = new URL(options.rootUrl);
     current.hash = root.hash = '';
@@ -96,16 +98,15 @@ export function installDetailActions(
       group.remove();
       header = next;
     }
-    if (!header) return;
-    const entry = historyEntry();
+    const key = entryKey();
     if (
-      rootEntry === null &&
+      rootEntry.key === null &&
       options.rootUrl &&
       options.href() === options.rootUrl &&
-      typeof entry?.key === 'string' &&
-      entry.state?.fromApp !== true
+      typeof key === 'string'
     )
-      rootEntry = entry.key;
+      rootEntry.key = key;
+    if (!header) return;
     if (!style.isConnected) (doc.head ?? doc.documentElement).append(style);
     if (!header.hasAttribute(HEADER)) header.setAttribute(HEADER, '');
     // Match the native action nearest our group (Bluesky's preferences button), never our

@@ -71,6 +71,32 @@ it('does not swallow a click or leave layout mutations when opening is unavailab
   expect(host()?.shadowRoot?.querySelector('iframe')?.src).toContain('/jack/status/123?lang=');
 });
 
+it('discards the reading when the main page changes route and only reopens on a new selection', () => {
+  let onFrame: FrameRequestCallback | undefined;
+  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+    onFrame = callback;
+    return 1;
+  });
+  click('body');
+  const oldFrame = host()?.shadowRoot?.querySelector('iframe');
+  act(() => {
+    history.pushState({}, '', '/search?q=test');
+    window.dispatchEvent(new Event('sv:locationchange'));
+    onFrame?.(0);
+  });
+  expect(host()).toBeNull();
+  expect(oldFrame?.isConnected).toBe(false);
+  expect(document.getElementById('sv-layout-style')).toBeNull();
+  act(() => {
+    window.dispatchEvent(new Event('sv:locationchange'));
+    onFrame?.(0);
+  });
+  expect(host()).toBeNull();
+  click('quote-body');
+  expect(host()?.shadowRoot?.querySelector('iframe')?.src).toContain('/beth/status/456');
+  history.replaceState({}, '', '/home');
+});
+
 it('does not install UI or navigation preferences after startup is invalidated', async () => {
   act(() => ctx.abort());
   await settings.compactNavigation.setValue(true);

@@ -344,3 +344,40 @@ main URL remained `/home`. The disposable tab was closed; the original user tab 
 one installed-extension host and no test host. Final reading-boundary checks: 138 tests,
 TypeScript, Biome, production build and `git diff --check` passed. Installed-extension E2E
 acceptance remains outstanding; renderer/adapter checks above are explicitly narrower.
+
+## Installed-extension native Back regression (2026-10-01)
+
+Supersedes the native-history-key implementation and the installed-extension acceptance gap
+above. The existing X tab and a newly opened tab initially ran an older cached extension
+script despite the newer file on disk. After reloading the extension and the test page,
+CDP `Debugger.getScriptSource` was compared byte-for-byte with the production `timeline.js`.
+The fixed build was installed into the existing unpacked-extension directory and reloaded
+the same way; no second renderer or temporary sidebar was injected.
+
+The reading root now uses the browser's Navigation API entry key, held for the lifetime of
+the reading across Document changes. X's private history state is not used. Root Back is
+independent of native-header layout readiness; a deeper visit to the same URL remains native.
+Main-page X Back with an open reading closes the iframe before traversing to the main frame's
+own predecessor, so child history cannot consume that action. With no same-origin predecessor
+or no Navigation API, the iframe closes and X retains its native fallback. Main-route changes
+dispose the reading instead of reattaching a potentially reloaded iframe.
+
+Authenticated Chrome CDP smoke used one persistent connection and the installed extension.
+Post selections used DOM clicks through the real content-script router; native Back and
+profile controls used CDP mouse input. Focus emulation on the disposable test tab prevented
+Chrome's background-page animation-frame suspension from stalling header reconciliation.
+
+- Home and Search: opening a post and native root Back removes the sole side column without
+  changing the source URL. Closing and reopening works.
+- Post -> author profile -> native Back -> original post -> native Back closes the column.
+- Search -> open post -> author profile -> click the **main Search** Back returns to Home
+  and removes the column, rather than leaving Search in place and navigating the iframe.
+- Search main Back while the iframe is at its root also removes the column and returns Home.
+- Main-list A -> B and profile -> reselect A replace the old iframe; root Back then closes.
+
+Unit regressions cover mutable platform history state, repeated URLs with distinct navigation
+keys, reading identity across action reinstallation, Back before header-layout readiness,
+main-route cleanup, modified/unrelated clicks, missing Navigation API, fallback and teardown.
+146 tests, TypeScript, Biome and the production build passed. Browser-toolbar history remains
+browser-owned; this change targets X's page-native Back controls. Firefox and live Bluesky
+navigation were not part of this CDP acceptance run.

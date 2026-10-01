@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { i18n } from '#i18n';
 import type { DetailIntent } from '@/core/types';
-import { installDetailActions } from './detail-actions';
+import { installDetailActions, type ReadingRoot } from './detail-actions';
 
 interface Props {
   intent: DetailIntent;
@@ -34,6 +34,7 @@ export function IframeColumn({ intent, frameName, frameUrl, onClose, findHeader 
     const frame = frameRef.current;
     if (!frame) return;
     let settled = false;
+    const root: ReadingRoot = { key: null };
     let activeDoc: Document | null = null;
     let poll: ReturnType<typeof setInterval> | null = null;
     let timer: ReturnType<typeof setTimeout> | null = null;
@@ -72,6 +73,7 @@ export function IframeColumn({ intent, frameName, frameUrl, onClose, findHeader 
       if (!doc.documentElement) return;
       actionsCleanup.current?.();
       actionsCleanup.current = installDetailActions(doc, findHeader, {
+        root,
         rootUrl: intent.url,
         href: () => {
           const current = new URL(doc.URL);
