@@ -381,3 +381,86 @@ main-route cleanup, modified/unrelated clicks, missing Navigation API, fallback 
 146 tests, TypeScript, Biome and the production build passed. Browser-toolbar history remains
 browser-owned; this change targets X's page-native Back controls. Firefox and live Bluesky
 navigation were not part of this CDP acceptance run.
+
+## Compact navigation left gutter (2026-10-01)
+
+Compact navigation is extension CSS, not a native X mode toggle. X's outer banner uses
+`flex: 1 0 auto` and aligns the inner navigation to its right edge, providing the page's
+left gutter. Forcing that banner to `flex: 0 0 88px; width: 88px` removed the gutter.
+The fix only narrows the inner navigation wrappers and preserves the native banner flex.
+
+Authenticated Chrome checks reused one persistent CDP WebSocket and target sessions.
+At a 1994 CSS-pixel viewport, the old compact CSS placed the rail at x=0 and the timeline
+at x=88. Removing the outer-banner override restored the rail to approximately x=450
+and the timeline to x=538, with an 88px rail and 600px timeline.
+
+The rebuilt `timeline.js` was copied into the existing unpacked extension directory
+(matching SHA-256), and the extension and disposable X test tab were reloaded. Toggling
+the actual options-page switch injected the corrected CSS without a temporary override.
+Viewport probes covered 699, 1000, 1280, 1440, 1994 and 2560 CSS pixels; screenshots were
+visually checked at the desktop size. Opening a real post produced one detail host with
+a 600px iframe and retained the gutter. Closing detail removed the host while retaining
+compact navigation. Disabling compact navigation removed its stylesheet and restored the
+original 275px navigation and timeline x=632. Test settings were restored afterward.
+
+146 tests, TypeScript, Biome, production build and `git diff --check` passed. This change
+and live acceptance cover X; Bluesky and Threads implementations were unchanged.
+
+## Native compact-navigation exploration (2026-10-01)
+
+The CSS-only implementation above is not the final navigation design. Subsequent reports
+identified malformed compose buttons and Bluesky horizontal overflow. Temporary CDP probes
+in disposable authenticated tabs disabled `sv-compact-nav` before testing native mechanisms.
+These probes are feasibility evidence, not installed-extension acceptance of a native bridge.
+
+- X's mounted layout exposes `setSideNavForceCollapased(boolean)` through its layout context
+  (spelling as shipped). It updates a reference count and passes `forceCollapsed` to the native
+  header. A balanced true/false call at viewport width 1994 folded the rail from 275px to 68px
+  and rendered X's own 52x52 compose button. The left gutter and right sidebar x-coordinate
+  were preserved; the 600px timeline moved left. This is a private runtime capability, not
+  a public extension API. Integration must validate it and release only its own count.
+- Bluesky's official `src/alf/breakpoints.ts` derives `leftNavMinimal` from
+  `(max-width: 1300px)`, separately from `rightNavVisible` and `centerColumnOffset`.
+  `src/view/shell/desktop/LeftNav.tsx` uses that state for the whole native navigation tree:
+  an 80px rail, 48x48 compose control with a 24px native icon, account control and horizontal
+  overflow handling. A probe dispatched only that navigation component's matching boolean
+  hook state. At width 1994 the native rail rendered correctly, with main/right geometry
+  unchanged and no horizontal scrollbar. Screenshot inspection confirmed the result.
+  A narrow-then-wide resize restored the 240px rail, demonstrating that a one-shot hook
+  dispatch is not a persistent setting. No dedicated navigation toggle callback was found.
+
+Do not ship fixed hook indices, fake a Messages route, or globally override viewport/media
+queries to enable this feature. A Bluesky integration still needs a validated, scoped lifecycle
+boundary; availability should fail closed if that boundary cannot be established. Native
+probes were released and test tabs closed. Threads should hide the unsupported popup switch.
+
+## Installed native compact-navigation bridge (2026-10-01)
+
+Supersedes the CSS implementation and the one-shot exploration above. The extension now ships
+a MAIN-world bridge with a boolean DOM request and capability status. X collapse ownership is
+balanced across updates/replacements and teardown. Bluesky's state is located by the exact
+native media-query/effect relationship in the mounted LeftNav component, never a fixed hook
+index. Only that component is updated; native media queries remain untouched. Navigation-tree
+mutations and resize/route events reconcile the request; ordinary timeline mutations do not.
+Disabling restores the current breakpoint. Missing/ambiguous capabilities do not trigger CSS.
+
+Authenticated installed-extension CDP acceptance (one persistent WebSocket):
+
+- Options-page switch activated native navigation on both sites, with no compact stylesheet.
+  X rendered its native SVG and 52x52 compose button; Bluesky rendered its native SVG and
+  48x48 compose button, 80px rail and native horizontal-overflow handling.
+- 1100, 1500 and 1994px viewport probes retained compact controls; narrow-to-wide resizing
+  no longer reverted Bluesky. X Home/Explore and Bluesky Home/Search navigation, plus full
+  page reloads, retained the preference.
+- Both compose controls opened native editors; Escape dismissed them without entering text.
+- Both sites opened one 600px detail iframe from a real feed item while compact stayed active.
+- Disabling the master switch restored 275px X and 240px Bluesky navigation at desktop width.
+- The real toolbar popup over Threads omitted compact navigation, including its needs-reload
+  state. Unit coverage also checks unavailable native capabilities and supported X controls.
+
+156 tests, TypeScript, Biome, production build and diff whitespace checks passed. Tests include
+balanced ownership with another native X consumer, remounts, missing/ambiguous capability,
+current-breakpoint restoration, scoped reconciliation, invalidation and master-switch release.
+Final artifacts were installed in the existing unpacked-extension directory and reloaded.
+These are validated private compatibility boundaries, not stable public site APIs; Firefox
+was not part of this live acceptance run.

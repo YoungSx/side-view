@@ -137,19 +137,27 @@ it('keeps the compact navigation preference when detail closes, and removes it w
   addAnchor();
   await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
   layout.setCompactNavigation(true);
-  expect(document.body.classList.contains('sv-compact-nav')).toBe(true);
-  expect(document.getElementById('sv-navigation-style')).not.toBeNull();
+  expect(document.documentElement.getAttribute('data-sideview-compact-request') === 'true').toBe(
+    true,
+  );
+  expect(document.getElementById('sv-navigation-style')).toBeNull();
   expect(layout.open()).toBe(true);
   layout.close();
   expect(host()).toBeNull();
   expect(document.body.classList.contains('sv-active')).toBe(false);
-  expect(document.body.classList.contains('sv-compact-nav')).toBe(true);
+  expect(document.documentElement.getAttribute('data-sideview-compact-request') === 'true').toBe(
+    true,
+  );
   layout.setCompactNavigation(false);
-  expect(document.body.classList.contains('sv-compact-nav')).toBe(false);
+  expect(document.documentElement.getAttribute('data-sideview-compact-request') === 'true').toBe(
+    false,
+  );
   expect(document.getElementById('sv-navigation-style')).toBeNull();
   layout.setCompactNavigation(true);
   ctx.abort();
-  expect(document.body.classList.contains('sv-compact-nav')).toBe(false);
+  expect(document.documentElement.getAttribute('data-sideview-compact-request') === 'true').toBe(
+    false,
+  );
   expect(document.getElementById('sv-navigation-style')).toBeNull();
 });
 

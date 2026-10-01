@@ -3,14 +3,13 @@ import { createShadowRootUi } from '#imports';
 import { log } from '@/core/log';
 import {
   SV_ACTIVE_CLASS,
-  SV_COMPACT_NAV_CLASS,
   SV_HOST_ATTR,
   SV_LAYOUT_STYLE_ID,
   SV_MIN_VIEWPORT_PX,
   SV_MODE_CLASS,
-  SV_NAV_STYLE_ID,
 } from '@/core/style-ids';
 import type { LayoutController, LayoutMode, LayoutMountHooks, PlatformAdapter } from '@/core/types';
+import { COMPACT_REQUEST, NAVIGATION_CHANGE } from '@/platforms/compact/protocol';
 
 /**
  * Places the detail column in the host page using WXT's shadow-root UI.
@@ -23,7 +22,6 @@ import type { LayoutController, LayoutMode, LayoutMountHooks, PlatformAdapter } 
 export class ShadowLayoutController implements LayoutController {
   private ui: ShadowRootContentScriptUi<HTMLElement> | null = null;
   private styleEl: HTMLStyleElement | null = null;
-  private navigationStyleEl: HTMLStyleElement | null = null;
   private hooks: LayoutMountHooks | null = null;
   private observer: MutationObserver | null = null;
   private state: 'uninitialized' | 'initializing' | 'closed' | 'open' | 'disposed' =
@@ -75,6 +73,7 @@ export class ShadowLayoutController implements LayoutController {
       this.observer = new MutationObserver(() => this.reattachIfDetached());
       this.state = 'closed';
       window.addEventListener('resize', this.resizeColumn);
+      window.addEventListener(NAVIGATION_CHANGE, this.resizeColumn);
       // Re-sample the surface when the OS colour scheme flips so a live theme change re-tints.
       this.themeQuery = window.matchMedia('(prefers-color-scheme: dark)');
       this.themeQuery.addEventListener?.('change', this.onThemeChange);
@@ -150,15 +149,7 @@ export class ShadowLayoutController implements LayoutController {
 
   setCompactNavigation(enabled: boolean): void {
     if (this.state === 'disposed') return;
-    this.navigationStyleEl?.remove();
-    this.navigationStyleEl = null;
-    document.body.classList.toggle(SV_COMPACT_NAV_CLASS, enabled);
-    if (enabled) {
-      this.navigationStyleEl = document.createElement('style');
-      this.navigationStyleEl.id = SV_NAV_STYLE_ID;
-      this.navigationStyleEl.textContent = this.adapter.compactNavigationCss();
-      document.head.append(this.navigationStyleEl);
-    }
+    document.documentElement.setAttribute(COMPACT_REQUEST, String(enabled));
     this.resizeColumn();
   }
 
@@ -191,6 +182,7 @@ export class ShadowLayoutController implements LayoutController {
     this.observer?.disconnect();
     this.observer = null;
     window.removeEventListener('resize', this.resizeColumn);
+    window.removeEventListener(NAVIGATION_CHANGE, this.resizeColumn);
     this.themeQuery?.removeEventListener?.('change', this.onThemeChange);
     this.themeQuery = null;
     this.ui?.remove();
@@ -198,9 +190,7 @@ export class ShadowLayoutController implements LayoutController {
     this.styleEl?.remove();
     this.styleEl = null;
     this.removeBodyClasses();
-    this.navigationStyleEl?.remove();
-    this.navigationStyleEl = null;
-    document.body.classList.remove(SV_COMPACT_NAV_CLASS);
+    document.documentElement.removeAttribute(COMPACT_REQUEST);
   }
 
   private removeBodyClasses(): void {

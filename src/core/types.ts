@@ -58,8 +58,6 @@ export interface PlatformAdapter {
   resolveIntent(event: MouseEvent): DetailIntent | null;
   /** Host-page CSS (attribute selectors + `!important`) for the given layout mode. */
   layoutCss(mode: LayoutMode): string;
-  /** Independent navigation customization, including its own activation selector. */
-  compactNavigationCss(): string;
   /** CSS injected INSIDE the detail frame to strip the platform's own chrome. */
   detailFrameCss(): string;
   /** The native flex row that owns the detail title and existing header actions. */

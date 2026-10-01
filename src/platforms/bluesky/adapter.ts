@@ -1,9 +1,4 @@
-import {
-  SV_ACTIVE_CLASS,
-  SV_COMPACT_NAV_CLASS,
-  SV_HOST_ATTR,
-  SV_MIN_VIEWPORT_PX,
-} from '@/core/style-ids';
+import { SV_ACTIVE_CLASS, SV_HOST_ATTR, SV_MIN_VIEWPORT_PX } from '@/core/style-ids';
 import type { DetailIntent, LayoutMode, PlatformAdapter } from '@/core/types';
 import { findBlueskyDetailHeader } from '@/platforms/detail-headers';
 import { resolveBlueskySelectors } from './selectors';
@@ -51,12 +46,6 @@ export class BlueskyAdapter implements PlatformAdapter {
         body.${SV_ACTIVE_CLASS} [${SV_HOST_ATTR}] { display: none !important; }
       }
     `;
-  }
-  compactNavigationCss(): string {
-    const nav = `body.${SV_COMPACT_NAV_CLASS} ${this.s.navigation}:has(a[href="/notifications"])`;
-    return `${nav} { width: 88px !important; padding: 12px !important; }
-      ${nav} a [dir] { display: none !important; }
-      ${nav} a { justify-content: center !important; }`;
   }
   detailHeader(doc: Document): HTMLElement | null {
     return findBlueskyDetailHeader(doc);
