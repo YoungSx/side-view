@@ -10,7 +10,6 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    environment: cws
     steps:
       - uses: actions/checkout@v5
 
@@ -72,28 +71,14 @@ jobs:
           files: ${{ steps.package.outputs.path }}
           generate_release_notes: true
 
-      # The `upload` subcommand uploads without publishing; only the bare form (or `publish`)
-      # calls the publish API. The new version therefore waits in the Chrome Web Store
-      # dashboard until a human presses Publish.
-      - name: Upload to Chrome Web Store as a draft
-        env:
-          CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
-          EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
-          PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
-        run: |
-          npx --yes chrome-webstore-upload-cli@4 \
-            upload \
-            --source "${{ steps.package.outputs.path }}"
-
-      - name: Remind the operator to publish
+      # Store upload stays manual: the zip above is what you drag into the Chrome Web
+      # Store dashboard, then press Publish yourself. Nothing here touches the store.
+      - name: Tell the operator how to publish
         run: |
           {
-            echo "## Draft uploaded to the Chrome Web Store"
+            echo "## Ready for the Chrome Web Store"
             echo
-            echo "Version ${{ github.ref_name }} is sitting in the dashboard as a draft."
-            echo "Review it, then press **Publish** to send it to review."
+            echo "Upload \`${{ steps.package.outputs.path }}\` in the dashboard, then press Publish."
             echo
             echo "SHA-256 \`${{ steps.package.outputs.sha256 }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
