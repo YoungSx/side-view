@@ -34,6 +34,7 @@ export function IframeColumn({ intent, frameName, frameUrl, onClose, findHeader 
     const frame = frameRef.current;
     if (!frame) return;
     let settled = false;
+    let activeDoc: Document | null = null;
     let poll: ReturnType<typeof setInterval> | null = null;
     let timer: ReturnType<typeof setTimeout> | null = null;
     // Assigning src leaves the previous document readable until navigation commits.
@@ -63,13 +64,15 @@ export function IframeColumn({ intent, frameName, frameUrl, onClose, findHeader 
     };
 
     const ready = (doc: Document): void => {
-      if (settled) return;
+      if (doc === activeDoc) return;
+      activeDoc = doc;
       settled = true;
       stop();
       setLoadState('ready');
       if (!doc.documentElement) return;
       actionsCleanup.current?.();
       actionsCleanup.current = installDetailActions(doc, findHeader, {
+        rootUrl: intent.url,
         href: () => {
           const current = new URL(doc.URL);
           if (current.href === frameUrl) return intent.url;
@@ -81,7 +84,9 @@ export function IframeColumn({ intent, frameName, frameUrl, onClose, findHeader 
     };
 
     const fail = (): void => {
-      if (settled) return;
+      activeDoc = null;
+      actionsCleanup.current?.();
+      actionsCleanup.current = null;
       settled = true;
       stop();
       setLoadState('error');
@@ -113,7 +118,9 @@ export function IframeColumn({ intent, frameName, frameUrl, onClose, findHeader 
       if (doc && doc.readyState !== 'loading') ready(doc);
     }, REVEAL_POLL_MS);
     // iframe onError is unreliable for blocked documents; bound the loading UI as a backstop.
-    timer = setTimeout(fail, LOAD_TIMEOUT_MS);
+    timer = setTimeout(() => {
+      if (!settled) fail();
+    }, LOAD_TIMEOUT_MS);
 
     return () => {
       stop();

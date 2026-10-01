@@ -51,6 +51,8 @@ export const X_INTERACTIVE_WITHIN_TWEET = [
   '[role="menuitem"]',
   'input',
   'textarea',
+  'select',
+  '[contenteditable="true"]',
   'video',
   '[data-testid="videoPlayer"]',
   '[data-testid="tweetPhoto"]',

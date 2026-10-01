@@ -26,7 +26,7 @@
     "enableTitle": "启用 Side View",
     "compactTitle": "紧凑导航",
     "interceptTitle": "打开个人主页、话题标签和搜索",
-    "threadsOwnsColumn": "Threads 使用它自己保存的栏目，因此宽度和位置在此不适用。",
+    "threadsOwnsColumn": "Threads 使用原生栏目，因此这里的宽度和位置设置不适用。",
     "reloadHint": "此标签页加载于 Side View 启动之前。",
     "reloadAction": "重新加载标签页",
     "platform": {
@@ -104,7 +104,7 @@
       "xBlueskyTitle": "X 与 Bluesky",
       "xBlueskyNote": "沿用上方的布局与导航偏好。除总开关外，更改即时生效。",
       "threadsTitle": "Threads",
-      "threadsNote": "复用保存到你 Threads 账号的一个原生栏。宽度、顺序和滚动请在 Threads 中管理。要移除它，请使用原生栏目菜单；关闭 Side View 不会删除它。"
+      "threadsNote": "首页复用保存到 Threads 账号的原生栏。支持的独立动态和搜索页面会打开临时原生栏，保留当前页面且不保存新栏目。使用原生栏目菜单即可关闭。停用 Side View 会关闭临时栏，但不会删除首页保存的栏。"
     },
     "advanced": {
       "title": "高级",

@@ -26,7 +26,7 @@
     "enableTitle": "Enable Side View",
     "compactTitle": "Compact navigation",
     "interceptTitle": "Open profiles, hashtags & searches",
-    "threadsOwnsColumn": "Threads uses its own saved column, so width and placement don’t apply here.",
+    "threadsOwnsColumn": "Threads uses native columns, so these width and placement settings don’t apply.",
     "reloadHint": "This tab loaded before Side View started.",
     "reloadAction": "Reload tab",
     "platform": {
@@ -102,7 +102,7 @@
       "title": "Platforms",
       "subtitle": "One reading habit, three different homes.",
       "xBlueskyNote": "Use the layout and navigation preferences above. Changes apply live, except the main enable switch.",
-      "threadsNote": "Reuses one native column saved to your Threads account. Manage its width, order and scrolling in Threads. To remove it, use the native column menu; disabling Side View won’t delete it.",
+      "threadsNote": "Home reuses a native column saved to your Threads account. Supported standalone feeds and search pages open a temporary native column without leaving the page or saving a column. Close it from the native column menu. Disabling Side View closes temporary columns but does not delete the saved home column.",
       "xBlueskyTitle": "X & Bluesky",
       "threadsTitle": "Threads"
     },

@@ -64,3 +64,50 @@ it('measures the post column instead of the virtual list overlay', () => {
   list?.prepend(document.createElement('div'));
   expect(adapter.getPrimaryColumn()).toBe(center);
 });
+
+it('finds notification content while the cached home feed is hidden', () => {
+  Object.defineProperty(Element.prototype, 'checkVisibility', {
+    configurable: true,
+    value: function (this: Element) {
+      return !this.closest('[hidden]');
+    },
+  });
+  try {
+    document
+      .querySelector('[data-testid="customFeedPage-feed-flatlist"]')
+      ?.setAttribute('hidden', '');
+    document
+      .querySelector('main')
+      ?.insertAdjacentHTML(
+        'beforeend',
+        '<div data-testid="notifsFeed"><div></div><div id="notifications"><a id="notification" href="/profile/alice.bsky.social">Followed you</a></div></div>',
+      );
+    expect(adapter.getPrimaryColumn()).toBe(document.getElementById('notifications'));
+    expect(intent('notification')?.kind).toBe('profile');
+    document.getElementById('notifications')?.setAttribute('hidden', '');
+    expect(adapter.getPrimaryColumn()).toBeNull();
+  } finally {
+    Reflect.deleteProperty(Element.prototype, 'checkVisibility');
+  }
+});
+
+it('preserves explicit new-tab links and navigation inside dialogs', () => {
+  document.getElementById('profile')?.setAttribute('target', '_blank');
+  expect(intent('profile')).toBeNull();
+  document.getElementById('profile')?.removeAttribute('target');
+  document.querySelector('main')?.setAttribute('role', 'dialog');
+  expect(intent('profile')).toBeNull();
+});
+
+it('supports search result bodies without home-feed test IDs', () => {
+  document.body.innerHTML = `<main role="main"><div data-testid="searchScreen"><div style="max-width: 600px">
+    <div role="link"><a href="/profile/alice.bsky.social/post/3abc123">1h</a><span id="search-body">Result</span>
+    <div role="link"><a href="/profile/bob.bsky.social/post/3def456">Quote</a><span id="search-quote">Quoted body</span></div>
+    <button id="search-action">Like</button></div></div></div></main>`;
+  expect(adapter.getPrimaryColumn()?.style.maxWidth).toBe('600px');
+  expect(intent('search-body')?.url).toBe(
+    'https://bsky.app/profile/alice.bsky.social/post/3abc123',
+  );
+  expect(intent('search-quote')?.url).toBe('https://bsky.app/profile/bob.bsky.social/post/3def456');
+  expect(intent('search-action')).toBeNull();
+});

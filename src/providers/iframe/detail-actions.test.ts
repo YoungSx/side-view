@@ -154,3 +154,36 @@ it('never reconciles after cleanup, even with a frame already pending', async ()
   await vi.runAllTimersAsync();
   expect(finder).not.toHaveBeenCalled();
 });
+
+it('closes only X root-level back while leaving deeper native returns untouched', () => {
+  const doc = document.implementation.createHTMLDocument();
+  Object.defineProperty(doc, 'defaultView', { value: window });
+  const entry = vi.spyOn(window.history, 'state', 'get').mockReturnValue({ key: 'root' });
+  doc.body.innerHTML =
+    '<header id="header"><button data-testid="app-bar-back"><span>Back</span></button></header>';
+  let current = 'https://x.com/a/status/1';
+  const close = vi.fn();
+  const dispose = installDetailActions(doc, () => doc.getElementById('header'), {
+    href: () => current,
+    rootUrl: current,
+    onClose: close,
+  });
+  const click = () => {
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+    doc.querySelector('span')?.dispatchEvent(event);
+    return event;
+  };
+  expect(click().defaultPrevented).toBe(true);
+  expect(close).toHaveBeenCalledOnce();
+  current = 'https://x.com/a';
+  expect(click().defaultPrevented).toBe(false);
+  expect(close).toHaveBeenCalledOnce();
+  current = 'https://x.com/a/status/1';
+  entry.mockReturnValue({ key: 'revisit', state: { fromApp: true } });
+  expect(click().defaultPrevented).toBe(false);
+  entry.mockReturnValue({ key: 'root' });
+  expect(click().defaultPrevented).toBe(true);
+  expect(close).toHaveBeenCalledTimes(2);
+  dispose();
+  expect(click().defaultPrevented).toBe(false);
+});

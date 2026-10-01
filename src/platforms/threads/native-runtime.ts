@@ -2,6 +2,7 @@
  * No layout writes, custom rendering, direct network calls, or account data extraction.
  */
 interface Fiber {
+  type?: { $$typeof?: symbol; _context?: unknown };
   return?: Fiber | null;
   memoizedProps?: Record<string, unknown>;
   dependencies?: { firstContext?: Dependency | null };
@@ -19,6 +20,20 @@ interface Hook {
 }
 interface Dispatcher {
   go(url: string, options?: { replace?: boolean; passthroughProps?: Record<string, string> }): void;
+  preloadRouteCode?(url: string): void;
+}
+
+/** Read the nearest value for each provider without mutating the host React tree. */
+export function nativeContexts(element: Element): Map<unknown, unknown> {
+  const contexts = new Map<unknown, unknown>();
+  for (let f = fiber(element), depth = 0; f && depth < 512; f = f.return ?? null, depth++) {
+    const kind = f.type?.$$typeof;
+    if (kind !== Symbol.for('react.context') && kind !== Symbol.for('react.provider')) continue;
+    const context = f.type?._context ?? f.type;
+    if (f.memoizedProps && 'value' in f.memoizedProps && !contexts.has(context))
+      contexts.set(context, f.memoizedProps.value);
+  }
+  return contexts;
 }
 type UpdateColumn = (args: {
   columnID: string;
@@ -111,12 +126,25 @@ export function nativeColumns(): NativeColumn[] {
 export function updateNativeColumn(column: NativeColumn, url: string): boolean {
   if (!column.element.checkVisibility()) return false;
   const anchor = column.element.querySelector('a[href]');
-  const dispatcher = anchor && findDispatcher(anchor);
-  if (!column.update || !dispatcher) return false;
+  let reset: ((url: string) => void) | null = null;
+  for (
+    let f = anchor && fiber(anchor), depth = 0;
+    f && depth < 160;
+    f = f.return ?? null, depth++
+  ) {
+    if (record(f.memoizedProps?.column$key)) break;
+    // Mounted useBarcelonaColumnRouterReset callback. Reset the native history stack, not
+    // merely its last entry; main-page selections begin a new reading session.
+    reset = nativeAction<(url: string) => void>(f, (source) =>
+      /\{\s*type:\s*["']reset["']\s*,\s*url:/.test(source),
+    );
+    if (reset) break;
+  }
+  if (!column.update || !reset) return false;
   // Update the persistent root as well as its current route so Threads retains its own
   // "Remove column" action instead of treating the view as an unpinned child navigation.
   column.update({ columnID: column.id, relayRecordID: column.relayId, relativeURL: url });
-  dispatcher.go(url, { replace: true });
+  reset(url);
   column.element.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' });
   return true;
 }

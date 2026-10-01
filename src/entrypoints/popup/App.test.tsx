@@ -84,7 +84,7 @@ it('hides width and placement on Threads, which owns its own column', async () =
   stubTab({ answer: { kind: 'ready', platform: 'threads', columnOpen: false } });
   render(<App />);
   await screen.findByText('Threads · Active');
-  expect(screen.getByText(/Threads uses its own saved column/)).toBeDefined();
+  expect(screen.getByText(/Threads uses native columns/)).toBeDefined();
   expect(screen.queryByRole('slider')).toBeNull();
   // The switches below still apply everywhere.
   expect(screen.getByRole('switch', { name: 'Compact navigation' })).toBeDefined();

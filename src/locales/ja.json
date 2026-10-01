@@ -26,7 +26,7 @@
     "enableTitle": "Side View を有効にする",
     "compactTitle": "コンパクトナビゲーション",
     "interceptTitle": "プロフィール・ハッシュタグ・検索を開く",
-    "threadsOwnsColumn": "Threads は保存済みのカラムを使うため、幅と配置はここで適用されません。",
+    "threadsOwnsColumn": "Threads はネイティブカラムを使うため、ここの幅と配置の設定は適用されません。",
     "reloadHint": "このタブは Side View の起動より前に読み込まれました。",
     "reloadAction": "タブを再読み込み",
     "platform": {
@@ -104,7 +104,7 @@
       "xBlueskyTitle": "X と Bluesky",
       "xBlueskyNote": "上のレイアウトとナビゲーションの設定を使います。メインのスイッチ以外の変更は即時反映されます。",
       "threadsTitle": "Threads",
-      "threadsNote": "Threads アカウントに保存されたネイティブカラムを 1 つ再利用します。幅・順序・スクロールは Threads 側で管理してください。削除するにはネイティブのカラムメニューを使用します。Side View を無効にしても削除はされません。"
+      "threadsNote": "ホームではアカウントに保存されたネイティブカラムを再利用します。対応するフィードや検索の単独ページでは、ページを離れずに一時的なネイティブカラムを開きます。新しいカラムは保存されません。カラムメニューから閉じられます。Side View を無効にすると一時カラムは閉じますが、ホームの保存済みカラムは削除されません。"
     },
     "advanced": {
       "title": "詳細設定",

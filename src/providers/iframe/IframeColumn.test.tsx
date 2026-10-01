@@ -122,3 +122,41 @@ it('reveals the platform view as soon as its document is interactive, before the
   expect(screen.queryByRole('alert')).toBeNull();
   expect(frame.style.visibility).toBe('visible');
 });
+
+it('reattaches actions after full document navigation and back without duplicating them', () => {
+  const close = vi.fn();
+  render(
+    <IframeColumn {...props} onClose={close} findHeader={(doc) => doc.getElementById('header')} />,
+  );
+  const frame = screen.getByTitle('Side View detail');
+  const makeDoc = (url: string) => {
+    const doc = document.implementation.createHTMLDocument();
+    Object.defineProperty(doc, 'URL', { value: url });
+    doc.body.innerHTML = '<header id="header">Native header</header>';
+    return doc;
+  };
+  const first = makeDoc(props.frameUrl),
+    next = makeDoc('https://x.com/beth');
+  const load = (doc: Document | null) => {
+    Object.defineProperty(frame, 'contentDocument', { configurable: true, value: doc });
+    fireEvent.load(frame);
+  };
+  load(first);
+  expect(first.querySelectorAll('[data-sv-detail-actions]')).toHaveLength(1);
+  load(next);
+  expect(first.querySelector('[data-sv-detail-actions]')).toBeNull();
+  expect(next.querySelector('a')?.href).toBe('https://x.com/beth');
+  load(next);
+  expect(next.querySelectorAll('[data-sv-detail-actions]')).toHaveLength(1);
+  load(first);
+  expect(next.querySelector('[data-sv-detail-actions]')).toBeNull();
+  expect(first.querySelectorAll('[data-sv-detail-actions]')).toHaveLength(1);
+  first.querySelector('button')?.click();
+  expect(close).toHaveBeenCalledOnce();
+  load(null);
+  expect(screen.getByRole('alert')).toBeDefined();
+  expect(first.querySelector('[data-sv-detail-actions]')).toBeNull();
+  load(next);
+  expect(screen.queryByRole('alert')).toBeNull();
+  expect(next.querySelectorAll('[data-sv-detail-actions]')).toHaveLength(1);
+});

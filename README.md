@@ -44,10 +44,14 @@ replies all included.
 **On X and Bluesky**, Side View draws the column itself and puts it beside your feed. You can have
 it take over the right sidebar, or sit next to the sidebar with both visible.
 
-**On Threads**, there's no sidebar to take over, so Side View reuses Threads' own column feature —
+**On Threads home**, there's no sidebar to take over, so Side View reuses Threads' own column feature —
 one native column, saved to your Threads account, reused every time you open a post. It behaves
 like any other Threads column: you can move it, resize it, or scroll it the way you already know
-how.
+how. On standalone activity, following, saved, liked, for-you, archive, custom-feed and search
+pages, Side View renders a temporary native detail column beside the current content. The URL
+stays unchanged and no column is saved to your account. Close it from the native column menu.
+These standalone views require room for two 640px columns plus native navigation; when native rendering
+is unavailable or there is insufficient room, clicks keep their normal behavior.
 
 ![The post opens beside the feed on Bluesky](assets/store/screenshots/02-bluesky-sidebar.jpg)
 

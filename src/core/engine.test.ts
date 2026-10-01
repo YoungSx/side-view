@@ -48,8 +48,10 @@ it('has no empty view at startup and follows open, switch, close, reopen with re
   expect(firstHost?.shadowRoot?.textContent).not.toContain('Click a tweet');
   click('quote-body');
   expect(host()).toBe(firstHost);
-  expect(host()?.shadowRoot?.querySelector('iframe')).toBe(frame);
-  expect(frame?.src).toContain('/beth/status/456?lang=');
+  const nextFrame = host()?.shadowRoot?.querySelector('iframe');
+  expect(nextFrame).not.toBe(frame);
+  expect(frame?.isConnected).toBe(false);
+  expect(nextFrame?.src).toContain('/beth/status/456?lang=');
   act(() => host()?.shadowRoot?.querySelector<HTMLButtonElement>('button[title="Close"]')?.click());
   expect(host()).toBeNull();
   expect(frame?.isConnected).toBe(false);

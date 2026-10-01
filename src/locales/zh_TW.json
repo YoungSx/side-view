@@ -26,7 +26,7 @@
     "enableTitle": "啟用 Side View",
     "compactTitle": "緊湊導覽",
     "interceptTitle": "開啟個人頁面、話題標籤和搜尋",
-    "threadsOwnsColumn": "Threads 使用它自己儲存的欄位，因此寬度和位置在此不適用。",
+    "threadsOwnsColumn": "Threads 使用原生欄位，因此這裡的寬度和位置設定不適用。",
     "reloadHint": "此分頁載入於 Side View 啟動之前。",
     "reloadAction": "重新載入分頁",
     "platform": {
@@ -104,7 +104,7 @@
       "xBlueskyTitle": "X 與 Bluesky",
       "xBlueskyNote": "沿用上方的版面與導覽偏好。除總開關外，變更即時生效。",
       "threadsTitle": "Threads",
-      "threadsNote": "重複使用儲存到你 Threads 帳號的一個原生欄。寬度、順序和捲動請在 Threads 中管理。要移除它，請使用原生欄位選單；停用 Side View 不會刪除它。"
+      "threadsNote": "首頁沿用儲存到 Threads 帳號的原生欄。支援的獨立動態和搜尋頁面會開啟臨時原生欄，保留目前頁面且不儲存新欄位。使用原生欄位選單即可關閉。停用 Side View 會關閉臨時欄，但不會刪除首頁儲存的欄。"
     },
     "advanced": {
       "title": "進階",

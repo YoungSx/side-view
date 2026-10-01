@@ -14,7 +14,8 @@ The user requests a standalone full-tab settings page and a redesigned settings 
 ## Capabilities and Constraints
 
 Existing React/WXT extension, synced settings, system light/dark theme. Preserve all settings.
-X and Bluesky use extension-controlled detail columns; Threads uses its own saved native column.
+X and Bluesky use extension-controlled detail columns. Threads home uses its saved native column;
+supported standalone routes use a temporary native renderer without navigation or account persistence.
 Inferred from source: settings are used occasionally to adjust reading behavior. Keep existing English product copy.
 
 ## Product Principles
