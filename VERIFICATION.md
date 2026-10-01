@@ -153,6 +153,46 @@ Final native DOM verification after page refresh and another real post click: tw
 zero iframes, and no `sv-layout-style`. The original feed column server ID remained unchanged.
 
 
+## Threads hidden-deck click regression (2026-10-01)
+
+Authenticated Windows Chrome, attached over CDP to the existing Threads tab. This supersedes
+the home-route passthrough creation path described above. The extension's production MAIN
+script was rebuilt and evaluated in that tab, replacing its previous listener via the existing
+cleanup hook. These checks did not replace the installed extension on disk.
+
+**Reproduced cause:** navigating from home to `/activity` retains two `data-deck-column` nodes
+with `checkVisibility() === false` and zero-size rectangles. An activity post click updated
+the hidden owned column URI while the main URL stayed `/activity`. The installed extension's
+capture listener called `preventDefault` and `stopImmediatePropagation`. Merely finding a DOM
+column or a working update callback therefore does not prove a visible detail can be served.
+The current activity URL was observed in the actual navigation, not inferred from `/me`.
+
+**Capability boundary:** clicks must originate in a visible native deck column; reuse also
+requires the owned column to be visible. Standalone routes retain their original click and
+native navigation. There is no pathname allowlist. Creation invokes the uniquely identified,
+mounted `useBarcelonaCreateColumnMutation` callback from the source column, instead of sending
+passthrough props through a global router. This is the callback used by native Pin to home;
+Threads owns its optimistic rendering, persistence, rollback and error toast. Missing or
+ambiguous callbacks leave the click native. This remains an internal site integration.
+
+Verified with CDP mouse input and observed native state:
+
+- Activity post and avatar clicks navigate to the requested post and profile, respectively.
+- Home clicks reuse the same visible saved detail column without navigating the main page.
+- With no owned column configured, creation shows a visible optimistic column, then assigns
+  its numeric server ID and persists extension ownership; the main URL remains `/`.
+- Scoped CDP request interception failed only `useBarcelonaCreateColumnMutation`. The temporary
+  column appeared, then rolled back; Threads displayed its native failure toast and the main
+  URL stayed `/`. Interception was removed, and the next click successfully created a saved
+  column. No forced navigation or extension deadline was involved.
+- Native Remove column removed the test column and cleared ownership without a removal timer.
+
+The controller has no timeout, polling, or `location.assign` fallback. While creation is pending,
+further clicks remain native. Mutation observations reconcile optimistic/saved ownership and
+removal, rather than treating elapsed time as evidence of failure. Regression tests cover hidden
+cached decks, unavailable/ambiguous actions, pending clicks, rollback, saved-ID adoption, hidden
+completion, removal and DOM replacement. Test-created columns are removed after the live checks.
+
 ## Native detail-header actions (2026-09-30)
 
 X and Bluesky no longer render the extension's separate title bar. A shared lifecycle-managed

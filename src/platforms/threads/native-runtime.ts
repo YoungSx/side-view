@@ -61,20 +61,16 @@ export function findDispatcher(element: Element, global = false): Dispatcher | n
   }
   return found;
 }
-function updateAction(f: Fiber): UpdateColumn | null {
-  const found = new Set<UpdateColumn>();
+function nativeAction<T extends (...args: never[]) => void>(
+  f: Fiber,
+  matches: (source: string) => boolean,
+): T | null {
+  const found = new Set<T>();
   const scan = (value: unknown, depth = 0): void => {
     if (depth > 5) return;
     if (typeof value === 'function') {
-      // Signature from the live native useBarcelonaUpdateColumnMutation callback. Fail closed
-      // when the site changes rather than calling an arbitrary function in its component cache.
       const source = Function.prototype.toString.call(value);
-      if (
-        source.includes('Trying to update a column with no changes') &&
-        source.includes('relativeURL') &&
-        source.includes('columnID')
-      )
-        found.add(value as UpdateColumn);
+      if (matches(source)) found.add(value as T);
     } else if (Array.isArray(value)) for (const item of value) scan(item, depth + 1);
   };
   scan(f.updateQueue?.memoCache?.data);
@@ -98,7 +94,13 @@ export function nativeColumns(): NativeColumn[] {
           id: column.id,
           relayId: column.__id,
           url: column.uri,
-          update: updateAction(f),
+          update: nativeAction<UpdateColumn>(
+            f,
+            (source) =>
+              source.includes('Trying to update a column with no changes') &&
+              source.includes('relativeURL') &&
+              source.includes('columnID'),
+          ),
         });
       }
       break;
@@ -107,6 +109,7 @@ export function nativeColumns(): NativeColumn[] {
   return out;
 }
 export function updateNativeColumn(column: NativeColumn, url: string): boolean {
+  if (!column.element.checkVisibility()) return false;
   const anchor = column.element.querySelector('a[href]');
   const dispatcher = anchor && findDispatcher(anchor);
   if (!column.update || !dispatcher) return false;
@@ -118,8 +121,25 @@ export function updateNativeColumn(column: NativeColumn, url: string): boolean {
   return true;
 }
 export function createNativeColumn(source: Element, url: string, requestId: string): boolean {
-  const dispatcher = findDispatcher(source, true);
-  if (!dispatcher) return false;
-  dispatcher.go('/', { passthroughProps: { newColumnID: requestId, newColumnURL: url } });
-  return true;
+  const element = source.closest('[data-deck-column]');
+  if (!element?.checkVisibility()) return false;
+  for (let f = fiber(element), depth = 0; f && depth < 100; f = f.return ?? null, depth++) {
+    if (!record(f.memoizedProps?.column$key)) continue;
+    // The mounted useBarcelonaCreateColumnMutation callback used by Pin to home. It owns
+    // optimistic rendering, persistence and native error feedback. A global router alone
+    // proves none of these capabilities (and may only update a hidden cached home page).
+    const create = nativeAction<(url: string, requestId: string) => void>(
+      f,
+      (text) =>
+        text.includes('xfb_text_app_board_create_column') &&
+        text.includes('optimisticUpdater') &&
+        text.includes('connectionRecord') &&
+        text.includes('relayRecordID') &&
+        text.includes('relativeURL'),
+    );
+    if (!create) return false;
+    create(url, requestId);
+    return true;
+  }
+  return false;
 }
