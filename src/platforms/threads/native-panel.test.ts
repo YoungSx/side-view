@@ -124,18 +124,24 @@ it('measures the replica box from a live native column instead of hardcoding it'
   const host = document.querySelector<HTMLElement>(`[${PANEL_ATTR}]`);
   expect(host?.style.width).toBe('514px');
   expect(host?.style.height).toBe('934px');
-  expect(host?.style.display).toBe('flex');
+  // A grid track, not a flex column: a flex child keeps its min-height:auto floor and
+  // would grow past the box and be clipped rather than scroll.
+  expect(host?.style.display).toBe('grid');
+  expect(host?.style.gridTemplateRows).toBe('minmax(0,1fr)');
   expect(host?.style.overflow).toBe('hidden');
   expect(host?.style.position).toBe('');
 });
 
-it('mirrors a page-scrolling timeline when no native column exists', () => {
-  // Profile and search routes scroll as a document, so the replica must grow with its
-  // content rather than clip it.
+it('keeps the native column model on a route that scrolls as a document', () => {
+  // Profile and search pages scroll as a document, but a native column is still
+  // viewport-tall and scrolls inside itself. Growing with content instead would leave
+  // the two columns on different scroll models.
   expect(panel.open(source, '/@a/post/one')).toBe(true);
   const host = document.querySelector<HTMLElement>(`[${PANEL_ATTR}]`);
   expect(host?.style.width).toBe('640px');
-  expect(host?.style.height).toBe('auto');
+  expect(host?.style.height).toBe(`${document.documentElement.clientHeight}px`);
+  expect(host?.style.overflow).toBe('hidden');
+  expect(host?.style.marginInlineStart).toBe('12px');
 });
 
 it('reuses a single native root across switches and detaches cleanly on close', () => {
