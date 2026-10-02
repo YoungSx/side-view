@@ -165,3 +165,55 @@ it('does not mutate a saved column if its native history reset callback is unava
   expect(calls).toEqual([]);
   expect(globalGo).not.toHaveBeenCalled();
 });
+
+/** The standard fixture, but living inside our replica host. */
+function replica() {
+  document.body.innerHTML =
+    '<div data-sideview-threads-panel><div data-deck-column>' +
+    '<div data-column-scrollable><a href="/@alice/post/one">Post</a></div></div></div>';
+  const deck = document.querySelector<HTMLElement>('[data-deck-column]');
+  const link = deck?.querySelector('a');
+  const scrollable = deck?.querySelector('[data-column-scrollable]');
+  if (!deck || !link || !scrollable) throw new Error('Fixture missing');
+  const root = {
+    memoizedProps: { column$key: { id: '123', __id: 'relay-123', uri: '/@alice/post/one' } },
+    updateQueue: { memoCache: { data: [[update, create]] } },
+  };
+  Object.assign(deck, { __reactFiber$test: { return: root } });
+  deck.scrollIntoView = vi.fn();
+  return { deck, link, scrollable, root };
+}
+
+it('never adopts, retargets or creates through a replica column', () => {
+  const { deck, link, scrollable } = replica();
+  expect(nativeColumns()).toEqual([]);
+  expect(
+    updateNativeColumn(
+      { id: '123', relayId: 'relay-123', url: '/@alice/post/one', element: deck, update: null },
+      '/@bob/post/two',
+    ),
+  ).toBe(false);
+  expect(createNativeColumn(scrollable, '/@bob/post/two', 'request-id')).toBe(false);
+  expect(createNativeColumn(link, '/@bob/post/two', 'request-id')).toBe(false);
+  expect(created).not.toHaveBeenCalled();
+  expect(calls).toEqual([]);
+});
+
+it('still owns every real column on a page that also hosts a replica', () => {
+  const { deck } = replica();
+  const real = document.createElement('div');
+  real.setAttribute('data-deck-column', '');
+  const realRoot = {
+    memoizedProps: { column$key: { id: '9', __id: 'relay-9', uri: '/@c/post/three' } },
+    updateQueue: { memoCache: { data: [[update]] } },
+  };
+  Object.assign(real, { __reactFiber$test: { return: realRoot } });
+  real.scrollIntoView = vi.fn();
+  document.body.append(real);
+
+  const columns = nativeColumns();
+  expect(columns).toHaveLength(1);
+  expect(columns[0]?.id).toBe('9');
+  expect(columns[0]?.element).toBe(real);
+  expect(deck.isConnected).toBe(true);
+});
