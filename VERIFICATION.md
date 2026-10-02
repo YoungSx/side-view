@@ -474,15 +474,24 @@ row past the viewport and produced a second scrollbar outside the column.
 The host is now a plain `div[data-sideview-threads-panel]` inserted as the last child of
 Threads' own flex row, carrying only a measured box:
 
-- Width, height and inter-column gap come from a live `[data-deck-column]` when the page has
-  one, which makes Threads' responsive shrinking (640px with two columns down to 420px with
-  four) automatic. With no native column — profiles and search — the source timeline's own
-  width is used and the height is left to content, because those routes scroll as a document.
-- The host sets `overflow:hidden` and never scrolls. The `[data-column-scrollable]` rendered by
-  `BarcelonaRoutedColumn.react` is therefore the only scroller, exactly as in a native column.
+- Width and height come from a live `[data-deck-column]` when the page has one, which makes
+  Threads' responsive shrinking (640px with two columns down to 420px with four) automatic.
+  A native column is viewport-tall and scrolls inside itself, so where there is no native
+  column the replica takes its width from the timeline beside it and its height from the
+  viewport. Growing with content instead would leave the two columns on different scroll
+  models. Measured replica: 1022px tall, inner column 962px with `scrollHeight` 1179.
+- The inter-column gap is Threads' own, read from a native column's margin when one exists
+  and otherwise the 12px observed on a two-column home timeline. It is carried on the
+  replica's leading edge, so no margin is written onto the site's column. Measured box to
+  box: 983 → 995 = 12px, matching the native pair exactly.
+- The host is a **grid** container with `grid-template-rows: minmax(0, 1fr)`, not a flex
+  column. As a flex container the site-rendered child keeps its `min-height: auto` floor,
+  grows past the box and is clipped; the grid track lets it shrink, so the inner
+  `[data-column-scrollable]` becomes the only scroller, exactly as in a native column. This
+  constrains it without writing any style onto Threads' own element.
 - Nothing is measured that cannot be measured: an unmeasurable page leaves the click native
-  rather than falling back to hardcoded widths. Over-width is detected after mounting, because
-  Threads clips its page row rather than scrolling it.
+  rather than falling back to hardcoded widths. Over-width is detected after mounting,
+  because Threads clips its page row rather than scrolling it.
 - `resize` re-measures instead of re-applying a stale width.
 
 `nativeColumns()`, `createNativeColumn()` and `updateNativeColumn()` ignore anything inside the
@@ -508,3 +517,11 @@ replica grows with its content, matching the route's own scroll model.
 Still internal site interfaces rather than a supported public extension API: the column module
 name, the three router contexts, the preloader and the measured column geometry. A Threads
 redesign can require compatibility updates.
+
+### Native pair, measured for reference (2026-10-02)
+
+Two native columns on the home timeline, viewport 1994x1022: 12px apart, each 640x1022
+with `margin: 0 12px 0 0`, each inner `[data-column-scrollable]` 640x950 with
+`padding: 20px 0 0`, `border-radius: 24px`, `overflow-y: auto` and scrolling internally.
+This is the shape the replica is measured against; the home route itself needs no replica
+and continues to use Threads' own columns.
