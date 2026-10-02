@@ -57,6 +57,7 @@ afterEach(() => {
   Reflect.deleteProperty(Element.prototype, 'checkVisibility');
 });
 it.each([
+  '/',
   '/activity',
   '/following/',
   '/saved',
@@ -68,7 +69,7 @@ it.each([
 ])('supports the standalone source %s', (path) =>
   expect(supportsStandalone(new URL(path, location.origin))).toBe(true),
 );
-it.each(['/', '/messages', '/@alice', '/search', '/settings', '/custom_feed/123/edit'])(
+it.each(['/messages', '/@alice', '/search', '/settings', '/custom_feed/123/edit'])(
   'does not take over %s',
   (path) => expect(supportsStandalone(new URL(path, location.origin))).toBe(false),
 );

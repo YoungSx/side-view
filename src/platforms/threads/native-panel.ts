@@ -5,8 +5,10 @@ const SOURCE = 'data-sideview-threads-source';
 const WIDTH = 640;
 const GAP = 16;
 
+/** Every timeline route that renders exactly one ephemeral column we may sit beside. */
 export function supportsStandalone(url: URL): boolean {
   return (
+    url.pathname === '/' ||
     /^\/(?:activity|following|saved|liked|for_you|archive)\/?$/.test(url.pathname) ||
     /^\/custom_feed\/[^/]+\/?$/.test(url.pathname) ||
     (url.pathname.replace(/\/$/, '') === '/search' && !!url.searchParams.get('q'))
@@ -80,7 +82,7 @@ export class ThreadsNativePanel {
     )
       return false;
     const page = source.closest<HTMLElement>('#barcelona-page-layout');
-    if (!page?.checkVisibility() || source.closest('[data-deck-column]')) return false;
+    if (!page?.checkVisibility()) return false;
     const react = load('react') as typeof React | null;
     const dom = load('ReactDOM') as NativeDOM | null;
     const Column = load('BarcelonaRoutedColumn.react') as React.ComponentType<

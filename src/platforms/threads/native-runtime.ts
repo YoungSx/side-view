@@ -149,10 +149,13 @@ export function updateNativeColumn(column: NativeColumn, url: string): boolean {
   return true;
 }
 export function createNativeColumn(source: Element, url: string, requestId: string): boolean {
-  const element = source.closest('[data-deck-column]');
-  if (!element?.checkVisibility()) return false;
-  for (let f = fiber(element), depth = 0; f && depth < 100; f = f.return ?? null, depth++) {
-    if (!record(f.memoizedProps?.column$key)) continue;
+  // The home timeline runs in Threads' single-column layout, where the feed is not a deck
+  // column and carries no column$key — asking for one first would deadlock. The create
+  // callback is mounted on the column regardless, and calling it is what flips the layout
+  // to multi-column, so anchor the search on the scrollable timeline itself.
+  const element = source.closest<HTMLElement>('[data-column-scrollable]') ?? source;
+  if (!element.checkVisibility()) return false;
+  for (let f = fiber(element), depth = 0; f && depth < 160; f = f.return ?? null, depth++) {
     // The mounted useBarcelonaCreateColumnMutation callback used by Pin to home. It owns
     // optimistic rendering, persistence and native error feedback. A global router alone
     // proves none of these capabilities (and may only update a hidden cached home page).
@@ -165,9 +168,10 @@ export function createNativeColumn(source: Element, url: string, requestId: stri
         text.includes('relayRecordID') &&
         text.includes('relativeURL'),
     );
-    if (!create) return false;
-    create(url, requestId);
-    return true;
+    if (create) {
+      create(url, requestId);
+      return true;
+    }
   }
   return false;
 }

@@ -29,11 +29,10 @@ export function installThreadsNative(): () => void {
     const columnId = config.columnId;
     const current = columns.find((c) => c.id === columnId);
     if (current) knownOwned = current.element;
-    else if (
-      knownOwned &&
-      !knownOwned.isConnected &&
-      columns.some((c) => c.element.checkVisibility())
-    ) {
+    // Forget a recorded column that is gone from an otherwise populated deck. The empty-deck
+    // case is deliberately not handled here: columns unmount transiently during navigation,
+    // which is indistinguishable from "nothing is pinned".
+    else if (columnId && columns.some((c) => c.element.checkVisibility())) {
       config.columnId = null;
       knownOwned = null;
       report(null);
@@ -121,22 +120,29 @@ export function installThreadsNative(): () => void {
     const { pathname, search } = new URL(intent.url);
     const relative = pathname + search;
     try {
-      if (!source) {
-        if (!panel.open(scrollable, relative)) return;
-      } else if (pending) {
-        return; // no confirmed detail to retarget yet; let Threads handle this click
-      } else if (owned) {
+      // A recorded column that is not on screen cannot be retargeted. On the home timeline
+      // Threads mounts every pinned column, so its absence means the column is gone; keeping
+      // the id would strand this click on the fallback panel for the rest of the session.
+      if (config.columnId && !owned && new URL(location.href).pathname === '/') {
+        config.columnId = null;
+        report(null);
+      }
+      // Prefer Threads' own column: reuse the one we own, otherwise create one. The
+      // ephemeral panel is only a fallback for routes that expose no column capability.
+      // Reuse stays gated on a deck column so a standalone route never hijacks the
+      // pinned home column.
+      if (pending) return; // no confirmed detail to retarget yet; let Threads handle this click
+      if (owned && source) {
         if (!updateNativeColumn(owned, relative)) return;
-      } else {
-        // Refuse before swallowing when a recorded column is gone: recreating it here would open
-        // a duplicate the user never asked for.
-        if (config.columnId) return;
+      } else if (!config.columnId) {
         const requestId = crypto.randomUUID();
         pending = { requestId, optimistic: null };
-        if (!createNativeColumn(target, relative, requestId)) {
+        if (!createNativeColumn(scrollable, relative, requestId)) {
           pending = null;
-          return;
+          if (!panel.open(scrollable, relative)) return;
         }
+      } else if (!panel.open(scrollable, relative)) {
+        return;
       }
       event.preventDefault();
       event.stopImmediatePropagation();
