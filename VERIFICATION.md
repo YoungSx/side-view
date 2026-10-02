@@ -263,10 +263,9 @@ explicit original link and Close action. This still uses internal site interface
 supported public extension API; a Threads release can require compatibility updates.
 
 The temporary host lives inside the source page so native menu/dialog portals remain above
-it. Its layout stylesheet and source marker are removed on close, disable, source removal,
-route change or insufficient room for two 640px columns plus the measured native navigation.
-Native column menus and in-column navigation remain owned by Threads. No saved home-column
-ownership is changed by this path.
+it. It is removed on close, disable, source removal, route change, or when it would not fit
+the viewport. Native column menus and in-column navigation remain owned by Threads. No saved
+home-column ownership is changed by this path.
 
 Authenticated Windows Chrome, using a persistent CDP connection and the rebuilt production
 MAIN script injected into the existing Threads tab:
@@ -464,3 +463,48 @@ current-breakpoint restoration, scoped reconciliation, invalidation and master-s
 Final artifacts were installed in the existing unpacked-extension directory and reloaded.
 These are validated private compatibility boundaries, not stable public site APIs; Firefox
 was not part of this live acceptance run.
+
+## Replica column box and profile/search coverage (2026-10-02)
+
+Supersedes the host description in the section above. The replica no longer owns its layout:
+it no longer writes a stylesheet, no longer sets `position:fixed` + `height:100dvh` +
+`overflow:auto`, and no longer pads `#barcelona-page-layout`. That padding inflated the page
+row past the viewport and produced a second scrollbar outside the column.
+
+The host is now a plain `div[data-sideview-threads-panel]` inserted as the last child of
+Threads' own flex row, carrying only a measured box:
+
+- Width, height and inter-column gap come from a live `[data-deck-column]` when the page has
+  one, which makes Threads' responsive shrinking (640px with two columns down to 420px with
+  four) automatic. With no native column — profiles and search — the source timeline's own
+  width is used and the height is left to content, because those routes scroll as a document.
+- The host sets `overflow:hidden` and never scrolls. The `[data-column-scrollable]` rendered by
+  `BarcelonaRoutedColumn.react` is therefore the only scroller, exactly as in a native column.
+- Nothing is measured that cannot be measured: an unmeasurable page leaves the click native
+  rather than falling back to hardcoded widths. Over-width is detected after mounting, because
+  Threads clips its page row rather than scrolling it.
+- `resize` re-measures instead of re-applying a stale width.
+
+`nativeColumns()`, `createNativeColumn()` and `updateNativeColumn()` ignore anything inside the
+replica, so it can never be adopted, retargeted or reported as an owned column.
+
+Route coverage now includes profiles (`/@handle`) and both `/search?q=` results and the empty
+`/search` page's recommended-user list. `/messages`, `/settings`, `/@handle/followers` and
+`/custom_feed/:id/edit` remain excluded.
+
+Measured on authenticated threads.com, viewport 1994x1022, via the persistent CDP bridge:
+
+| Route | Native columns | Replica | Replica box | Inline style on page row |
+|---|---|---|---|---|
+| `/` | 2 | 0 (native path) | — | none |
+| `/@bushejiao` | 0 | 1 | x=989, w=640 | none |
+| `/search?q=ai` | 0 | 1 | x=989, w=640 | none |
+| `/search` | 0 | 1 | x=989, w=640 | none |
+
+`documentElement.scrollHeight === clientHeight` on the home route, so no window-level scrollbar
+appears. Profile and search scrolled as documents before this change too; on those routes the
+replica grows with its content, matching the route's own scroll model.
+
+Still internal site interfaces rather than a supported public extension API: the column module
+name, the three router contexts, the preloader and the measured column geometry. A Threads
+redesign can require compatibility updates.

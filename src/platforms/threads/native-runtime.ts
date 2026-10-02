@@ -1,6 +1,11 @@
 /** Narrow compatibility boundary around Threads' own mounted React router and column actions.
  * No layout writes, custom rendering, direct network calls, or account data extraction.
+ * Layout replication lives separately in `native-column-box.ts`.
  */
+import { PANEL_ATTR } from './native-column-box';
+
+const REPLICA = `[${PANEL_ATTR}]`;
+
 interface Fiber {
   type?: { $$typeof?: symbol; _context?: unknown };
   return?: Fiber | null;
@@ -96,6 +101,9 @@ function nativeAction<T extends (...args: never[]) => void>(
 export function nativeColumns(): NativeColumn[] {
   const out: NativeColumn[] = [];
   for (const element of document.querySelectorAll<HTMLElement>('[data-deck-column]')) {
+    // Our replica renders a column body and may sit inside a deck; it is never a column
+    // Threads owns, so it must never be adopted, retargeted or reported as owned.
+    if (element.closest(REPLICA)) continue;
     for (let f = fiber(element), depth = 0; f && depth < 100; f = f.return ?? null, depth++) {
       const column = record(f.memoizedProps?.column$key);
       if (!column) continue;
@@ -124,6 +132,7 @@ export function nativeColumns(): NativeColumn[] {
   return out;
 }
 export function updateNativeColumn(column: NativeColumn, url: string): boolean {
+  if (column.element.closest(REPLICA)) return false;
   if (!column.element.checkVisibility()) return false;
   const anchor = column.element.querySelector('a[href]');
   let reset: ((url: string) => void) | null = null;

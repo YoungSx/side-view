@@ -1,17 +1,28 @@
 import type * as React from 'react';
+import {
+  columnAnchor,
+  hostBoxCss,
+  insertColumn,
+  measureColumnBox,
+  PANEL_ATTR,
+} from './native-column-box';
 import { findDispatcher, nativeContexts } from './native-runtime';
 
-const SOURCE = 'data-sideview-threads-source';
-const WIDTH = 640;
-const GAP = 16;
-
-/** Every timeline route that renders exactly one ephemeral column we may sit beside. */
+/** Routes that render exactly one column we may sit beside.
+ *
+ * REPLICATION, not reuse: this list only decides *where* the replica may be hosted.
+ * Which URLs are worth hijacking is a separate question, answered by
+ * `resolveThreadsUrl` in `./url.ts`.
+ */
 export function supportsStandalone(url: URL): boolean {
   return (
     url.pathname === '/' ||
     /^\/(?:activity|following|saved|liked|for_you|archive)\/?$/.test(url.pathname) ||
     /^\/custom_feed\/[^/]+\/?$/.test(url.pathname) ||
-    (url.pathname.replace(/\/$/, '') === '/search' && !!url.searchParams.get('q'))
+    // Profiles, and both the search results and the empty search page's
+    // recommended-user list, which is just as much a timeline to click through.
+    /^\/@[A-Za-z0-9._]+\/?$/.test(url.pathname) ||
+    url.pathname.replace(/\/$/, '') === '/search'
   );
 }
 
@@ -32,13 +43,18 @@ interface NativeDOM {
   flushSync(fn: () => void): void;
 }
 
-/** Ephemeral native renderer for standalone routes. Nothing is pinned or saved to the account. */
+/** Ephemeral replica column for routes where Threads mounts no column of its own.
+ *
+ * REUSE: the column body is Threads' own `BarcelonaRoutedColumn.react`, mounted with
+ * Threads' own React and its live router contexts — see `native-runtime.ts`.
+ * REPLICATION: only the outer box, derived from live measurements in
+ * `native-column-box.ts`. Nothing is pinned or saved to the account.
+ */
 export class ThreadsNativePanel {
   private root: NativeRoot | null = null;
   private host: HTMLElement | null = null;
   private page: HTMLElement | null = null;
   private source: HTMLElement | null = null;
-  private style: HTMLStyleElement | null = null;
   private route = '';
   private preparedPage: HTMLElement | null = null;
 
@@ -76,13 +92,13 @@ export class ThreadsNativePanel {
   }
 
   open(source: HTMLElement, url: string): boolean {
-    if (
-      !supportsStandalone(new URL(location.href)) ||
-      window.innerWidth < this.navigationInset() + WIDTH * 2 + GAP
-    )
-      return false;
-    const page = source.closest<HTMLElement>('#barcelona-page-layout');
-    if (!page?.checkVisibility()) return false;
+    if (!supportsStandalone(new URL(location.href))) return false;
+    const page = columnAnchor(source);
+    if (!page) return false;
+    // REPLICATION: derive the box before mounting, so a host is never created that we
+    // cannot size. Nothing measurable means nothing to match — leave the click native.
+    const box = measureColumnBox(source);
+    if (!box) return false;
     const react = load('react') as typeof React | null;
     const dom = load('ReactDOM') as NativeDOM | null;
     const Column = load('BarcelonaRoutedColumn.react') as React.ComponentType<
@@ -112,22 +128,17 @@ export class ThreadsNativePanel {
       this.source = source;
       this.route = location.href;
       if (!this.host) {
-        this.host = document.createElement('aside');
-        this.host.setAttribute('data-sideview-threads-panel', '');
-        this.host.style.cssText = `position:fixed;top:0;width:${WIDTH}px;height:100dvh;overflow:auto;`;
-        this.style = document.createElement('style');
-        document.head.append(this.style);
-        page.setAttribute(SOURCE, '');
-        // Keep the panel below Threads' root-level menu/dialog portals in the stacking order.
-        page.append(this.host);
+        // REPLICATION: a plain host carrying only a measured box. It joins Threads' own
+        // flex row, so the site's layout owns width, spacing and stacking — there is no
+        // second scroller and no padding write against `#barcelona-page-layout`.
+        this.host = document.createElement('div');
+        this.host.setAttribute(PANEL_ATTR, '');
+        insertColumn(this.host, page);
         this.root = dom.createRoot(this.host);
         window.addEventListener('resize', this.resize);
         window.addEventListener('popstate', this.reconcileRoute);
       }
-      if (!this.position()) {
-        this.close();
-        return false;
-      }
+      this.host.style.cssText = hostBoxCss(box);
       const close = () => this.close();
       class Boundary extends react.Component<{ children: React.ReactNode }, { failed: boolean }> {
         override state = { failed: false };
@@ -157,7 +168,7 @@ export class ThreadsNativePanel {
       for (const [context, value] of contexts)
         tree = react.createElement((context as React.Context<unknown>).Provider, { value }, tree);
       dom.flushSync(() => this.root?.render(react.createElement(Boundary, { children: tree })));
-      if (this.host.checkVisibility()) return true;
+      if (this.host.checkVisibility() && this.fitsViewport()) return true;
       this.close();
       return false;
     } catch {
@@ -166,48 +177,38 @@ export class ThreadsNativePanel {
     }
   }
 
+  /** Threads clips its page row rather than scrolling it, so an over-wide replica would be
+   * silently cut off. Measure after mounting instead of predicting it from viewport maths. */
+  private fitsViewport(): boolean {
+    const rect = this.host?.getBoundingClientRect();
+    return !!rect && rect.width > 0 && rect.left >= -0.5 && rect.right <= window.innerWidth + 0.5;
+  }
+
   close(): void {
     window.removeEventListener('resize', this.resize);
     window.removeEventListener('popstate', this.reconcileRoute);
     const root = this.root;
     this.root = null;
-    // Unmounting may trigger native effect cleanup. Always restore layout, even if it throws.
+    // Unmounting may trigger native effect cleanup. Always detach the host, even if it throws.
     try {
       root?.unmount();
     } finally {
       this.host?.remove();
       this.host = null;
-      this.page?.removeAttribute(SOURCE);
       this.page = null;
       this.source = null;
-      this.style?.remove();
-      this.style = null;
     }
   }
 
-  private position(): boolean {
-    if (!this.host || !this.source || !this.style) return false;
-    const inset = this.navigationInset();
-    if (window.innerWidth < inset + WIDTH * 2 + GAP) return false;
-    this.style.textContent = `#barcelona-page-layout[${SOURCE}] {padding-inline-start:${inset}px!important;padding-inline-end:${WIDTH + GAP}px!important;box-sizing:border-box!important}`;
-    const rect = this.source.getBoundingClientRect();
-    const left = rect.right + GAP;
-    if (rect.width <= 0 || rect.left < inset || left + WIDTH > window.innerWidth) return false;
-    this.host.style.left = `${left}px`;
-    return true;
-  }
-  private navigationInset(): number {
-    let right = 0;
-    for (const link of document.querySelectorAll<HTMLAnchorElement>(
-      'a[href="/"],a[href="/activity"],a[href="/search"]',
-    )) {
-      if (link.closest('#barcelona-page-layout') || !link.checkVisibility()) continue;
-      right = Math.max(right, link.getBoundingClientRect().right);
-    }
-    return right + GAP;
-  }
+  /** Threads' column width is responsive, so re-measure rather than re-use the old box. */
   private readonly resize = () => {
-    if (!this.position()) this.close();
+    const box = this.source && measureColumnBox(this.source);
+    if (!box || !this.host) {
+      this.close();
+      return;
+    }
+    this.host.style.cssText = hostBoxCss(box);
+    if (!this.fitsViewport()) this.close();
   };
   private readonly reconcileRoute = () => this.reconcile();
 }
