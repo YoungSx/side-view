@@ -112,17 +112,33 @@ it('reuses a visible owned column', () => {
   expect(createNativeColumn).not.toHaveBeenCalled();
 });
 
+it('creates a native column from the single-column home timeline', () => {
+  // Threads renders the home feed without data-deck-column until the first pin,
+  // so the creation entry point must not require one.
+  source.removeAttribute('data-deck-column');
+  vi.stubGlobal('location', new URL('https://www.threads.com/'));
+  configure(null);
+  vi.mocked(createNativeColumn).mockReturnValue(true);
+  expect(trustedClick().preventDefault).toHaveBeenCalledOnce();
+  expect(createNativeColumn).toHaveBeenCalledWith(
+    link.parentElement,
+    '/@a/post/one',
+    expect.any(String),
+  );
+});
+
 it('opens standalone details only after the local native panel accepts the click', () => {
   source.removeAttribute('data-deck-column');
   source.id = 'barcelona-page-layout';
   vi.stubGlobal('location', new URL('https://www.threads.com/activity'));
   const open = vi.spyOn(ThreadsNativePanel.prototype, 'open').mockReturnValue(false);
-  configure('saved-home-detail');
+  // No column capability on this route, so creation declines and the panel takes over.
+  vi.mocked(createNativeColumn).mockReturnValue(false);
+  configure(null);
   expect(trustedClick().preventDefault).not.toHaveBeenCalled();
   open.mockReturnValue(true);
   expect(trustedClick().preventDefault).toHaveBeenCalledOnce();
   expect(open).toHaveBeenLastCalledWith(link.parentElement, '/@a/post/one');
-  expect(createNativeColumn).not.toHaveBeenCalled();
   expect(updateNativeColumn).not.toHaveBeenCalled();
 });
 
@@ -226,6 +242,44 @@ it('forgets a removed column from the active deck without a timer or creating a 
     { channel: NATIVE_CHANNEL, type: 'owned', columnId: null },
     location.origin,
   );
+  expect(createNativeColumn).not.toHaveBeenCalled();
+});
+it('forgets a column id that no longer exists after a reload', async () => {
+  // The page reloaded with a recorded id whose column was removed in Threads' own UI.
+  // There is no owned element to inspect, so ownership must be dropped from the id alone.
+  configure('999');
+  const post = vi.spyOn(window, 'postMessage');
+  document.body.append(document.createElement('span'));
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(post).toHaveBeenCalledWith(
+    { channel: NATIVE_CHANNEL, type: 'owned', columnId: null },
+    location.origin,
+  );
+});
+it('creates a fresh column when the recorded one is gone from the home timeline', () => {
+  // The recorded column was removed in Threads' own UI; the id must not strand the click
+  // on the fallback panel when the home deck shows nothing.
+  columns = [];
+  configure('999');
+  vi.mocked(createNativeColumn).mockReturnValue(true);
+  expect(trustedClick().preventDefault).toHaveBeenCalledOnce();
+  expect(createNativeColumn).toHaveBeenCalledWith(
+    link.parentElement,
+    '/@a/post/one',
+    expect.any(String),
+  );
+});
+it('keeps a recorded id on routes that do not mount the home column', async () => {
+  // /activity renders no deck columns even when one is pinned, so absence proves nothing.
+  vi.stubGlobal('location', new URL('https://www.threads.com/activity'));
+  columns = [];
+  configure('999');
+  const post = vi.spyOn(window, 'postMessage');
+  document.body.append(document.createElement('span'));
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(post).not.toHaveBeenCalled();
   expect(createNativeColumn).not.toHaveBeenCalled();
 });
 it('preserves ownership when the deck unmounts during navigation', async () => {
