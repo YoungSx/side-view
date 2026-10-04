@@ -37,6 +37,15 @@ export class XiaohongshuAdapter implements PlatformAdapter {
     return null;
   }
 
+  observeLayoutAvailability(onUnavailable: () => void): () => void {
+    const root = document.documentElement;
+    const observer = new MutationObserver(() => {
+      if (root.getAttribute(XHS_LAYOUT_STATUS) !== 'available') onUnavailable();
+    });
+    observer.observe(root, { attributes: true, attributeFilter: [XHS_LAYOUT_STATUS] });
+    return () => observer.disconnect();
+  }
+
   resolveIntent(event: MouseEvent): DetailIntent | null {
     const target = event.target;
     if (!(target instanceof Element)) return null;

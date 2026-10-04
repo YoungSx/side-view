@@ -113,3 +113,49 @@ it('validates the site capability and leaves unsupported versions untouched', ()
   expect(native.$patch).not.toHaveBeenCalled();
   expect(document.documentElement.getAttribute(XHS_LAYOUT_STATUS)).toBe('unavailable');
 });
+
+it.each([false, true])(
+  'keeps reflowing after app replacement (initially absent: %s)',
+  async (absent) => {
+    const watched = new Set<Element>();
+    let resizeObserved: () => void = () => {};
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: () => void) {
+          resizeObserved = callback;
+        }
+        observe(element: Element) {
+          watched.add(element);
+        }
+        unobserve(element: Element) {
+          watched.delete(element);
+        }
+        disconnect() {
+          watched.clear();
+        }
+      },
+    );
+    const previousApp = document.querySelector('#app');
+    if (absent) previousApp?.remove();
+    document.body.classList.add('sv-active');
+    dispose = installFeedLayout(() => native);
+    const replacement = document.createElement('div');
+    replacement.id = 'app';
+    replacement.innerHTML =
+      '<div class="feeds-container"><section class="note-item"></section></div>';
+    previousApp?.remove();
+    document.body.append(replacement);
+    await vi.waitFor(() => expect(watched.has(replacement)).toBe(true));
+    expect(watched.has(previousApp as Element)).toBe(false);
+    await vi.waitFor(() => expect(native.columnWidth).toBe(207.6));
+    width = 600;
+    // A CSS-only width change has no body mutation or window resize event.
+    resizeObserved();
+    await vi.waitFor(() => expect(native.columns).toBe(3));
+    expect(native.columnWidth).toBeCloseTo((600 - 64) / 3);
+    dispose();
+    dispose = undefined;
+    expect(watched.size).toBe(0);
+  },
+);

@@ -30,7 +30,13 @@ function icon(doc: Document, path: string): SVGElement {
 export function installDetailActions(
   doc: Document,
   findHeader: (doc: Document) => HTMLElement | null,
-  options: { href: () => string; onClose: () => void; rootUrl?: string; root?: ReadingRoot },
+  options: {
+    href: () => string;
+    onClose: () => void;
+    rootUrl?: string;
+    root?: ReadingRoot;
+    onAvailabilityChange?: (available: boolean) => void;
+  },
 ): () => void {
   const group = doc.createElement('div');
   group.setAttribute(ACTIONS, '');
@@ -91,12 +97,17 @@ export function installDetailActions(
   style.id = STYLE;
   style.textContent = css;
   let header: HTMLElement | null = null;
+  let available: boolean | undefined;
   const reconcile = () => {
     const next = findHeader(doc);
     if (header !== next) {
       header?.removeAttribute(HEADER);
       group.remove();
       header = next;
+    }
+    if (available !== !!header) {
+      available = !!header;
+      options.onAvailabilityChange?.(available);
     }
     const key = entryKey();
     if (

@@ -83,7 +83,7 @@
     },
     "layout": {
       "title": "布局",
-      "subtitle": "宽度适用于 X、Bluesky 和小红书。位置与紧凑导航适用于 X 和 Bluesky。Threads 自行管理栏目。",
+      "subtitle": "宽度与原生紧凑导航适用于 X、Bluesky 和小红书。位置适用于 X 和 Bluesky。Threads 自行管理栏目。",
       "whereLegend": "详情打开的位置",
       "whereLabel": "详情打开的位置",
       "diagramTimeline": "时间线",
@@ -108,7 +108,7 @@
       "threadsTitle": "Threads",
       "threadsNote": "首页复用保存到 Threads 账号的原生栏。支持的独立动态和搜索页面会打开临时原生栏，保留当前页面且不保存新栏目。使用原生栏目菜单即可关闭。停用 Side View 会关闭临时栏，但不会删除首页保存的栏。",
       "xiaohongshuTitle": "小红书",
-      "xiaohongshuNote": "在信息流旁打开笔记和用户主页。宽度设置生效，最多占窗口一半；侧栏位置与紧凑导航不适用。用户链接遵循打开个人主页的设置，话题和搜索链接保持原生行为。"
+      "xiaohongshuNote": "在信息流旁打开笔记和用户主页。宽度设置生效，最多占窗口一半；侧栏位置不适用。紧凑导航在网站提供原生图标栏时可用。用户链接遵循打开个人主页的设置，话题和搜索链接保持原生行为。"
     },
     "advanced": {
       "title": "高级",

@@ -1,9 +1,14 @@
 import { findBlueskyNavigation, findXNavigation, type NativeNavigation } from './native-runtime';
 import { COMPACT_REQUEST, COMPACT_STATUS, NAVIGATION_CHANGE } from './protocol';
+import { findXiaohongshuNavigation } from './xiaohongshu-navigation';
 
 export function installNativeNavigation(
   resolve: () => NativeNavigation | null = () =>
-    location.hostname === 'bsky.app' ? findBlueskyNavigation(document) : findXNavigation(document),
+    location.hostname === 'www.xiaohongshu.com'
+      ? findXiaohongshuNavigation(document)
+      : location.hostname === 'bsky.app'
+        ? findBlueskyNavigation(document)
+        : findXNavigation(document),
 ): () => void {
   const root = document.documentElement;
   let current: NativeNavigation | null = null;

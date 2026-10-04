@@ -258,16 +258,14 @@ export function App() {
       <Separator />
 
       <div className="px-4 py-1">
-        {!isXiaohongshu &&
-          !isThreads &&
-          !(tab?.kind === 'active' && tab.compactNavigationAvailable === false) && (
-            <SwitchRow
-              label={i18n.t('popup.compactTitle')}
-              checked={s.compactNavigation}
-              disabled={busy}
-              onCheckedChange={(value) => void save('compactNavigation', value)}
-            />
-          )}
+        {!isThreads && !(tab?.kind === 'active' && tab.compactNavigationAvailable === false) && (
+          <SwitchRow
+            label={i18n.t('popup.compactTitle')}
+            checked={s.compactNavigation}
+            disabled={busy}
+            onCheckedChange={(value) => void save('compactNavigation', value)}
+          />
+        )}
         <SwitchRow
           label={i18n.t(isXiaohongshu ? 'popup.profilesTitle' : 'popup.interceptTitle')}
           checked={s.interceptProfilesAndTags}

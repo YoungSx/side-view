@@ -586,3 +586,39 @@ Quality checks: TypeScript, Biome, production Chrome build and 186 tests in 23 f
 Live acceptance is Chrome desktop; Firefox and private-layout-interface drift remain outside
 this smoke. Foreground/focus emulation was used for reliable native animation-frame relayout
 and header reconciliation in disposable test tabs.
+
+
+### Deep review and native compact follow-up (2026-10-04)
+
+Independent subagent review confirmed and fixed app-observer rebinding after replacement,
+and reviewed capability-loss cleanup and bounded missing-header recovery. The compact review
+also identified the native guard's state-preserving `AiChat`/`AiChatTab` routes; their restoration
+behavior now has explicit regression tests. Signed URLs and modified clicks had no new confirmed defect.
+
+The current site's `.side-bar-ai` renderer consumes Pinia `global.sideCollapse`. The extension
+uses that state and leaves older renderers unsupported. Native router state is restored on off;
+no compact CSS or global viewport/media-query override is installed.
+
+Live production-build smoke in authenticated Chrome (1994 CSS pixel viewport):
+
+- Compact changed native navigation width from 164px to 90px and back to 164px on off.
+- With compact enabled, pane widths 320/600/997px (1200px configured, capped at half-screen)
+  retained five columns; card widths were approximately 278.3/222.3/142.9px. Each had zero
+  cards beyond the pane boundary. Tests ran foreground after background relayout was observed
+  to remain temporarily unsettled; no claim is made about immediate background animation timing.
+- Stored compact setting applied live; turning the master switch off released native collapse.
+  Test settings were restored afterwards.
+- On the final build, a real feed author click opened the profile in the pane while the main
+  route stayed `/explore`. Closing and clicking a note reopened the native note with actions.
+  Compact on/off preserved complete five-column reflow and zero overlap.
+- Calling the MAIN layout bridge's cleanup in a disposable tab removed the pane, active body
+  class and reservation style, restoring full app width. Reload restored ordinary operation.
+- A temporary style hid the native note header in the test iframe: after 20 seconds the
+  recovery view exposed Close and Open in new tab. Removing the style restored native actions
+  and the visible frame; this simulated capability loss, not a live deleted-note case.
+- Unit tests cover late/replaced app observation, loss/removal of capability status, no automatic
+  reopening, missing-header timeout, late header recovery and stale-timer cancellation.
+
+Quality gate: 198 tests across 24 files, TypeScript, Biome and production Chrome build passed.
+Private site interfaces and older navigation variants remain runtime-gated. No live deleted or
+private note was needed to test the shared missing-header recovery path.

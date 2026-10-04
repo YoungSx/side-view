@@ -60,6 +60,28 @@ it('reserves space for a full-width feed, caps it to half the viewport, and rest
   document.documentElement.removeAttribute('data-sideview-xiaohongshu-layout');
 });
 
+it('releases an open split column when native layout support disappears and does not reopen automatically', async () => {
+  layout.detach();
+  document.body.innerHTML =
+    '<div id="app"><div class="feeds-container"><section class="note-item"></section></div></div>';
+  const attribute = 'data-sideview-xiaohongshu-layout';
+  document.documentElement.setAttribute(attribute, 'available');
+  layout = new ShadowLayoutController(ctx, new XiaohongshuAdapter(), 600);
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  expect(layout.open()).toBe(true);
+  document.documentElement.setAttribute(attribute, 'unavailable');
+  await vi.waitFor(() => expect(host()).toBeNull());
+  expect(document.body.classList.contains('sv-active')).toBe(false);
+  expect(document.getElementById('sv-layout-style')).toBeNull();
+  expect(layout.open()).toBe(false);
+  document.documentElement.setAttribute(attribute, 'available');
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(host()).toBeNull();
+  expect(layout.open()).toBe(true);
+  document.documentElement.removeAttribute(attribute);
+  await vi.waitFor(() => expect(host()).toBeNull());
+});
+
 it('initializes closed and never mounts on late anchors, route reconciliation or settings changes', async () => {
   await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
   addAnchor();

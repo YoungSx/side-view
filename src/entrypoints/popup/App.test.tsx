@@ -95,7 +95,7 @@ it('shows only supported settings on Xiaohongshu, including before reload', asyn
   await screen.findByText('Xiaohongshu · Reload');
   expect(screen.getByRole('slider', { name: 'Detail width' })).toBeDefined();
   expect(screen.queryByRole('group', { name: 'Where detail opens' })).toBeNull();
-  expect(screen.queryByRole('switch', { name: 'Compact navigation' })).toBeNull();
+  expect(screen.getByRole('switch', { name: 'Compact navigation' })).toBeDefined();
   expect(screen.queryByRole('switch', { name: 'Open profiles, hashtags and search' })).toBeNull();
   expect(screen.getByRole('switch', { name: 'Open user profiles' })).toBeDefined();
 });

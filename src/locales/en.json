@@ -83,7 +83,7 @@
     },
     "layout": {
       "title": "Layout",
-      "subtitle": "Width applies to X, Bluesky and Xiaohongshu. Placement and compact navigation apply to X and Bluesky. Threads manages its own columns.",
+      "subtitle": "Width and native compact navigation apply to X, Bluesky and Xiaohongshu. Placement applies to X and Bluesky. Threads manages its own columns.",
       "whereLegend": "Where details open",
       "whereLabel": "Where details open",
       "replaceSidebar": "Replace sidebar",
@@ -108,7 +108,7 @@
       "xBlueskyTitle": "X & Bluesky",
       "threadsTitle": "Threads",
       "xiaohongshuTitle": "Xiaohongshu",
-      "xiaohongshuNote": "Opens notes and user profiles beside the feed. Width applies, up to half the window; sidebar placement and compact navigation do not. Profile links follow the profile-opening preference; topic and search links stay native."
+      "xiaohongshuNote": "Opens notes and user profiles beside the feed. Width applies, up to half the window; placement does not. Compact navigation uses the native icon rail when available. Profile links follow the profile-opening preference; topic and search links stay native."
     },
     "advanced": {
       "title": "Advanced",

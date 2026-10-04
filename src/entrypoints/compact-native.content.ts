@@ -2,7 +2,12 @@ import { defineContentScript } from '#imports';
 import { installNativeNavigation } from '@/platforms/compact/native-controller';
 
 export default defineContentScript({
-  matches: ['*://x.com/*', '*://twitter.com/*', 'https://bsky.app/*'],
+  matches: [
+    '*://x.com/*',
+    '*://twitter.com/*',
+    'https://bsky.app/*',
+    'https://www.xiaohongshu.com/*',
+  ],
   world: 'MAIN',
   runAt: 'document_idle',
   main() {

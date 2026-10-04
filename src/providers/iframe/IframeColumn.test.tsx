@@ -160,3 +160,62 @@ it('reattaches actions after full document navigation and back without duplicati
   expect(screen.queryByRole('alert')).toBeNull();
   expect(next.querySelectorAll('[data-sv-detail-actions]')).toHaveLength(1);
 });
+
+it('bounds a readable page with no header and recovers if its native header arrives later', async () => {
+  vi.useFakeTimers();
+  const close = vi.fn();
+  render(
+    <IframeColumn {...props} onClose={close} findHeader={(doc) => doc.getElementById('header')} />,
+  );
+  const frame = screen.getByTitle('Side View detail') as HTMLIFrameElement;
+  const doc = document.implementation.createHTMLDocument();
+  Object.defineProperty(doc, 'URL', { value: props.frameUrl });
+  Object.defineProperty(frame, 'contentDocument', { configurable: true, value: doc });
+  doc.body.innerHTML = '<main>Note unavailable</main>';
+  fireEvent.load(frame);
+  expect(screen.queryByRole('alert')).toBeNull();
+  act(() => vi.advanceTimersByTime(20000));
+  expect(screen.getByRole('alert')).toBeDefined();
+  fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+  expect(close).toHaveBeenCalledOnce();
+  await act(async () => {
+    doc.body.innerHTML = '<header id="header">Post</header>';
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(50);
+  });
+  expect(screen.queryByRole('alert')).toBeNull();
+  expect(frame.style.visibility).toBe('visible');
+  expect(doc.querySelectorAll('[data-sv-detail-actions]')).toHaveLength(1);
+  await act(async () => {
+    doc.body.replaceChildren();
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(20050);
+  });
+  expect(screen.getByRole('alert')).toBeDefined();
+});
+
+it('cancels missing-header recovery when a new document is ready or the reading unmounts', () => {
+  vi.useFakeTimers();
+  const view = render(
+    <IframeColumn {...props} findHeader={(doc) => doc.getElementById('header')} />,
+  );
+  const frame = screen.getByTitle('Side View detail') as HTMLIFrameElement;
+  const load = (header: boolean, url: string) => {
+    const doc = document.implementation.createHTMLDocument();
+    Object.defineProperty(doc, 'URL', { value: url });
+    if (header) doc.body.innerHTML = '<header id="header">Post</header>';
+    Object.defineProperty(frame, 'contentDocument', { configurable: true, value: doc });
+    fireEvent.load(frame);
+  };
+  load(false, props.frameUrl);
+  act(() => vi.advanceTimersByTime(10000));
+  load(true, 'https://x.com/beth');
+  act(() => vi.advanceTimersByTime(20000));
+  expect(screen.queryByRole('alert')).toBeNull();
+  expect(frame.style.visibility).toBe('visible');
+  load(false, 'https://x.com/unavailable');
+  expect(vi.getTimerCount()).toBeGreaterThan(0);
+  view.unmount();
+  act(() => vi.advanceTimersByTime(20000));
+  expect(vi.getTimerCount()).toBe(0);
+});
