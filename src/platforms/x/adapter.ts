@@ -31,6 +31,8 @@ const RESERVED_HANDLES = new Set([
 
 const HOST_RE = /(^|\.)(x|twitter)\.com$/i;
 const STATUS_RE = /^\/([A-Za-z0-9_]{1,15}|i)\/status\/(\d+)\/?$/;
+/** A status href that may carry a sub-route, as a quote card's media thumbnail does. */
+const QUOTED_STATUS_RE = /^\/([A-Za-z0-9_]{1,15}|i)\/status\/(\d+)(?:\/|$)/;
 const HANDLE_RE = /^\/([A-Za-z0-9_]{1,15})\/?$/;
 
 /** x.com / twitter.com adapter. Holds ALL platform-specific DOM knowledge. */
@@ -145,24 +147,44 @@ export class XAdapter implements PlatformAdapter {
     const anchor = target.closest<HTMLAnchorElement>('a[href]');
     if (anchor) return this.profileFromAnchor(anchor); // profile or null (external/other)
 
-    // 3. Plain click on the tweet body → open the tweet's own status. A QUOTED tweet renders as a
-    //    role="link" block (NOT a nested <article>) carrying its own /status/ link; resolve to that
-    //    so clicking a quote opens the quoted tweet, never the enclosing one.
+    // 3. Plain click on the tweet body → open the tweet's own status. A QUOTED tweet is its own
+    //    `nestedQuotePreview` card; a click inside it targets the QUOTED tweet, never the
+    //    enclosing one. X renders that card with no permalink of its own — the quoted handle and
+    //    `<time>` are plain text — so the quoted status is recovered from the card's media
+    //    thumbnail (`/handle/status/<id>/photo/1`) when it has one. When the quote has no media
+    //    there is nothing to read and we return null: falling through to the enclosing permalink
+    //    would open the quoting tweet, which is not what was clicked.
     const article = target.closest<HTMLElement>(this.s.tweet);
     if (!article) return null;
-    const articlePerma = article.querySelector<HTMLAnchorElement>(this.s.permalink);
 
     const quote = target.closest<HTMLElement>(this.s.quote);
-    if (quote && article.contains(quote)) {
-      const quotePerma = quote.querySelector<HTMLAnchorElement>(this.s.permalink);
-      // A distinct status = a real quoted tweet. A matching href = a role="link" wrapper around the
-      // whole tweet body, which shares the enclosing permalink → fall through to the tweet below.
-      if (quotePerma && quotePerma.href !== articlePerma?.href) {
-        return this.statusIntent(quotePerma.href);
+    if (quote && article.contains(quote)) return this.quotedStatusIntent(quote);
+
+    const articlePerma = article.querySelector<HTMLAnchorElement>(this.s.permalink);
+    if (articlePerma) return this.statusIntent(articlePerma.href);
+    return null;
+  }
+
+  /**
+   * The status a quote card points at, or null when the card exposes no status link. X's quote
+   * card deliberately carries no permalink anchor, so the only source is the media thumbnail,
+   * whose href is a sub-route of the quoted status. Normalising it back to the bare permalink is
+   * what makes the sidebar open the quoted tweet instead of handing the click back to X.
+   */
+  private quotedStatusIntent(quote: Element): DetailIntent | null {
+    for (const anchor of quote.querySelectorAll<HTMLAnchorElement>(this.s.permalink)) {
+      const url = this.sameOriginUrl(anchor.href);
+      const match = url?.pathname.match(QUOTED_STATUS_RE);
+      const handle = match?.[1];
+      const statusId = match?.[2];
+      if (url && handle && statusId) {
+        return {
+          kind: 'status',
+          url: `${url.origin}/${handle}/status/${statusId}`,
+          meta: { handle, statusId },
+        };
       }
     }
-
-    if (articlePerma) return this.statusIntent(articlePerma.href);
     return null;
   }
 

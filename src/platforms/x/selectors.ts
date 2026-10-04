@@ -28,8 +28,12 @@ export const X_DEFAULT_SELECTORS = {
   tweetText: '[data-testid="tweetText"]',
   /** Permalink anchor wrapping the `<time>`; its href is the canonical status URL. */
   permalink: 'a[href*="/status/"]',
-  /** Quoted-tweet block: a role="link" container (NOT a nested article) with its own status link. */
-  quote: 'div[role="link"][tabindex="0"]',
+  /**
+   * Quoted-tweet card: a self-contained `role="link"` block (NOT a nested article). The testid —
+   * not `role`/`tabindex`, which the tweet body's own clickable wrapper also carries — is what
+   * separates "clicked the quote" from "clicked the tweet that quotes it".
+   */
+  quote: '[data-testid="nestedQuotePreview"]',
   /** Hashtag link. */
   hashtag: 'a[href^="/hashtag/"]',
   /** Search link. */

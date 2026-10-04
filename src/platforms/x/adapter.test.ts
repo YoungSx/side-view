@@ -64,11 +64,24 @@ describe('XAdapter.resolveIntent', () => {
   });
 
   it('opens the QUOTED tweet, not the enclosing one, on a quote-body click', () => {
+    // The quote card carries no permalink of its own; the status is recovered from its media
+    // thumbnail's sub-route href and normalised back to the bare permalink.
     expect(adapter.resolveIntent(clickOn(byId('quote-body')))).toEqual({
       kind: 'status',
       url: 'https://x.com/beth/status/456',
       meta: { handle: 'beth', statusId: '456' },
     });
+  });
+
+  it('never opens the enclosing tweet when a media-less quote exposes no status', () => {
+    // #quote-text has no status href anywhere, so the quoted status is unknowable. Returning the
+    // enclosing permalink here would silently show the QUOTING tweet in the sidebar — the tweet the
+    // user did not click. Defer to X, which opens the quoted tweet natively.
+    expect(adapter.resolveIntent(clickOn(byId('quote-text-body')))).toBeNull();
+  });
+
+  it("leaves a quote card's own media thumbnail to X so the photo viewer still opens", () => {
+    expect(adapter.resolveIntent(clickOn(byId('quote-media')))).toBeNull();
   });
 
   it('rejects a cross-origin href matched by the contains-permalink selector', () => {
