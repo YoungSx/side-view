@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated: 2026-09-30**
+**Last updated: 2026-10-04**
 
 Side View is a browser extension that shows a social media post in a side column beside your
 feed, so you can read it without losing your place. This policy explains what the extension
@@ -21,6 +21,7 @@ To render the side column, the extension reads content from the page you are alr
 
 - `x.com` and `twitter.com`
 - `bsky.app`
+- `www.xiaohongshu.com`
 - `threads.com` and `threads.net`
 
 Specifically, it reads the text and links of the post you clicked, plus structural information
@@ -90,7 +91,7 @@ Neither of these sends your data to us.
 | --- | --- |
 | `storage` | Save your settings and the Threads column ID. |
 | `declarativeNetRequestWithHostAccess` | Remove the framing headers described above, for X and Twitter only. |
-| Access to `x.com`, `twitter.com`, `bsky.app`, `threads.com`, `threads.net` | Read the post you clicked. No other site is touched. |
+| Access to `x.com`, `twitter.com`, `bsky.app`, `threads.com`, `threads.net`, `www.xiaohongshu.com` | Read the post you clicked. No other site is touched. |
 
 The extension requests access to **no other site**.
 
@@ -102,7 +103,7 @@ collects no information from anyone.
 ## Third-party platforms
 
 Side View is an independent project. It is **not affiliated with, endorsed by, or sponsored by**
-X Corp., Bluesky Social PBC, Meta Platforms, Inc., Threads, or Google. Any trademarks belong to
+X Corp., Bluesky Social PBC, Meta Platforms, Inc., Threads, Xiaohongshu, or Google. Any trademarks belong to
 their respective owners. Post content remains the property of its authors and the platforms that
 host it.
 

@@ -6,7 +6,12 @@ import { pickAdapter } from '@/platforms/registry';
 // the provider before the iframe's `src`. There it strips the platform's own chrome so just the thread shows.
 // A persistent <style> plus a MutationObserver re-inject it if X's in-frame React removes the node.
 export default defineContentScript({
-  matches: ['*://x.com/*', '*://twitter.com/*', 'https://bsky.app/*'],
+  matches: [
+    '*://x.com/*',
+    '*://twitter.com/*',
+    'https://bsky.app/*',
+    'https://www.xiaohongshu.com/*',
+  ],
   allFrames: true,
   runAt: 'document_start',
   main(ctx) {
@@ -18,6 +23,8 @@ export default defineContentScript({
     if (frameName !== adapter.detailFrameName) return;
     // Disconnect the re-inject observer when the extension context goes away (update/disable).
     ctx.onInvalidated(installChromeStripper(adapter.detailFrameCss()));
+    const cleanup = adapter.installDetailFrame?.(document);
+    if (cleanup) ctx.onInvalidated(cleanup);
   },
 });
 

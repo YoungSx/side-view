@@ -4,7 +4,7 @@
     "description": "Extension name shown in the Chrome Web Store listing and in chrome://extensions."
   },
   "extDescription": {
-    "message": "X・Bluesky・Threads の投稿詳細をタイムラインから離れずにサイドカラムで開きます。",
+    "message": "X、Bluesky、Threads、小紅書の投稿を、タイムラインを離れずにサイド列で開きます。",
     "description": "Chrome Web Store listing description."
   },
   "brand": "Side View",
@@ -32,7 +32,8 @@
     "platform": {
       "X": "X",
       "Bluesky": "Bluesky",
-      "Threads": "Threads"
+      "Threads": "Threads",
+      "Xiaohongshu": "小紅書"
     },
     "status": {
       "active": "稼働中",
@@ -47,7 +48,8 @@
     "layout": {
       "replaceSidebar": "サイドバーを置き換える",
       "insertColumn": "サイドバーを残す"
-    }
+    },
+    "profilesTitle": "ユーザープロフィールを開く"
   },
   "options": {
     "title": "Side View · 設定",
@@ -68,7 +70,7 @@
       "title": "一般",
       "subtitle": "閲覧中もタイムラインにとどまります。",
       "enableTitle": "Side View を有効にする",
-      "enableHint": "タイムラインの横に詳細を開きます。変更後、X または Bluesky を再読み込みしてください。Threads は即時反映されます。",
+      "enableHint": "タイムラインの横に詳細を開きます。変更後は X、Bluesky、小紅書を再読み込みしてください。Threads は即座に反映されます。",
       "interceptTitle": "プロフィール・ハッシュタグ・検索を開く",
       "interceptHint": "これらのリンクも詳細カラムで開きます。オフにすると投稿のみ開きます。",
       "languageTitle": "表示言語",
@@ -81,7 +83,7 @@
     },
     "layout": {
       "title": "レイアウト",
-      "subtitle": "X と Bluesky向け。Threads は独自にカラムを管理します。",
+      "subtitle": "幅は X、Bluesky、小紅書に適用されます。配置とコンパクトナビは X と Bluesky に適用されます。Threads は独自に列を管理します。",
       "whereLegend": "詳細を開く場所",
       "whereLabel": "詳細を開く場所",
       "diagramTimeline": "タイムライン",
@@ -100,11 +102,13 @@
     },
     "platforms": {
       "title": "プラットフォーム",
-      "subtitle": "同じ読書習慣を、3 つの異なる場所で。",
+      "subtitle": "ひとつの読み方、4つのプラットフォーム。",
       "xBlueskyTitle": "X と Bluesky",
       "xBlueskyNote": "上のレイアウトとナビゲーションの設定を使います。メインのスイッチ以外の変更は即時反映されます。",
       "threadsTitle": "Threads",
-      "threadsNote": "ホームではアカウントに保存されたネイティブカラムを再利用します。対応するフィードや検索の単独ページでは、ページを離れずに一時的なネイティブカラムを開きます。新しいカラムは保存されません。カラムメニューから閉じられます。Side View を無効にすると一時カラムは閉じますが、ホームの保存済みカラムは削除されません。"
+      "threadsNote": "ホームではアカウントに保存されたネイティブカラムを再利用します。対応するフィードや検索の単独ページでは、ページを離れずに一時的なネイティブカラムを開きます。新しいカラムは保存されません。カラムメニューから閉じられます。Side View を無効にすると一時カラムは閉じますが、ホームの保存済みカラムは削除されません。",
+      "xiaohongshuTitle": "小紅書",
+      "xiaohongshuNote": "ノートとユーザープロフィールをフィードの横に開きます。幅は画面の半分まで設定できます。配置とコンパクトナビは適用されません。プロフィールは設定に従い、トピックと検索リンクは通常どおり開きます。"
     },
     "advanced": {
       "title": "詳細設定",

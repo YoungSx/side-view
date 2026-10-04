@@ -71,6 +71,39 @@ if their runtime shape is missing/ambiguous, the feature is unavailable and the 
 Threads also hides the compact control. Turning the master switch off releases compact navigation
 immediately, even though other engine changes still require a reload.
 
+## Xiaohongshu
+
+`XiaohongshuAdapter` uses the shared iframe provider on `https://www.xiaohongshu.com`.
+It accepts signed cover/title links inside note feeds on Explore, search and profile pages.
+Profile note paths normalize to `/explore/:note`; `xsec_token` and existing source parameters
+are retained. Empty `xsec_source` values must receive the native source (`pc_feed`, `pc_search`
+or `pc_user`), otherwise the site can redirect an iframe to the home feed.
+
+The `split` column position reserves the right side of the viewport using `--sv-column-width`.
+A MAIN-world script updates only the validated native Pinia layout store's column count and
+width; the site's own relayout controller recomputes card positions, virtualization and scroll
+anchors in that space. Shrinking CSS alone leaves the old fifth column behind the detail pane.
+Closing calls the native resize action to restore the current viewport layout. Missing
+capabilities leave clicks native. Width is capped at half the viewport;
+below 1050 CSS pixels clicks remain native. Closing removes the reservation. The frame keeps
+the site's responsive note renderer, carousel and comments, adding the shared detail actions
+to its visible author header. No Xiaohongshu frame-header rule is required.
+
+Feed author links open profiles in the same detail column when profile interception is enabled.
+The site's default author target="_blank" is accepted; modifier and middle-click gestures retain
+their native behavior. In the detail frame, ordinary author clicks continue in that frame.
+Profile-to-note navigation keeps the site's close control so it can return to the profile;
+the shared open/close actions follow the currently visible note or profile header.
+Likes and topic/search links remain native. The popup shows width and profile interception,
+and hides unsupported placement and compact-navigation controls. Changing the master enable
+switch requires a page reload.
+
+For local CDP debugging, keep one browser WebSocket connection alive and multiplex commands
+with request IDs and flattened target sessions (`Target.attachToTarget` with `flatten: true`).
+On Windows Chrome, the current endpoint is recorded in
+`%LOCALAPPDATA%/Google/Chrome/User Data/DevToolsActivePort`; `/json/version` can return 404
+even while that WebSocket is available. CDP is a development tool only, not part of the extension.
+
 ## Toolbar popup
 
 Clicking the toolbar icon opens a 360px popup scoped to the current tab. It carries the master

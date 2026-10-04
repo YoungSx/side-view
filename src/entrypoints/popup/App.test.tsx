@@ -89,6 +89,17 @@ it('hides width, placement and compact navigation on Threads', async () => {
   expect(screen.queryByRole('switch', { name: 'Compact navigation' })).toBeNull();
 });
 
+it('shows only supported settings on Xiaohongshu, including before reload', async () => {
+  stubTab({ url: 'https://www.xiaohongshu.com/explore', reject: true });
+  render(<App />);
+  await screen.findByText('Xiaohongshu · Reload');
+  expect(screen.getByRole('slider', { name: 'Detail width' })).toBeDefined();
+  expect(screen.queryByRole('group', { name: 'Where detail opens' })).toBeNull();
+  expect(screen.queryByRole('switch', { name: 'Compact navigation' })).toBeNull();
+  expect(screen.queryByRole('switch', { name: 'Open profiles, hashtags and search' })).toBeNull();
+  expect(screen.getByRole('switch', { name: 'Open user profiles' })).toBeDefined();
+});
+
 it('shows width and placement on X, and writes them straight through', async () => {
   stubTab({ answer: { kind: 'ready', platform: 'x', columnOpen: false } });
   render(<App />);

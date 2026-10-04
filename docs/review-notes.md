@@ -7,14 +7,14 @@ let a reviewer verify them independently.
 ## What the extension does
 
 Side View opens a social post in a column beside the feed instead of navigating
-away from it. It supports X, Bluesky and Threads, and it is not affiliated with
+away from it. It supports X, Bluesky, Threads and Xiaohongshu, and it is not affiliated with
 any of them.
 
 ## Data flow
 
 There is no server operated by the developer. The packaged code contains no
 `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, `eval` or `new Function`
-call, and the only external hosts it references are the three platforms
+call, and the only external hosts it references are the four platforms
 themselves. Every read happens in a content script on the page the user is
 already viewing, and is discarded when the view closes.
 
@@ -27,6 +27,7 @@ Full detail: [privacy-policy.md](../docs/privacy-policy.md).
 | `storage` | Stores user preferences in `chrome.storage.sync` (on/off, layout, width, compact navigation, link-interception preference, selector overrides, UI language) and the reused Threads native column ID in `chrome.storage.local`. No data is transmitted. |
 | Host access — `*://x.com/*`, `*://twitter.com/*` | Identify a post from the DOM the user is already viewing, open its detail in the side column, integrate with the native top bar, and restore the original layout on close. Read-only against the page. |
 | Host access — `https://bsky.app/*` | Same, for Bluesky. |
+| Host access — `https://www.xiaohongshu.com/*` | Open the clicked note or author profile in a same-origin frame beside the feed, preserving its access parameters. A MAIN-world script updates the native layout dimensions so every feed column remains visible. No frame-header relaxation or debugger permission is used. |
 | Host access — `https://*.threads.com/*`, `https://*.threads.net/*` | Respond to a real user click and use Threads' own column feature to create or update one native detail column. See "Threads native column" below. |
 | `declarativeNetRequestWithHostAccess` | One rule each for `x.com` and `twitter.com`, scoped to `sub_frame` requests initiated by the same origin. See "Frame headers on X" below. |
 
