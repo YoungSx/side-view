@@ -525,3 +525,64 @@ with `margin: 0 12px 0 0`, each inner `[data-column-scrollable]` 640x950 with
 `padding: 20px 0 0`, `border-radius: 24px`, `overflow-y: auto` and scrolling internally.
 This is the shape the replica is measured against; the home route itself needs no replica
 and continues to use Threads' own columns.
+
+## Xiaohongshu split feed and profile reading (2026-10-04)
+
+Verified in the running, authenticated Windows Chrome with the unpacked production extension.
+CDP commands used one persistent browser WebSocket, request IDs and flattened target sessions.
+The current WebSocket endpoint came from Chrome's `DevToolsActivePort`; HTTP
+`/json/version` returned 404. CDP scripts and screenshots stay in ignored `output/`
+and are not included in the extension. The extension requests no debugger permission.
+
+### Layout correction
+
+A CSS-only reservation did conceal the fifth column: its cards still started at x=1422
+while the pane started at x=1394. The native layout store computed positions from the full
+window width, so narrowing the app and firing resize was insufficient.
+
+The MAIN-world bridge now validates the mounted Pinia layout store and patches only its
+column count and width. The site's own feed relayout controller handles positions,
+virtualization and scroll anchors. Closing restores the current native layout via its resize
+action. Missing capability leaves clicks native.
+
+Live geometry in a 1994px viewport, after allowing the native relayout to settle:
+
+| Configured pane width | Actual pane width | Feed columns | Card width | Cards beyond pane boundary |
+| --- | --- | --- | --- | --- |
+| 320px | 320px | 5 | 263.5px | 0 |
+| 600px | 600px | 5 | 207.5px | 0 |
+| 1200px | 997px (half viewport) | 4 | 168.2px | 0 |
+
+At 600px, the furthest card edge was x=1361.6 and the pane began at x=1394.
+Three additional scroll/virtualization checks also found zero cards past that boundary.
+Closing restored five 274.4px native columns; reopening reflowed the complete feed again.
+At a 1300px viewport the 600px pane left three 146.7px columns, with zero concealed cards.
+At 1000px, a real cover click opened the site's own note modal with no extension host.
+Closing that modal and restoring the viewport returned the native layout.
+
+### Real navigation clicks
+
+- Home note covers open, switch and close in the side column without changing the main route.
+- Search note links retain `/search_result/:note` and `pc_search`.
+- A real left-feed author click opened a responsive 600px profile in the right column.
+  The main route stayed `/explore`, scroll stayed at 0 and the 30 mounted cards had no overlap.
+- Clicking a note within that profile opened the site's native note modal in the frame.
+  Shared detail actions moved to the note's author header. The native close returned to
+  the profile and the actions returned to its nickname header.
+- Clicking a note's author within the frame navigated to its profile in that same frame;
+  the browser page-target count did not increase. Clicking another left author replaced
+  the profile; a subsequent left-note click replaced it with the selected note.
+- On a main user-profile page, clicking a signed `/user/profile/:user/:note` cover
+  opened `/explore/:note` in the pane. The main profile route and all 32 mounted
+  cover paths stayed unchanged, with zero cards beyond the pane boundary.
+
+Default author `target="_blank"` is intentionally intercepted for ordinary clicks.
+The shared profile setting controls left-feed author interception. Unit tests cover retained
+access parameters, missing source defaults, unsigned SEO-link rejection, profile-note
+normalization, modifiers/middle-click, likes, explicit targets and action-link exclusions.
+Topics and search links remain native. No Xiaohongshu frame-header relaxation is needed.
+
+Quality checks: TypeScript, Biome, production Chrome build and 186 tests in 23 files passed.
+Live acceptance is Chrome desktop; Firefox and private-layout-interface drift remain outside
+this smoke. Foreground/focus emulation was used for reliable native animation-frame relayout
+and header reconciliation in disposable test tabs.

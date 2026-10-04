@@ -24,7 +24,7 @@ Side View opens that post **in a column right beside your timeline**. Your feed 
 where it was. Read it, reply, scroll through the thread, close it — and you're still looking at
 the same screen.
 
-Works on **X**, **Bluesky** and **Threads**.
+Works on **X**, **Bluesky**, **Threads** and **Xiaohongshu**.
 
 ---
 
@@ -46,6 +46,8 @@ replies all included.
 
 ## Where it works
 
+**On Xiaohongshu**, note covers, titles and author profiles open in a right-hand detail column. The complete feed reflows into the remaining space; width is limited to half the window. You can continue from a profile to its notes and back inside the column. Profile interception is optional; topic and search links stay native.
+
 **On X and Bluesky**, Side View draws the column itself and puts it beside your feed. You can have
 it take over the right sidebar, or sit next to the sidebar with both visible.
 
@@ -65,7 +67,7 @@ is unavailable or there is insufficient room, clicks keep their normal behavior.
 ## Getting started
 
 1. Install Side View from the [Chrome Web Store](https://chromewebstore.google.com/detail/side-view-%E2%80%94-social-post-s/hbplammjgakmogfiaobijlngllblpjhm).
-2. Open X, Bluesky or Threads as usual. Nothing else to configure.
+2. Open X, Bluesky, Threads or Xiaohongshu as usual. Nothing else to configure.
 3. Click a post. It opens beside your timeline.
 
 If you want the post on its own instead, every detail panel has an "open in a new tab" button.

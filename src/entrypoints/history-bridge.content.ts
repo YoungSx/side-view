@@ -5,7 +5,12 @@ import { defineContentScript } from '#imports';
 // popstate covers back/forward. This is a redundant fallback — where the Navigation API works, the
 // engine already hears navigations without it. Side-effect only; no chrome.* usage (MAIN world).
 export default defineContentScript({
-  matches: ['*://x.com/*', '*://twitter.com/*', 'https://bsky.app/*'],
+  matches: [
+    '*://x.com/*',
+    '*://twitter.com/*',
+    'https://bsky.app/*',
+    'https://www.xiaohongshu.com/*',
+  ],
   world: 'MAIN',
   runAt: 'document_start',
   main() {

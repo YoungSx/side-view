@@ -2,6 +2,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { ContentScriptContext } from '#imports';
 import { BlueskyAdapter } from '@/platforms/bluesky/adapter';
 import { XAdapter } from '@/platforms/x/adapter';
+import { XiaohongshuAdapter } from '@/platforms/xiaohongshu/adapter';
 import { ShadowLayoutController } from './shadow-layout-controller';
 
 let layout: ShadowLayoutController;
@@ -33,6 +34,30 @@ afterEach(() => {
   ctx.abort();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+});
+
+it('reserves space for a full-width feed, caps it to half the viewport, and restores on close', async () => {
+  layout.detach();
+  document.body.innerHTML =
+    '<div id="app"><div class="feeds-container"><section class="note-item"></section></div></div>';
+  const feed = document.querySelector<HTMLElement>('.feeds-container');
+  if (!feed) throw new Error('Missing feed');
+  vi.spyOn(feed, 'getBoundingClientRect').mockReturnValue({ right: 1400, width: 1400 } as DOMRect);
+  layout = new ShadowLayoutController(ctx, new XiaohongshuAdapter(), 1000);
+  document.documentElement.setAttribute('data-sideview-xiaohongshu-layout', 'available');
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  expect(layout.open()).toBe(true);
+  expect(host()?.style.width).toBe('700px');
+  expect(host()?.style.left).toBe('700px');
+  layout.setWidth(400);
+  expect(host()?.style.width).toBe('400px');
+  expect(host()?.style.left).toBe('1000px');
+  expect(document.getElementById('sv-layout-style')?.textContent).toContain('min(400px, 50vw)');
+  layout.close();
+  expect(host()).toBeNull();
+  expect(document.getElementById('sv-layout-style')).toBeNull();
+  expect(document.body.classList.contains('sv-active')).toBe(false);
+  document.documentElement.removeAttribute('data-sideview-xiaohongshu-layout');
 });
 
 it('initializes closed and never mounts on late anchors, route reconciliation or settings changes', async () => {

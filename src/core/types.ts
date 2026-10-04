@@ -37,8 +37,9 @@ export interface LayoutMountHooks {
 
 /** Encapsulates ALL knowledge of a single platform's DOM and navigation. */
 export interface PlatformAdapter {
-  readonly id: 'x' | 'bluesky' | 'threads';
-  readonly columnPosition: 'inline' | 'fixed';
+  readonly id: 'x' | 'bluesky' | 'threads' | 'xiaohongshu';
+  /** Split reserves viewport space for a full-width feed using --sv-column-width in layoutCss. */
+  readonly columnPosition: 'inline' | 'fixed' | 'split';
   /** Marker set as the detail iframe's `name` so the in-frame script recognises itself. */
   readonly detailFrameName: string;
   /** Platform-specific document URL for the iframe; canonical links remain unchanged. */
@@ -60,6 +61,8 @@ export interface PlatformAdapter {
   layoutCss(mode: LayoutMode): string;
   /** CSS injected INSIDE the detail frame to strip the platform's own chrome. */
   detailFrameCss(): string;
+  /** Optional in-frame navigation behavior, with cleanup owned by the frame content script. */
+  installDetailFrame?(doc: Document): () => void;
   /** The native flex row that owns the detail title and existing header actions. */
   detailHeader(doc: Document): HTMLElement | null;
   /** Report which load-bearing selectors currently resolve — a DOM-drift canary. */

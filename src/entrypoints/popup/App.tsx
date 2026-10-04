@@ -22,6 +22,7 @@ const PLATFORM_LABEL_KEYS = {
   x: 'X',
   bluesky: 'Bluesky',
   threads: 'Threads',
+  xiaohongshu: 'Xiaohongshu',
 } as const satisfies Record<TabState extends { platform: infer P } ? P : never, string>;
 
 /** Status line copy for each derived tab state. `null` means "no badge". */
@@ -125,6 +126,7 @@ export function App() {
   const platform = tab && tab.kind !== 'unsupported' ? tab.platform : null;
   // Threads renders into a native column it owns, so width and placement genuinely do not apply.
   const isThreads = platform === 'threads';
+  const isXiaohongshu = platform === 'xiaohongshu';
 
   if (!s) {
     return (
@@ -203,27 +205,29 @@ export function App() {
         </p>
       ) : (
         <div className="space-y-4 px-4 py-3">
-          <fieldset disabled={busy} className="min-w-0 space-y-2">
-            <legend className="text-sm font-medium">{i18n.t('popup.layoutLegend')}</legend>
-            <ToggleGroup
-              type="single"
-              variant="outline"
-              value={s.layoutMode}
-              aria-label={i18n.t('popup.layoutLegend')}
-              className="w-full"
-              onValueChange={(value) => {
-                if (value === 'replace-sidebar' || value === 'insert-column')
-                  void save('layoutMode', value);
-              }}
-            >
-              <ToggleGroupItem value="replace-sidebar" className="flex-1">
-                {i18n.t('popup.layout.replaceSidebar')}
-              </ToggleGroupItem>
-              <ToggleGroupItem value="insert-column" className="flex-1">
-                {i18n.t('popup.layout.insertColumn')}
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </fieldset>
+          {!isXiaohongshu && (
+            <fieldset disabled={busy} className="min-w-0 space-y-2">
+              <legend className="text-sm font-medium">{i18n.t('popup.layoutLegend')}</legend>
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                value={s.layoutMode}
+                aria-label={i18n.t('popup.layoutLegend')}
+                className="w-full"
+                onValueChange={(value) => {
+                  if (value === 'replace-sidebar' || value === 'insert-column')
+                    void save('layoutMode', value);
+                }}
+              >
+                <ToggleGroupItem value="replace-sidebar" className="flex-1">
+                  {i18n.t('popup.layout.replaceSidebar')}
+                </ToggleGroupItem>
+                <ToggleGroupItem value="insert-column" className="flex-1">
+                  {i18n.t('popup.layout.insertColumn')}
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </fieldset>
+          )}
 
           <div className="space-y-2">
             <div className="flex items-baseline justify-between gap-3">
@@ -254,16 +258,18 @@ export function App() {
       <Separator />
 
       <div className="px-4 py-1">
-        {!isThreads && !(tab?.kind === 'active' && tab.compactNavigationAvailable === false) && (
-          <SwitchRow
-            label={i18n.t('popup.compactTitle')}
-            checked={s.compactNavigation}
-            disabled={busy}
-            onCheckedChange={(value) => void save('compactNavigation', value)}
-          />
-        )}
+        {!isXiaohongshu &&
+          !isThreads &&
+          !(tab?.kind === 'active' && tab.compactNavigationAvailable === false) && (
+            <SwitchRow
+              label={i18n.t('popup.compactTitle')}
+              checked={s.compactNavigation}
+              disabled={busy}
+              onCheckedChange={(value) => void save('compactNavigation', value)}
+            />
+          )}
         <SwitchRow
-          label={i18n.t('popup.interceptTitle')}
+          label={i18n.t(isXiaohongshu ? 'popup.profilesTitle' : 'popup.interceptTitle')}
           checked={s.interceptProfilesAndTags}
           disabled={busy}
           onCheckedChange={(value) => void save('interceptProfilesAndTags', value)}

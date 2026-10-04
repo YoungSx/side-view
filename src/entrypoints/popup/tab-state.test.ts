@@ -8,6 +8,9 @@ describe('platformForUrl', () => {
     expect(platformForUrl('https://twitter.com/jack')).toBe('x');
     expect(platformForUrl('https://bsky.app/profile/beth.bsky.social')).toBe('bluesky');
     expect(platformForUrl('https://www.threads.net/@jack')).toBe('threads');
+    expect(platformForUrl('https://www.xiaohongshu.com/explore')).toBe('xiaohongshu');
+    expect(platformForUrl('http://www.xiaohongshu.com/')).toBeNull();
+    expect(platformForUrl('https://www.xiaohongshu.com.evil.test/')).toBeNull();
     expect(platformForUrl('https://example.com/')).toBeNull();
     // A lookalike host must not pass the suffix test.
     expect(platformForUrl('https://notx.com/')).toBeNull();
@@ -19,6 +22,7 @@ describe('isPingResult', () => {
   it('accepts only the two shapes the content scripts send', () => {
     expect(isPingResult({ kind: 'unsupported' })).toBe(true);
     expect(isPingResult({ kind: 'ready', platform: 'x', columnOpen: false })).toBe(true);
+    expect(isPingResult({ kind: 'ready', platform: 'xiaohongshu', columnOpen: true })).toBe(true);
     expect(isPingResult({ kind: 'ready', platform: 'mastodon', columnOpen: false })).toBe(false);
     expect(isPingResult({ kind: 'ready', platform: 'x' })).toBe(false);
     expect(isPingResult(undefined)).toBe(false);

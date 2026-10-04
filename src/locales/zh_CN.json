@@ -4,7 +4,7 @@
     "description": "Extension name shown in the Chrome Web Store listing and in chrome://extensions."
   },
   "extDescription": {
-    "message": "在侧栏中打开 X、Bluesky 和 Threads 的帖子详情，无需离开当前时间线。",
+    "message": "在侧栏中打开 X、Bluesky、Threads 和小红书的帖子详情，无需离开当前时间线。",
     "description": "Chrome Web Store listing description."
   },
   "brand": "Side View",
@@ -32,7 +32,8 @@
     "platform": {
       "X": "X",
       "Bluesky": "Bluesky",
-      "Threads": "Threads"
+      "Threads": "Threads",
+      "Xiaohongshu": "小红书"
     },
     "status": {
       "active": "运行中",
@@ -47,7 +48,8 @@
     "layout": {
       "replaceSidebar": "替换侧栏",
       "insertColumn": "保留侧栏"
-    }
+    },
+    "profilesTitle": "打开用户主页"
   },
   "options": {
     "title": "Side View · 设置",
@@ -68,7 +70,7 @@
       "title": "常规",
       "subtitle": "在浏览时留在你的时间线里。",
       "enableTitle": "启用 Side View",
-      "enableHint": "在时间线旁打开详情。更改此设置后请重新加载 X 或 Bluesky；Threads 会实时生效。",
+      "enableHint": "在时间线旁打开详情。更改此设置后请重新加载 X、Bluesky 或小红书；Threads 会实时生效。",
       "interceptTitle": "打开个人主页、话题标签和搜索",
       "interceptHint": "让这些链接也在详情栏中打开。关闭后仅打开帖子。",
       "languageTitle": "界面语言",
@@ -81,7 +83,7 @@
     },
     "layout": {
       "title": "布局",
-      "subtitle": "适用于 X 和 Bluesky。Threads 自行管理栏目。",
+      "subtitle": "宽度适用于 X、Bluesky 和小红书。位置与紧凑导航适用于 X 和 Bluesky。Threads 自行管理栏目。",
       "whereLegend": "详情打开的位置",
       "whereLabel": "详情打开的位置",
       "diagramTimeline": "时间线",
@@ -100,11 +102,13 @@
     },
     "platforms": {
       "title": "平台",
-      "subtitle": "同一种阅读习惯，三个不同的家。",
+      "subtitle": "同一种阅读习惯，四个不同的家。",
       "xBlueskyTitle": "X 与 Bluesky",
       "xBlueskyNote": "沿用上方的布局与导航偏好。除总开关外，更改即时生效。",
       "threadsTitle": "Threads",
-      "threadsNote": "首页复用保存到 Threads 账号的原生栏。支持的独立动态和搜索页面会打开临时原生栏，保留当前页面且不保存新栏目。使用原生栏目菜单即可关闭。停用 Side View 会关闭临时栏，但不会删除首页保存的栏。"
+      "threadsNote": "首页复用保存到 Threads 账号的原生栏。支持的独立动态和搜索页面会打开临时原生栏，保留当前页面且不保存新栏目。使用原生栏目菜单即可关闭。停用 Side View 会关闭临时栏，但不会删除首页保存的栏。",
+      "xiaohongshuTitle": "小红书",
+      "xiaohongshuNote": "在信息流旁打开笔记和用户主页。宽度设置生效，最多占窗口一半；侧栏位置与紧凑导航不适用。用户链接遵循打开个人主页的设置，话题和搜索链接保持原生行为。"
     },
     "advanced": {
       "title": "高级",

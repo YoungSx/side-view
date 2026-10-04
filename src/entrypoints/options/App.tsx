@@ -407,6 +407,10 @@ export function App() {
                   <dt>{i18n.t('options.platforms.threadsTitle')}</dt>
                   <dd>{i18n.t('options.platforms.threadsNote')}</dd>
                 </div>
+                <div>
+                  <dt>{i18n.t('options.platforms.xiaohongshuTitle')}</dt>
+                  <dd>{i18n.t('options.platforms.xiaohongshuNote')}</dd>
+                </div>
               </dl>
             </section>
             <Separator />

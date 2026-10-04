@@ -144,6 +144,7 @@ export class ShadowLayoutController implements LayoutController {
 
   setWidth(px: number): void {
     this.width = px;
+    if (this.state === 'open') this.injectLayoutCss();
     if (this.ui) this.styleHost(this.ui.shadowHost);
   }
 
@@ -207,7 +208,11 @@ export class ShadowLayoutController implements LayoutController {
       this.styleEl.id = SV_LAYOUT_STYLE_ID;
       document.head.appendChild(this.styleEl);
     }
-    this.styleEl.textContent = this.adapter.layoutCss(this.mode);
+    const reservation =
+      this.adapter.columnPosition === 'split'
+        ? `body.${SV_ACTIVE_CLASS} { --sv-column-width: min(${this.width}px, 50vw); }`
+        : '';
+    this.styleEl.textContent = `${reservation}\n${this.adapter.layoutCss(this.mode)}`;
   }
 
   private styleHost(host: HTMLElement): void {
@@ -226,7 +231,7 @@ export class ShadowLayoutController implements LayoutController {
     host.style.width = `${bounds.width}px`;
     host.style.overflow = 'hidden';
     host.style.alignSelf = 'flex-start';
-    const fixed = this.adapter.columnPosition === 'fixed';
+    const fixed = this.adapter.columnPosition !== 'inline';
     host.style.position = fixed ? 'fixed' : 'sticky';
     if (fixed) {
       host.style.left = `${bounds.left}px`;
@@ -281,6 +286,13 @@ export class ShadowLayoutController implements LayoutController {
   }
 
   private bounds(): { left: number; width: number } | null {
+    if (this.adapter.columnPosition === 'split') {
+      const primary = this.adapter.getPrimaryColumn()?.getBoundingClientRect();
+      if (!primary || primary.width <= 0) return null;
+      const viewport = document.documentElement.clientWidth;
+      const width = Math.min(this.width, viewport / 2);
+      return width > 0 ? { left: viewport - width, width } : null;
+    }
     const left = this.columnLeft();
     if (left === null) return null;
     const width = Math.min(this.width, Math.max(0, document.documentElement.clientWidth - left));

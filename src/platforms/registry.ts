@@ -1,6 +1,7 @@
 import type { PlatformAdapter } from '@/core/types';
 import { BlueskyAdapter } from '@/platforms/bluesky/adapter';
 import { XAdapter } from '@/platforms/x/adapter';
+import { XiaohongshuAdapter } from '@/platforms/xiaohongshu/adapter';
 
 /**
  * Build the platform adapter that owns `url`, or null. `overrides` are the user's selector patches.
@@ -13,5 +14,7 @@ export function pickAdapter(
   const x = new XAdapter(overrides);
   if (x.matches(url)) return x;
   const bluesky = new BlueskyAdapter(overrides);
-  return bluesky.matches(url) ? bluesky : null;
+  if (bluesky.matches(url)) return bluesky;
+  const xiaohongshu = new XiaohongshuAdapter();
+  return xiaohongshu.matches(url) ? xiaohongshu : null;
 }

@@ -26,6 +26,7 @@ export default defineConfig({
       '*://x.com/*',
       '*://twitter.com/*',
       'https://bsky.app/*',
+      'https://www.xiaohongshu.com/*',
       'https://*.threads.com/*',
       'https://*.threads.net/*',
     ],
