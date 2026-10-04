@@ -83,7 +83,7 @@
     },
     "layout": {
       "title": "版面配置",
-      "subtitle": "寬度適用於 X、Bluesky 和小紅書。位置與精簡導覽適用於 X 和 Bluesky。Threads 自行管理欄目。",
+      "subtitle": "寬度與原生精簡導覽適用於 X、Bluesky 和小紅書。位置適用於 X 和 Bluesky。Threads 自行管理欄目。",
       "whereLegend": "詳情開啟的位置",
       "whereLabel": "詳情開啟的位置",
       "diagramTimeline": "時間軸",
@@ -108,7 +108,7 @@
       "threadsTitle": "Threads",
       "threadsNote": "首頁沿用儲存到 Threads 帳號的原生欄。支援的獨立動態和搜尋頁面會開啟臨時原生欄，保留目前頁面且不儲存新欄位。使用原生欄位選單即可關閉。停用 Side View 會關閉臨時欄，但不會刪除首頁儲存的欄。",
       "xiaohongshuTitle": "小紅書",
-      "xiaohongshuNote": "在動態旁開啟筆記和使用者主頁。寬度設定生效，最多佔視窗一半；側欄位置與精簡導覽不適用。使用者連結依照開啟個人主頁的設定，話題和搜尋連結保留原生行為。"
+      "xiaohongshuNote": "在動態旁開啟筆記和使用者主頁。寬度設定生效，最多佔視窗一半；側欄位置不適用。精簡導覽在網站提供原生圖示列時可用。使用者連結依照開啟個人主頁的設定，話題和搜尋連結保留原生行為。"
     },
     "advanced": {
       "title": "進階",

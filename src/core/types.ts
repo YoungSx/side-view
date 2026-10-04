@@ -50,6 +50,8 @@ export interface PlatformAdapter {
   matches(url: URL): boolean;
   /** The persistent timeline column, or null if not present yet. */
   getPrimaryColumn(): HTMLElement | null;
+  /** Notify when a required native layout capability disappears; return observer cleanup. */
+  observeLayoutAvailability?(onUnavailable: () => void): () => void;
   /** The native right column replaced in `replace-sidebar` mode, or null. */
   getSidebarColumn(): HTMLElement | null;
   /**

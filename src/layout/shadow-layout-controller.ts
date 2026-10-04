@@ -30,6 +30,7 @@ export class ShadowLayoutController implements LayoutController {
   /** The host page's sampled surface (background + text), applied so the column blends in. */
   private surface: { background: string; foreground: string } = { background: '', foreground: '' };
   private themeQuery: MediaQueryList | null = null;
+  private stopObservingAvailability: (() => void) | null = null;
 
   constructor(
     private readonly ctx: ContentScriptContext,
@@ -72,6 +73,8 @@ export class ShadowLayoutController implements LayoutController {
       // Observe the actual host connection as well as the current anchor, not just selector existence.
       this.observer = new MutationObserver(() => this.reattachIfDetached());
       this.state = 'closed';
+      this.stopObservingAvailability =
+        this.adapter.observeLayoutAvailability?.(() => this.close()) ?? null;
       window.addEventListener('resize', this.resizeColumn);
       window.addEventListener(NAVIGATION_CHANGE, this.resizeColumn);
       // Re-sample the surface when the OS colour scheme flips so a live theme change re-tints.
@@ -180,6 +183,8 @@ export class ShadowLayoutController implements LayoutController {
 
   detach(): void {
     this.state = 'disposed';
+    this.stopObservingAvailability?.();
+    this.stopObservingAvailability = null;
     this.observer?.disconnect();
     this.observer = null;
     window.removeEventListener('resize', this.resizeColumn);

@@ -68,7 +68,10 @@ left navigation's structurally validated responsive state and reconciles it afte
 navigation changes. Disabling restores the current native breakpoint. There is no compact CSS,
 global media-query override, replacement icon or fallback layout. These are private capabilities:
 if their runtime shape is missing/ambiguous, the feature is unavailable and the popup hides it.
-Threads also hides the compact control. Turning the master switch off releases compact navigation
+Xiaohongshu uses the native AI navigation renderer's `global.sideCollapse` state; route hooks
+preserve the site's own navigation choice for restoration. Its chat routes preserve that choice
+without changing it. Unsupported older navigation hides the compact control. Threads also hides
+the compact control. Turning the master switch off releases compact navigation
 immediately, even though other engine changes still require a reload.
 
 ## Xiaohongshu
@@ -84,7 +87,8 @@ A MAIN-world script updates only the validated native Pinia layout store's colum
 width; the site's own relayout controller recomputes card positions, virtualization and scroll
 anchors in that space. Shrinking CSS alone leaves the old fifth column behind the detail pane.
 Closing calls the native resize action to restore the current viewport layout. Missing
-capabilities leave clicks native. Width is capped at half the viewport;
+capabilities leave clicks native. Losing the capability closes an existing pane and releases
+its reservation; app replacement rebinds the width observer. Width is capped at half the viewport;
 below 1050 CSS pixels clicks remain native. Closing removes the reservation. The frame keeps
 the site's responsive note renderer, carousel and comments, adding the shared detail actions
 to its visible author header. No Xiaohongshu frame-header rule is required.
@@ -95,7 +99,8 @@ their native behavior. In the detail frame, ordinary author clicks continue in t
 Profile-to-note navigation keeps the site's close control so it can return to the profile;
 the shared open/close actions follow the currently visible note or profile header.
 Likes and topic/search links remain native. The popup shows width and profile interception,
-and hides unsupported placement and compact-navigation controls. Changing the master enable
+and hides unsupported placement controls. Compact navigation is available when the native AI
+navigation renderer is present. Changing the master enable
 switch requires a page reload.
 
 For local CDP debugging, keep one browser WebSocket connection alive and multiplex commands
@@ -103,6 +108,10 @@ with request IDs and flattened target sessions (`Target.attachToTarget` with `fl
 On Windows Chrome, the current endpoint is recorded in
 `%LOCALAPPDATA%/Google/Chrome/User Data/DevToolsActivePort`; `/json/version` can return 404
 even while that WebSocket is available. CDP is a development tool only, not part of the extension.
+
+A readable iframe without a native action header receives the existing error/recovery controls
+after 20 seconds. A late header restores normal reading; document changes and cleanup cancel
+the previous header timer. Normal loading does not introduce a second toolbar.
 
 ## Toolbar popup
 

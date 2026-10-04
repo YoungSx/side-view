@@ -38,6 +38,11 @@ export function IframeColumn({ intent, frameName, frameUrl, onClose, findHeader 
     let activeDoc: Document | null = null;
     let poll: ReturnType<typeof setInterval> | null = null;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let headerTimer: ReturnType<typeof setTimeout> | null = null;
+    const stopHeaderTimer = (): void => {
+      if (headerTimer !== null) clearTimeout(headerTimer);
+      headerTimer = null;
+    };
     // Assigning src leaves the previous document readable until navigation commits.
     // Neither its readyState nor a late load event can signal that the new view is ready.
     let previousDoc: Document | null = null;
@@ -70,6 +75,7 @@ export function IframeColumn({ intent, frameName, frameUrl, onClose, findHeader 
       settled = true;
       stop();
       setLoadState('ready');
+      stopHeaderTimer();
       if (!doc.documentElement) return;
       actionsCleanup.current?.();
       actionsCleanup.current = installDetailActions(doc, findHeader, {
@@ -82,10 +88,23 @@ export function IframeColumn({ intent, frameName, frameUrl, onClose, findHeader 
           return current.origin === new URL(intent.url).origin ? current.href : intent.url;
         },
         onClose: () => closeRef.current(),
+        onAvailabilityChange: (available) => {
+          stopHeaderTimer();
+          if (available) setLoadState('ready');
+          else {
+            // A readable error/login page may never render a native action header.
+            // Bound the wait without adding a second toolbar during normal loading.
+            headerTimer = setTimeout(() => {
+              headerTimer = null;
+              setLoadState('error');
+            }, LOAD_TIMEOUT_MS);
+          }
+        },
       });
     };
 
     const fail = (): void => {
+      stopHeaderTimer();
       activeDoc = null;
       actionsCleanup.current?.();
       actionsCleanup.current = null;
@@ -126,6 +145,7 @@ export function IframeColumn({ intent, frameName, frameUrl, onClose, findHeader 
 
     return () => {
       stop();
+      stopHeaderTimer();
       actionsCleanup.current?.();
       actionsCleanup.current = null;
     };

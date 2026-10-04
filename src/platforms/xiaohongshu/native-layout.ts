@@ -63,6 +63,7 @@ export function installFeedLayout(
   let frame: number | null = null;
   let disposed = false;
   let failed: FeedLayoutStore | null = null;
+  let observedApp: Element | null = null;
   const root = document.documentElement;
   const release = () => {
     if (!owned) return;
@@ -73,6 +74,12 @@ export function installFeedLayout(
     frame = null;
     if (disposed) return;
     try {
+      const appElement = document.querySelector('#app');
+      if (appElement !== observedApp) {
+        if (observedApp) size.unobserve(observedApp);
+        observedApp = appElement;
+        if (observedApp) size.observe(observedApp);
+      }
       const next = resolve();
       if (next !== current) {
         unsubscribe?.();
@@ -134,8 +141,7 @@ export function installFeedLayout(
   tree.observe(document.body, { childList: true, subtree: true });
   const size = new ResizeObserver(schedule);
   // The body keeps viewport width; the app and feed change when the reservation opens/closes.
-  const app = document.querySelector('#app');
-  if (app) size.observe(app);
+  // reconcile() follows app replacement and late mounting so future width changes stay observed.
   window.addEventListener('resize', schedule);
   reconcile();
   return () => {
