@@ -1,6 +1,6 @@
 {
   "name": "side-view",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "Open X, Bluesky, Threads and Xiaohongshu post detail in a side column instead of navigating away.",
