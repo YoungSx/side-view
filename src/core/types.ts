@@ -46,6 +46,11 @@ export interface PlatformAdapter {
   detailFrameUrl(url: string): string;
   /** Where the detail column attaches: a STABLE CSS selector + which side of the anchor. */
   readonly columnAnchor: { readonly selector: string; readonly append: 'after' | 'before' };
+  /**
+   * The y where the column starts, measured live (a persistent site header keeps its strip to
+   * itself, and the header's own dropdown panels then paint above the column). Absent = 0.
+   */
+  columnTop?(): number;
   /** Does this adapter own the given location? */
   matches(url: URL): boolean;
   /** The persistent timeline column, or null if not present yet. */

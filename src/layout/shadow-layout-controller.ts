@@ -336,8 +336,11 @@ export class ShadowLayoutController implements LayoutController {
       host.style.left = `${bounds.left}px`;
       host.style.zIndex = '10';
     }
-    host.style.top = '0';
-    host.style.height = '100vh';
+    // Sites with a persistent global header hand the strip above the column to it: the column
+    // starts below the header, whose dropdown panels then paint over the column (z 1000 > 10).
+    const top = this.adapter.columnTop?.() ?? 0;
+    host.style.top = `${top}px`;
+    host.style.height = `calc(100vh - ${top}px)`;
     host.style.minWidth = '0';
   }
 

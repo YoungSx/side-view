@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { SV_HOST_ATTR } from '@/core/style-ids';
 import { pickAdapter } from '../registry';
 import { NodelocAdapter } from './adapter';
 import { parseTopicUrl } from './urls';
@@ -144,10 +143,16 @@ describe('Nodeloc adapter', () => {
     expect(intent('in-dialog')).toBeNull();
   });
 
-  it('lifts the column above the theme header (z-index 1000) while it is open', () => {
-    const css = adapter.layoutCss('replace-sidebar');
-    expect(css).toMatch(/z-index:\s*1001\s*!important/);
-    expect(css).toContain(SV_HOST_ATTR);
+  it('starts the column below the persistent global header and keeps stylesheets unlifted', () => {
+    document.body.innerHTML = '<header class="d-header"></header>';
+    const header = document.querySelector<HTMLElement>('.d-header');
+    if (!header) throw new Error('Missing header');
+    Object.defineProperty(header, 'offsetHeight', { value: 46, configurable: true });
+    expect(adapter.columnTop()).toBe(46);
+    header.remove();
+    expect(adapter.columnTop()).toBe(0);
+    // The column no longer out-zens the header: its dropdown panels must paint above the column.
+    expect(adapter.layoutCss('replace-sidebar')).not.toMatch(/z-index/);
   });
 
   it('joins the native toolbar row, falling back to title rows when it is absent', () => {

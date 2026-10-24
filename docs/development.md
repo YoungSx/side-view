@@ -125,10 +125,12 @@ template with `!important` inside cascade layers, which no injected stylesheet c
 close — re-declares the template **inline** with `!important` (the one author declaration that
 outranks it): the right rails collapse to zero-width tracks and the last named track holds
 `var(--sv-column-width)`, so the centered topic list reflows live as the column resizes. The
-template is removed on close. `layoutCss` still lifts the column host to `z-index: 1001`
-(`!important`, over the controller's inline 10): the theme's header wrap paints at 1000 and
-would otherwise cover the column's top strip, while the theme's toasts (9999) still overlay it.
-Placement and the profile/hashtag preference do not
+template is removed on close. The column also starts **below the site's persistent global
+header** (the optional `columnTop` hook; the controller sizes the host to `100vh - top`): the
+header keeps its own strip, its dropdown panels — search suggestions, user menus — paint above
+the column from the header wrap's `z-index: 1000` (the column host stays at the controller's
+inline 10), and the earlier top-strip overlap never occurs because the two no longer share
+that band. Placement and the profile/hashtag preference do not
 apply; the popup hides both. The frame keeps the theme's nested topic view and hides the site
 header, left sidebar and rails; the shared detail actions join the native toolbar row
 (`.community-op-header__bar`, beside the kebab menu), falling back to `.title-wrapper`,
