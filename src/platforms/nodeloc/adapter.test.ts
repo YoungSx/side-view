@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SV_HOST_ATTR } from '@/core/style-ids';
 import { pickAdapter } from '../registry';
 import { NodelocAdapter } from './adapter';
 import { parseTopicUrl } from './urls';
@@ -123,8 +124,13 @@ describe('Nodeloc adapter', () => {
     expect(intent('in-dialog')).toBeNull();
   });
 
-  it('uses the nested-view header row, falling back to real title rows', () => {
-    document.body.innerHTML =
+  it('lifts the column above the theme header (z-index 1000) while it is open', () => {
+    const css = adapter.layoutCss('replace-sidebar');
+    expect(css).toMatch(new RegExp(`z-index:\\s*1001\\s*!important`));
+    expect(css).toContain(SV_HOST_ATTR);
+  });
+
+  it('uses the nested-view header row, falling back to real title rows', () => {    document.body.innerHTML =
       '<div id="main-outlet"><div class="nested-view__header"><h1 class="nested-view__title">T</h1></div></div>';
     expect(adapter.detailHeader(document)?.className).toBe('nested-view__header');
     document.body.innerHTML =

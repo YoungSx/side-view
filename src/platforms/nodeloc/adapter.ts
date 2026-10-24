@@ -71,6 +71,11 @@ export class NodelocAdapter implements PlatformAdapter {
   layoutCss(_mode: LayoutMode): string {
     return `
       @media (min-width: ${SV_MIN_VIEWPORT_PX}px) {
+        /* The theme's header wrap (z-index 1000) paints over the shared z-10 column host and
+           hides the framed topic's top strip. Climb just above it — past the floating actions
+           (998) and header (1000), below the theme's toasts (9999). !important overrides the
+           inline z-index the layout controller sets on the host. */
+        body.${SV_ACTIVE_CLASS} [${SV_HOST_ATTR}] { z-index: 1001 !important; }
         body.${SV_ACTIVE_CLASS} .meta-recent-posts,
         body.${SV_ACTIVE_CLASS} .sidebar-ads-wrapper { display: none !important; }
       }
