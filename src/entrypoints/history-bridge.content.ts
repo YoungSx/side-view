@@ -10,6 +10,7 @@ export default defineContentScript({
     '*://twitter.com/*',
     'https://bsky.app/*',
     'https://www.xiaohongshu.com/*',
+    'https://www.nodeloc.com/*',
   ],
   world: 'MAIN',
   runAt: 'document_start',

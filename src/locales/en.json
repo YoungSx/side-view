@@ -4,7 +4,7 @@
     "description": "Extension name shown in the Chrome Web Store listing and in chrome://extensions."
   },
   "extDescription": {
-    "message": "Open X, Bluesky, Threads and Xiaohongshu posts in a side column without leaving your timeline.",
+    "message": "Open X, Bluesky, Threads, Xiaohongshu and NodeLoc posts in a side column without leaving your timeline.",
     "description": "Chrome Web Store listing description."
   },
   "brand": "Side View",
@@ -33,7 +33,8 @@
       "X": "X",
       "Bluesky": "Bluesky",
       "Threads": "Threads",
-      "Xiaohongshu": "Xiaohongshu"
+      "Xiaohongshu": "Xiaohongshu",
+      "Nodeloc": "NodeLoc"
     },
     "status": {
       "active": "Active",
@@ -70,7 +71,7 @@
       "title": "General",
       "subtitle": "Stay in your timeline while you explore.",
       "enableTitle": "Enable Side View",
-      "enableHint": "Open detail beside your timeline. Reload X, Bluesky or Xiaohongshu after changing this; Threads updates live.",
+      "enableHint": "Open detail beside your timeline. Reload X, Bluesky, Xiaohongshu or NodeLoc after changing this; Threads updates live.",
       "interceptTitle": "Open profiles, hashtags & searches",
       "interceptHint": "Include these links in the detail column. Turn off to open only posts.",
       "languageTitle": "Language",
@@ -83,7 +84,7 @@
     },
     "layout": {
       "title": "Layout",
-      "subtitle": "Width and native compact navigation apply to X, Bluesky and Xiaohongshu. Placement applies to X and Bluesky. Threads manages its own columns.",
+      "subtitle": "Width applies to X, Bluesky, Xiaohongshu and NodeLoc; native compact navigation applies to X, Bluesky and Xiaohongshu. Placement applies to X and Bluesky. Threads manages its own columns.",
       "whereLegend": "Where details open",
       "whereLabel": "Where details open",
       "replaceSidebar": "Replace sidebar",
@@ -102,13 +103,15 @@
     },
     "platforms": {
       "title": "Platforms",
-      "subtitle": "One reading habit, four different homes.",
+      "subtitle": "One reading habit, five different homes.",
       "xBlueskyNote": "Use the layout and navigation preferences above. Changes apply live, except the main enable switch.",
       "threadsNote": "Home reuses a native column saved to your Threads account. Supported standalone feeds and search pages open a temporary native column without leaving the page or saving a column. Close it from the native column menu. Disabling Side View closes temporary columns but does not delete the saved home column.",
       "xBlueskyTitle": "X & Bluesky",
       "threadsTitle": "Threads",
       "xiaohongshuTitle": "Xiaohongshu",
-      "xiaohongshuNote": "Opens notes and user profiles beside the feed. Width applies, up to half the window; placement does not. Compact navigation uses the native icon rail when available. Profile links follow the profile-opening preference; topic and search links stay native."
+      "xiaohongshuNote": "Opens notes and user profiles beside the feed. Width applies, up to half the window; placement does not. Compact navigation uses the native icon rail when available. Profile links follow the profile-opening preference; topic and search links stay native.",
+      "nodelocTitle": "NodeLoc",
+      "nodelocNote": "Opens topics from the topic list beside the list. Width applies; placement, compact navigation and the profile/hashtag preference do not — author, category and tag links keep their native behavior."
     },
     "advanced": {
       "title": "Advanced",

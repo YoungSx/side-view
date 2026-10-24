@@ -4,7 +4,7 @@
     "description": "Extension name shown in the Chrome Web Store listing and in chrome://extensions."
   },
   "extDescription": {
-    "message": "在側欄中開啟 X、Bluesky、Threads 和小紅書的貼文詳情，無須離開目前動態。",
+    "message": "在側欄中開啟 X、Bluesky、Threads、小紅書和 NodeLoc 的貼文詳情，無須離開目前動態。",
     "description": "Chrome Web Store listing description."
   },
   "brand": "Side View",
@@ -33,7 +33,8 @@
       "X": "X",
       "Bluesky": "Bluesky",
       "Threads": "Threads",
-      "Xiaohongshu": "小紅書"
+      "Xiaohongshu": "小紅書",
+      "Nodeloc": "NodeLoc"
     },
     "status": {
       "active": "執行中",
@@ -70,7 +71,7 @@
       "title": "一般",
       "subtitle": "瀏覽時留在你的時間軸裡。",
       "enableTitle": "啟用 Side View",
-      "enableHint": "在動態旁開啟詳情。更改此設定後請重新載入 X、Bluesky 或小紅書；Threads 會即時生效。",
+      "enableHint": "在動態旁開啟詳情。更改此設定後請重新載入 X、Bluesky、小紅書或 NodeLoc；Threads 會即時生效。",
       "interceptTitle": "開啟個人檔案、主題標籤和搜尋",
       "interceptHint": "讓這些連結也在詳情欄開啟。關閉後僅開啟貼文。",
       "languageTitle": "介面語言",
@@ -83,7 +84,7 @@
     },
     "layout": {
       "title": "版面配置",
-      "subtitle": "寬度與原生精簡導覽適用於 X、Bluesky 和小紅書。位置適用於 X 和 Bluesky。Threads 自行管理欄目。",
+      "subtitle": "寬度適用於 X、Bluesky、小紅書和 NodeLoc；原生精簡導覽適用於 X、Bluesky 和小紅書。位置適用於 X 和 Bluesky。Threads 自行管理欄目。",
       "whereLegend": "詳情開啟的位置",
       "whereLabel": "詳情開啟的位置",
       "diagramTimeline": "時間軸",
@@ -102,13 +103,15 @@
     },
     "platforms": {
       "title": "平台",
-      "subtitle": "同一種閱讀習慣，四個不同的家。",
+      "subtitle": "同一種閱讀習慣，五個不同的家。",
       "xBlueskyTitle": "X 與 Bluesky",
       "xBlueskyNote": "沿用上方的版面與導覽偏好。除總開關外，變更即時生效。",
       "threadsTitle": "Threads",
       "threadsNote": "首頁沿用儲存到 Threads 帳號的原生欄。支援的獨立動態和搜尋頁面會開啟臨時原生欄，保留目前頁面且不儲存新欄位。使用原生欄位選單即可關閉。停用 Side View 會關閉臨時欄，但不會刪除首頁儲存的欄。",
       "xiaohongshuTitle": "小紅書",
-      "xiaohongshuNote": "在動態旁開啟筆記和使用者主頁。寬度設定生效，最多佔視窗一半；側欄位置不適用。精簡導覽在網站提供原生圖示列時可用。使用者連結依照開啟個人主頁的設定，話題和搜尋連結保留原生行為。"
+      "xiaohongshuNote": "在動態旁開啟筆記和使用者主頁。寬度設定生效，最多佔視窗一半；側欄位置不適用。精簡導覽在網站提供原生圖示列時可用。使用者連結依照開啟個人主頁的設定，話題和搜尋連結保留原生行為。",
+      "nodelocTitle": "NodeLoc",
+      "nodelocNote": "在話題列表旁開啟話題。寬度設定生效；側欄位置、精簡導覽與個人主頁/話題標籤設定不適用，作者、節點和標籤連結保留原生行為。"
     },
     "advanced": {
       "title": "進階",

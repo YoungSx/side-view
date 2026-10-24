@@ -4,7 +4,7 @@
     "description": "Extension name shown in the Chrome Web Store listing and in chrome://extensions."
   },
   "extDescription": {
-    "message": "X、Bluesky、Threads、小紅書の投稿を、タイムラインを離れずにサイド列で開きます。",
+    "message": "X、Bluesky、Threads、小紅書、NodeLoc の投稿を、タイムラインを離れずにサイド列で開きます。",
     "description": "Chrome Web Store listing description."
   },
   "brand": "Side View",
@@ -33,7 +33,8 @@
       "X": "X",
       "Bluesky": "Bluesky",
       "Threads": "Threads",
-      "Xiaohongshu": "小紅書"
+      "Xiaohongshu": "小紅書",
+      "Nodeloc": "NodeLoc"
     },
     "status": {
       "active": "稼働中",
@@ -70,7 +71,7 @@
       "title": "一般",
       "subtitle": "閲覧中もタイムラインにとどまります。",
       "enableTitle": "Side View を有効にする",
-      "enableHint": "タイムラインの横に詳細を開きます。変更後は X、Bluesky、小紅書を再読み込みしてください。Threads は即座に反映されます。",
+      "enableHint": "タイムラインの横に詳細を開きます。変更後は X、Bluesky、小紅書、NodeLoc を再読み込みしてください。Threads は即座に反映されます。",
       "interceptTitle": "プロフィール・ハッシュタグ・検索を開く",
       "interceptHint": "これらのリンクも詳細カラムで開きます。オフにすると投稿のみ開きます。",
       "languageTitle": "表示言語",
@@ -83,7 +84,7 @@
     },
     "layout": {
       "title": "レイアウト",
-      "subtitle": "幅とネイティブのコンパクトナビは X、Bluesky、小紅書に適用されます。配置は X と Bluesky に適用されます。Threads は独自に列を管理します。",
+      "subtitle": "幅は X、Bluesky、小紅書、NodeLoc に適用され、ネイティブのコンパクトナビは X、Bluesky、小紅書に適用されます。配置は X と Bluesky に適用されます。Threads は独自に列を管理します。",
       "whereLegend": "詳細を開く場所",
       "whereLabel": "詳細を開く場所",
       "diagramTimeline": "タイムライン",
@@ -102,13 +103,15 @@
     },
     "platforms": {
       "title": "プラットフォーム",
-      "subtitle": "ひとつの読み方、4つのプラットフォーム。",
+      "subtitle": "ひとつの読み方、5つのプラットフォーム。",
       "xBlueskyTitle": "X と Bluesky",
       "xBlueskyNote": "上のレイアウトとナビゲーションの設定を使います。メインのスイッチ以外の変更は即時反映されます。",
       "threadsTitle": "Threads",
       "threadsNote": "ホームではアカウントに保存されたネイティブカラムを再利用します。対応するフィードや検索の単独ページでは、ページを離れずに一時的なネイティブカラムを開きます。新しいカラムは保存されません。カラムメニューから閉じられます。Side View を無効にすると一時カラムは閉じますが、ホームの保存済みカラムは削除されません。",
       "xiaohongshuTitle": "小紅書",
-      "xiaohongshuNote": "ノートとユーザープロフィールをフィードの横に開きます。幅は画面の半分まで設定できます。配置は適用されません。コンパクトナビはサイトのアイコン列が利用可能な場合に使えます。プロフィールは設定に従い、トピックと検索リンクは通常どおり開きます。"
+      "xiaohongshuNote": "ノートとユーザープロフィールをフィードの横に開きます。幅は画面の半分まで設定できます。配置は適用されません。コンパクトナビはサイトのアイコン列が利用可能な場合に使えます。プロフィールは設定に従い、トピックと検索リンクは通常どおり開きます。",
+      "nodelocTitle": "NodeLoc",
+      "nodelocNote": "トピック一覧の横にトピックを開きます。幅は適用されます。配置、コンパクトナビ、プロフィール/ハッシュタグ設定は適用されず、投稿者・カテゴリー・タグのリンクは通常どおり開きます。"
     },
     "advanced": {
       "title": "詳細設定",
