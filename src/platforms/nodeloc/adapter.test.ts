@@ -123,12 +123,16 @@ describe('Nodeloc adapter', () => {
     expect(intent('in-dialog')).toBeNull();
   });
 
-  it('uses the nested-view header row, falling back to the plain Discourse title', () => {
+  it('uses the nested-view header row, falling back to real title rows', () => {
     document.body.innerHTML =
       '<div id="main-outlet"><div class="nested-view__header"><h1 class="nested-view__title">T</h1></div></div>';
     expect(adapter.detailHeader(document)?.className).toBe('nested-view__header');
-    document.querySelector('.nested-view__header')?.remove();
-    document.body.innerHTML = '<div id="main-outlet"><h1 class="fancy-title">T</h1></div>';
-    expect(adapter.detailHeader(document)?.className).toBe('fancy-title');
+    document.body.innerHTML =
+      '<div id="main-outlet"><div class="title-wrapper"><h1 class="header-title">Locked</h1></div></div>';
+    expect(adapter.detailHeader(document)?.className).toBe('title-wrapper');
+    document.body.innerHTML = '<div id="main-outlet"><h1><a class="fancy-title">T</a></h1></div>';
+    // A block h1 wins over the inline fancy-title anchor so actions right-align, not trail the text.
+    expect(adapter.detailHeader(document)?.tagName).toBe('H1');
+    expect(adapter.detailHeader(document)?.className).not.toBe('fancy-title');
   });
 });

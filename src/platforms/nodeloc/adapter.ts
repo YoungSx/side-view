@@ -87,13 +87,21 @@ export class NodelocAdapter implements PlatformAdapter {
       #main-outlet-wrapper { grid-template-columns: minmax(0, 1fr) !important; padding: 0 !important; }
       #main-outlet { width: 100% !important; max-width: 100% !important; }
       .container, .wrap { padding-left: 8px !important; padding-right: 8px !important; }
+      /* Restricted/plain topics: give the title row a flex shape so the shared detail
+         actions right-align at the panel edge instead of trailing the title text. */
+      .title-wrapper { display: flex !important; flex-wrap: wrap !important; align-items: center !important; column-gap: 8px !important; }
     `;
   }
 
   detailHeader(doc: Document): HTMLElement | null {
-    // The nested view's header row owns the title; the plain Discourse title is the fallback.
+    // Normal topics put actions in the nested view's flex header row. Restricted topics
+    // (permission-gated) and plain variants render `.title-wrapper > h1.header-title` instead;
+    // both need a block/flex row, never the inline `.fancy-title` anchor — buttons appended to
+    // the anchor land after the title text, floating mid-panel instead of at the panel edge.
     return (
       doc.querySelector<HTMLElement>('.nested-view__header') ??
+      doc.querySelector<HTMLElement>('#main-outlet .title-wrapper') ??
+      doc.querySelector<HTMLElement>('#main-outlet h1') ??
       doc.querySelector<HTMLElement>('#main-outlet .fancy-title')
     );
   }
