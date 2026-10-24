@@ -40,6 +40,8 @@ export async function startSideView(ctx: ContentScriptContext): Promise<void> {
   });
   if (ctx.isInvalid) return;
   layout.setCompactNavigation(snapshot.compactNavigation);
+  // Drag/keyboard resize commits the width the user saw; the watcher above re-applies it.
+  layout.setOnWidthCommit((px) => void settings.columnWidth.setValue(px));
 
   const router = new ClickRouter(
     adapter,

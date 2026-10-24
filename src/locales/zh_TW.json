@@ -16,7 +16,8 @@
     "frameTitle": "Side View 詳情",
     "actionsLabel": "詳情操作",
     "loading": "載入中…",
-    "loadError": "無法在此處載入該檢視。"
+    "loadError": "無法在此處載入該檢視。",
+    "resizeColumn": "調整詳情欄寬度"
   },
   "popup": {
     "title": "Side View",

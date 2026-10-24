@@ -10,12 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { SV_WIDTH_MAX_PX as WIDTH_MAX, SV_WIDTH_MIN_PX as WIDTH_MIN } from '@/core/width';
 import { loadSettings, type SettingsSnapshot, settings } from '@/settings/storage';
 import { readTabState, type TabState } from './tab-state';
-
-/** Column width bounds, mirroring the settings page so both surfaces agree on what is valid. */
-const WIDTH_MIN = 320;
-const WIDTH_MAX = 1200;
 
 /** Maps a platform to the suffix of its display-name message key. */
 const PLATFORM_LABEL_KEYS = {

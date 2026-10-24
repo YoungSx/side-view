@@ -14,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { SV_WIDTH_MAX_PX, SV_WIDTH_MIN_PX } from '@/core/width';
 import { activeLanguage, setUiLanguage, UI_LANGUAGES, type UiLanguage } from '@/i18n/runtime';
 import { loadSettings, type SettingsSnapshot, settings } from '@/settings/storage';
 
@@ -114,7 +115,7 @@ export function App() {
 
   function saveWidth() {
     const value = Number(width);
-    if (!Number.isInteger(value) || value < 320 || value > 1200) {
+    if (!Number.isInteger(value) || value < SV_WIDTH_MIN_PX || value > SV_WIDTH_MAX_PX) {
       setWidthError(i18n.t('options.layout.widthError'));
       return;
     }
@@ -354,8 +355,8 @@ export function App() {
                       className="w-24 tabular-nums"
                       id="sv-width"
                       type="number"
-                      min={320}
-                      max={1200}
+                      min={SV_WIDTH_MIN_PX}
+                      max={SV_WIDTH_MAX_PX}
                       step={1}
                       value={width}
                       disabled={busy}
