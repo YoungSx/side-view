@@ -117,10 +117,14 @@ right rails (`meta-recent-posts`, `sidebar-ads-wrapper`), which `layoutCss` hide
 column is open. Xiaohongshu-style viewport reservation is not possible here: the theme declares
 the `#main-outlet-wrapper` grid template with `!important` inside cascade layers, so a
 `<style>`-injected reservation cannot win the cascade. Covering the rails instead keeps the
-centered topic list completely untouched. Placement and the profile/hashtag preference do not
+centered topic list completely untouched. The same stylesheet lifts the column host to
+`z-index: 1001` (`!important`, over the controller's inline 10) because the theme's header
+wrap sits at `z-index: 1000` and would otherwise paint over the column's top strip; the
+theme's toasts (9999) still win. Placement and the profile/hashtag preference do not
 apply; the popup hides both. The frame keeps the theme's nested topic view and hides the site
 header, left sidebar and rails; the shared detail actions attach to `.nested-view__header`
-(falling back to `.fancy-title`). SPA navigation closes the reading like on other platforms.
+(falling back to `.title-wrapper`, then any `#main-outlet` h1, never the inline
+`.fancy-title` anchor). SPA navigation closes the reading like on other platforms.
 
 For local CDP debugging, keep one browser WebSocket connection alive and multiplex commands
 with request IDs and flattened target sessions (`Target.attachToTarget` with `flatten: true`).
