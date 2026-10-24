@@ -99,15 +99,15 @@ export class NodelocAdapter implements PlatformAdapter {
   }
 
   detailHeader(doc: Document): HTMLElement | null {
-    // Normal topics put actions in the nested view's flex header row. Restricted topics
-    // (permission-gated) and plain variants render `.title-wrapper > h1.header-title` instead;
-    // both need a block/flex row, never the inline `.fancy-title` anchor — buttons appended to
-    // the anchor land after the title text, floating mid-panel instead of at the panel edge.
+    // Join the native toolbar row (back · category · author · kebab menu) so the shared
+    // actions sit beside the "…" trigger. The nested header is the surrounding column;
+    // appending there drops the buttons below the title. Restricted/plain topics render
+    // no bar: fall back to block title rows, never the inline `.fancy-title` anchor.
     return (
+      doc.querySelector<HTMLElement>('#main-outlet .community-op-header__bar') ??
       doc.querySelector<HTMLElement>('.nested-view__header') ??
       doc.querySelector<HTMLElement>('#main-outlet .title-wrapper') ??
-      doc.querySelector<HTMLElement>('#main-outlet h1') ??
-      doc.querySelector<HTMLElement>('#main-outlet .fancy-title')
+      doc.querySelector<HTMLElement>('#main-outlet h1')
     );
   }
 

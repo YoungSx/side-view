@@ -126,13 +126,17 @@ describe('Nodeloc adapter', () => {
 
   it('lifts the column above the theme header (z-index 1000) while it is open', () => {
     const css = adapter.layoutCss('replace-sidebar');
-    expect(css).toMatch(new RegExp(`z-index:\\s*1001\\s*!important`));
+    expect(css).toMatch(/z-index:\s*1001\s*!important/);
     expect(css).toContain(SV_HOST_ATTR);
   });
 
-  it('uses the nested-view header row, falling back to real title rows', () => {    document.body.innerHTML =
-      '<div id="main-outlet"><div class="nested-view__header"><h1 class="nested-view__title">T</h1></div></div>';
-    expect(adapter.detailHeader(document)?.className).toBe('nested-view__header');
+  it('joins the native toolbar row, falling back to title rows when it is absent', () => {
+    // Normal topics: the bar row holding the kebab menu is where the actions belong.
+    document.body.innerHTML =
+      '<div id="main-outlet"><div class="nested-view__header">' +
+      '<div class="community-op-header__bar"><button class="community-op-actions-trigger">…</button></div>' +
+      '<h1 class="nested-view__title">T</h1></div></div>';
+    expect(adapter.detailHeader(document)?.className).toBe('community-op-header__bar');
     document.body.innerHTML =
       '<div id="main-outlet"><div class="title-wrapper"><h1 class="header-title">Locked</h1></div></div>';
     expect(adapter.detailHeader(document)?.className).toBe('title-wrapper');
