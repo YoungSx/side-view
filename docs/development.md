@@ -118,15 +118,17 @@ opens that topic in the column; author (`data-user-card`), category, tag and eve
 keeps its native behavior. The site permits same-origin framing (`frame-ancestors 'self'`), so
 no frame-header rule is required.
 
-The column is `fixed` and starts at the topic list's right edge, covering the theme's own
-right rails (`meta-recent-posts`, `sidebar-ads-wrapper`), which `layoutCss` hides while the
-column is open. Xiaohongshu-style viewport reservation is not possible here: the theme declares
-the `#main-outlet-wrapper` grid template with `!important` inside cascade layers, so a
-`<style>`-injected reservation cannot win the cascade. Covering the rails instead keeps the
-centered topic list completely untouched. The same stylesheet lifts the column host to
-`z-index: 1001` (`!important`, over the controller's inline 10) because the theme's header
-wrap sits at `z-index: 1000` and would otherwise paint over the column's top strip; the
-theme's toasts (9999) still win. Placement and the profile/hashtag preference do not
+The column uses the shared `split` positioning: the layout controller pins it to the viewport's
+right edge and publishes `--sv-column-width`. The theme declares its `#main-outlet-wrapper` grid
+template with `!important` inside cascade layers, which no injected stylesheet can beat, so
+`applyGridReservation` — an optional adapter hook the controller calls on open, width changes and
+close — re-declares the template **inline** with `!important` (the one author declaration that
+outranks it): the right rails collapse to zero-width tracks and the last named track holds
+`var(--sv-column-width)`, so the centered topic list reflows live as the column resizes. The
+template is removed on close. `layoutCss` still lifts the column host to `z-index: 1001`
+(`!important`, over the controller's inline 10): the theme's header wrap paints at 1000 and
+would otherwise cover the column's top strip, while the theme's toasts (9999) still overlay it.
+Placement and the profile/hashtag preference do not
 apply; the popup hides both. The frame keeps the theme's nested topic view and hides the site
 header, left sidebar and rails; the shared detail actions join the native toolbar row
 (`.community-op-header__bar`, beside the kebab menu), falling back to `.title-wrapper`,

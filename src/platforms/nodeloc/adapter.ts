@@ -7,14 +7,14 @@ const INTERACTIVE =
   'button, [role="button"], input, textarea, select, video, [contenteditable="true"], .btn';
 
 /**
- * Fixed column over the forum's own right rails (recent posts / ads). The theme declares its
- * `#main-outlet-wrapper` grid template with `!important` inside cascade layers, so reserving
- * viewport space like Xiaohongshu cannot win the cascade; covering the rails and hiding them
- * does, without moving the centered topic list at all.
+ * The theme declares its `#main-outlet-wrapper` grid template with `!important` inside cascade
+ * layers, so stylesheet injection cannot win; `applyGridReservation` instead sets an inline
+ * `!important` template — the one declaration that outranks it — reserving the column as the
+ * last named track and zeroing the right rails, so the topic list reflows as the width changes.
  */
 export class NodelocAdapter implements PlatformAdapter {
   readonly id = 'nodeloc' as const;
-  readonly columnPosition = 'fixed' as const;
+  readonly columnPosition = 'split' as const;
   readonly detailFrameName = 'sideview-nodeloc-detail';
   readonly columnAnchor = { selector: '#main', append: 'after' as const };
 
@@ -66,6 +66,27 @@ export class NodelocAdapter implements PlatformAdapter {
     } catch {
       return null;
     }
+  }
+
+  /**
+   * The theme's own grid, re-declared inline with `!important`: the right rails collapse and
+   * the last named track holds the side column. `--sv-column-width` (set on `body.sv-active`
+   * by the layout controller) re-resolves live during drags without touching this template.
+   */
+  applyGridReservation(reserved: string | null): void {
+    const wrapper = document.querySelector<HTMLElement>('#main-outlet-wrapper');
+    if (!wrapper) return;
+    if (reserved === null) {
+      wrapper.style.removeProperty('grid-template-columns');
+      return;
+    }
+    wrapper.style.setProperty(
+      'grid-template-columns',
+      '[sidebar] var(--d-sidebar-width, 266px) [spacer-left] var(--spacer-width, 1fr) ' +
+        '[content] var(--main-outlet-width, minmax(0, 732px)) [community] 0 [spacer-right] 0 ' +
+        `[ads] minmax(0, ${reserved})`,
+      'important',
+    );
   }
 
   layoutCss(_mode: LayoutMode): string {

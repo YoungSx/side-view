@@ -65,6 +65,28 @@ it('reserves space for a full-width feed, caps it to half the viewport, and rest
   document.documentElement.removeAttribute('data-sideview-xiaohongshu-layout');
 });
 
+it('drives the grid reservation hook on open, width changes, and close', async () => {
+  layout.detach();
+  document.body.innerHTML =
+    '<div id="app"><div class="feeds-container"><section class="note-item"></section></div></div>';
+  const feed = document.querySelector<HTMLElement>('.feeds-container');
+  if (!feed) throw new Error('Missing feed');
+  vi.spyOn(feed, 'getBoundingClientRect').mockReturnValue({ right: 1400, width: 1400 } as DOMRect);
+  const adapter = new XiaohongshuAdapter();
+  const hook = vi.fn();
+  Object.assign(adapter, { applyGridReservation: hook });
+  document.documentElement.setAttribute('data-sideview-xiaohongshu-layout', 'available');
+  layout = new ShadowLayoutController(ctx, adapter, 600);
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  expect(layout.open()).toBe(true);
+  expect(hook).toHaveBeenCalledWith('var(--sv-column-width, 0px)');
+  hook.mockClear();
+  layout.setWidth(500);
+  expect(hook).toHaveBeenCalledWith('var(--sv-column-width, 0px)');
+  layout.close();
+  expect(hook).toHaveBeenLastCalledWith(null);
+  document.documentElement.removeAttribute('data-sideview-xiaohongshu-layout');
+});
 it('releases an open split column when native layout support disappears and does not reopen automatically', async () => {
   layout.detach();
   document.body.innerHTML =

@@ -61,6 +61,14 @@ export interface PlatformAdapter {
   resolveIntent(event: MouseEvent): DetailIntent | null;
   /** Host-page CSS (attribute selectors + `!important`) for the given layout mode. */
   layoutCss(mode: LayoutMode): string;
+  /**
+   * Reserve viewport space for the side column when stylesheet rules cannot win the host's
+   * cascade (e.g. the theme declares its layout with `!important` inside cascade layers).
+   * Called with a CSS length the reserved track should take — `var(--sv-column-width)` for
+   * split layouts, which re-resolves live as the width changes — and `null` to release.
+   * The element-level `!important` this sets outranks every author stylesheet rule.
+   */
+  applyGridReservation?(reserved: string | null): void;
   /** CSS injected INSIDE the detail frame to strip the platform's own chrome. */
   detailFrameCss(): string;
   /** Optional in-frame navigation behavior, with cleanup owned by the frame content script. */
