@@ -1,3 +1,4 @@
+import { i18n } from '#i18n';
 import type { ContentScriptContext, ShadowRootContentScriptUi } from '#imports';
 import { createShadowRootUi } from '#imports';
 import { log } from '@/core/log';
@@ -9,6 +10,12 @@ import {
   SV_MODE_CLASS,
 } from '@/core/style-ids';
 import type { LayoutController, LayoutMode, LayoutMountHooks, PlatformAdapter } from '@/core/types';
+import {
+  clampColumnWidth,
+  resizeColumnWidth,
+  SV_WIDTH_MAX_PX,
+  SV_WIDTH_MIN_PX,
+} from '@/core/width';
 import { COMPACT_REQUEST, NAVIGATION_CHANGE } from '@/platforms/compact/protocol';
 
 /**
@@ -31,6 +38,10 @@ export class ShadowLayoutController implements LayoutController {
   private surface: { background: string; foreground: string } = { background: '', foreground: '' };
   private themeQuery: MediaQueryList | null = null;
   private stopObservingAvailability: (() => void) | null = null;
+  /** The column-edge drag handle, resident in the shadow root while the host exists. */
+  private handle: HTMLElement | null = null;
+  private drag: { startX: number; startWidth: number } | null = null;
+  private onWidthCommit: ((px: number) => void) | null = null;
 
   constructor(
     private readonly ctx: ContentScriptContext,
@@ -69,6 +80,9 @@ export class ShadowLayoutController implements LayoutController {
         return;
       }
       this.ui = ui;
+      // A drag handle on the column's left edge lives in the shadow root, above the iframe.
+      this.handle = this.createResizeHandle();
+      ui.shadow.append(this.handle);
       // X can replace its children without changing the URL or ever leaving the anchor absent.
       // Observe the actual host connection as well as the current anchor, not just selector existence.
       this.observer = new MutationObserver(() => this.reattachIfDetached());
@@ -149,6 +163,78 @@ export class ShadowLayoutController implements LayoutController {
     this.width = px;
     if (this.state === 'open') this.injectLayoutCss();
     if (this.ui) this.styleHost(this.ui.shadowHost);
+    this.handle?.setAttribute('aria-valuenow', String(px));
+  }
+
+  /**
+   * Receive the width a drag/keyboard resize settled on. The engine routes this into settings
+   * storage; the live `columnWidth` watcher re-applies it, which is a no-op for equal values.
+   */
+  setOnWidthCommit(commit: (px: number) => void): void {
+    this.onWidthCommit = commit;
+  }
+
+  /** The column edge: drag left to widen, exactly like the native os window it imitates. */
+  private createResizeHandle(): HTMLElement {
+    const handle = document.createElement('div');
+    handle.className = 'sv-resize-handle';
+    handle.setAttribute('role', 'separator');
+    handle.setAttribute('aria-orientation', 'vertical');
+    handle.setAttribute('aria-label', i18n.t('detail.resizeColumn'));
+    handle.setAttribute('aria-valuemin', String(SV_WIDTH_MIN_PX));
+    handle.setAttribute('aria-valuemax', String(SV_WIDTH_MAX_PX));
+    handle.setAttribute('aria-valuenow', String(this.width));
+    handle.tabIndex = 0;
+    handle.addEventListener('pointerdown', this.onResizeStart);
+    handle.addEventListener('pointermove', this.onResizeMove);
+    handle.addEventListener('pointerup', this.onResizeEnd);
+    handle.addEventListener('pointercancel', this.onResizeEnd);
+    handle.addEventListener('keydown', this.onResizeKey);
+    return handle;
+  }
+
+  private readonly onResizeStart = (event: PointerEvent): void => {
+    if (event.button !== 0) return;
+    const host = this.ui?.shadowHost;
+    const startWidth = host?.getBoundingClientRect().width ?? 0;
+    if (!host || startWidth <= 0) return;
+    this.drag = { startX: event.clientX, startWidth };
+    this.handle?.setAttribute('data-dragging', '');
+    // Keep the drag alive while the pointer crosses the iframe; absent under jsdom.
+    try {
+      this.handle?.setPointerCapture(event.pointerId);
+    } catch {
+      // Environments without pointer capture still drag inside the shadow root.
+    }
+    event.preventDefault();
+  };
+
+  private readonly onResizeMove = (event: PointerEvent): void => {
+    if (!this.drag) return;
+    this.setWidth(resizeColumnWidth(this.drag.startWidth, this.drag.startX, event.clientX));
+  };
+
+  private readonly onResizeEnd = (): void => {
+    if (!this.drag) return;
+    this.drag = null;
+    this.handle?.removeAttribute('data-dragging');
+    this.commitWidth();
+  };
+
+  private readonly onResizeKey = (event: KeyboardEvent): void => {
+    // The edge follows the arrow: ArrowLeft pushes it left (wider), ArrowRight narrows.
+    const step = event.shiftKey ? 50 : 10;
+    const delta = event.key === 'ArrowLeft' ? step : event.key === 'ArrowRight' ? -step : 0;
+    if (delta === 0) return;
+    event.preventDefault();
+    this.setWidth(clampColumnWidth(this.width + delta));
+    this.commitWidth();
+  };
+
+  /** Persist what the user actually sees: the laid-out width after the geometry clamp. */
+  private commitWidth(): void {
+    const width = this.bounds()?.width ?? 0;
+    if (width > 0) this.onWidthCommit?.(Math.round(width));
   }
 
   setCompactNavigation(enabled: boolean): void {
@@ -187,6 +273,9 @@ export class ShadowLayoutController implements LayoutController {
     this.stopObservingAvailability = null;
     this.observer?.disconnect();
     this.observer = null;
+    this.handle = null;
+    this.drag = null;
+    this.onWidthCommit = null;
     window.removeEventListener('resize', this.resizeColumn);
     window.removeEventListener(NAVIGATION_CHANGE, this.resizeColumn);
     this.themeQuery?.removeEventListener?.('change', this.onThemeChange);

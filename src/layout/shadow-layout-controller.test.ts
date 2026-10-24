@@ -1,9 +1,14 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { ContentScriptContext } from '#imports';
+import { resizeColumnWidth } from '@/core/width';
 import { BlueskyAdapter } from '@/platforms/bluesky/adapter';
 import { XAdapter } from '@/platforms/x/adapter';
 import { XiaohongshuAdapter } from '@/platforms/xiaohongshu/adapter';
 import { ShadowLayoutController } from './shadow-layout-controller';
+
+const pressPointer = (handle: Element, type: string, x: number): void => {
+  handle.dispatchEvent(new MouseEvent(type, { clientX: x, button: 0, bubbles: true }));
+};
 
 let layout: ShadowLayoutController;
 let ctx: ContentScriptContext;
@@ -313,4 +318,63 @@ it('skips transparent body backgrounds and samples the opaque root background', 
     document.body.style.backgroundColor = '';
     document.documentElement.style.backgroundColor = '';
   }
+});
+
+it('clamps drag resizing to the shared width bounds', () => {
+  expect(resizeColumnWidth(600, 800, 700)).toBe(700); // 100px drag-left widens
+  expect(resizeColumnWidth(600, 800, 1080)).toBe(320); // the floor
+  expect(resizeColumnWidth(600, 800, -300)).toBe(1200); // the ceiling
+});
+
+it('resizes the open column by dragging its edge and commits what fits', async () => {
+  addAnchor();
+  const commit = vi.fn();
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  layout.setOnWidthCommit(commit);
+  expect(layout.open()).toBe(true);
+  const handle = host()?.shadowRoot?.querySelector<HTMLElement>('.sv-resize-handle');
+  if (!handle) throw new Error('Missing resize handle');
+  pressPointer(handle, 'pointerdown', 800);
+  pressPointer(handle, 'pointermove', 700);
+  expect(host()?.style.width).toBe('700px');
+  expect(commit).not.toHaveBeenCalled();
+  pressPointer(handle, 'pointerup', 700);
+  expect(commit).toHaveBeenCalledWith(700);
+  expect(handle.hasAttribute('data-dragging')).toBe(false);
+});
+
+it('stops the drag at the shared bounds and commits only the displayed width', async () => {
+  addAnchor();
+  const commit = vi.fn();
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  layout.setOnWidthCommit(commit);
+  expect(layout.open()).toBe(true);
+  const handle = host()?.shadowRoot?.querySelector<HTMLElement>('.sv-resize-handle');
+  if (!handle) throw new Error('Missing resize handle');
+  pressPointer(handle, 'pointerdown', 800);
+  pressPointer(handle, 'pointermove', 2000);
+  expect(host()?.style.width).toBe('320px');
+  pressPointer(handle, 'pointermove', -2000);
+  // The viewport (1400) leaves 800px beside the timeline at left=600: WYSIWYG commit.
+  expect(host()?.style.width).toBe('800px');
+  pressPointer(handle, 'pointerup', -2000);
+  expect(commit).toHaveBeenCalledWith(800);
+});
+
+it('resizes from the keyboard and commits each step', async () => {
+  addAnchor();
+  const commit = vi.fn();
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  layout.setOnWidthCommit(commit);
+  expect(layout.open()).toBe(true);
+  const handle = host()?.shadowRoot?.querySelector<HTMLElement>('.sv-resize-handle');
+  if (!handle) throw new Error('Missing resize handle');
+  handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+  expect(host()?.style.width).toBe('610px');
+  expect(commit).toHaveBeenCalledWith(610);
+  handle.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true, bubbles: true }),
+  );
+  expect(host()?.style.width).toBe('560px');
+  expect(commit).toHaveBeenLastCalledWith(560);
 });

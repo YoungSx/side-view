@@ -73,3 +73,32 @@
 .sv-loading {
   opacity: 0.7;
 }
+
+/* Drag handle on the column's left edge. Sits above the iframe; the 9px strip is dead to the
+   frame's own pointer targets, a standard window-edge tradeoff. The line appears on hover,
+   while dragging, and on keyboard focus. */
+.sv-resize-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 9px;
+  height: 100%;
+  z-index: 20;
+  cursor: col-resize;
+  touch-action: none;
+  outline: none;
+}
+.sv-resize-handle::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 2px;
+  background: transparent;
+}
+.sv-resize-handle:hover::after,
+.sv-resize-handle[data-dragging]::after,
+.sv-resize-handle:focus-visible::after {
+  background: color-mix(in srgb, var(--sv-on-surface, #0f1419) 35%, transparent);
+}

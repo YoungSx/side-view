@@ -16,7 +16,8 @@
     "frameTitle": "Side View detail",
     "actionsLabel": "Detail actions",
     "loading": "Loading…",
-    "loadError": "Couldn’t load this view here."
+    "loadError": "Couldn’t load this view here.",
+    "resizeColumn": "Resize detail column"
   },
   "popup": {
     "title": "Side View",

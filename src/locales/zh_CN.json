@@ -16,7 +16,8 @@
     "frameTitle": "Side View 详情",
     "actionsLabel": "详情操作",
     "loading": "加载中…",
-    "loadError": "无法在此处加载该视图。"
+    "loadError": "无法在此处加载该视图。",
+    "resizeColumn": "调整详情栏宽度"
   },
   "popup": {
     "title": "Side View",
