@@ -20,7 +20,7 @@ beforeEach(() => {
       </tr>
       <tr class="topic-list-item">
         <td class="main-link">
-          <a id="bare" href="/t/999">Bare id</a>
+          <a id="bare" class="title raw-topic-link" href="/t/999">Bare id</a>
           <a id="author" href="/u/xiaoyi669" data-user-card="xiaoyi669">Author</a>
           <a id="category" href="/n/open-sharing">Category</a>
           <a id="external" href="https://example.test/t/topic/1">External</a>
@@ -89,10 +89,28 @@ describe('Nodeloc adapter', () => {
     );
   });
 
-  it('leaves author cards, categories, external links and blank space native', () => {
-    for (const id of ['author', 'category', 'external', 'blank']) expect(intent(id)).toBeNull();
+  it('leaves author cards, categories and external links native', () => {
+    for (const id of ['author', 'category', 'external']) expect(intent(id)).toBeNull();
     document.getElementById('title')?.setAttribute('download', '');
     expect(intent('title')).toBeNull();
+  });
+
+  it('opens the row topic from linkless spots, mirroring the overlay layouts', () => {
+    // The compact layout draws no full-row overlay; blank areas must still open the row topic.
+    expect(intent('blank')).toEqual({
+      kind: 'status',
+      url: 'https://www.nodeloc.com/t/999',
+      meta: { statusId: '999' },
+    });
+    const cell = document.createElement('td');
+    cell.id = 'cell-blank';
+    document.getElementById('bare')?.parentElement?.append(cell);
+    expect(intent('cell-blank')).toEqual(intent('blank'));
+  });
+
+  it('stays native when a linkless row has no topic title link', () => {
+    document.getElementById('bare')?.remove();
+    expect(intent('blank')).toBeNull();
   });
 
   it('does not intercept links outside a topic list or inside dialogs', () => {

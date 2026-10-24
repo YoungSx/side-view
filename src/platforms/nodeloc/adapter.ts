@@ -48,7 +48,12 @@ export class NodelocAdapter implements PlatformAdapter {
       return null;
     const row = target.closest<HTMLElement>(ROW);
     if (!row?.closest('.topic-list')) return null;
-    const link = target.closest<HTMLAnchorElement>('a[href]');
+    // The clicked link wins (title, full-row overlays in card/expanded layouts, deep post links);
+    // a linkless spot falls back to the row's own topic so the whole item is clickable in the
+    // compact layout, which draws no overlay. Native compact rows navigate nowhere on such clicks.
+    const link =
+      target.closest<HTMLAnchorElement>('a[href]') ??
+      row.querySelector<HTMLAnchorElement>('a.title, a.raw-topic-link');
     if (!link || link.hasAttribute('download')) return null;
     // Avatar and author links open the site's user card natively.
     if (link.hasAttribute('data-user-card')) return null;
