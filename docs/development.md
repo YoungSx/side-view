@@ -62,11 +62,13 @@ General switches save immediately; width changes use **Apply**, and advanced sel
 **Save selectors**. Failed saves show an error and keep the last saved setting. Reload X or Bluesky
 after changing the main enable switch, and reload X after saving selector overrides.
 
-The detail column also has a drag handle on its left edge (all platforms): dragging resizes live
-within the shared 320–1200px bounds and commits the displayed width — after the geometry clamp —
-to `columnWidth` on release; arrow keys (±10, Shift for ±50) do the same from keyboard focus. The
-handle lives in the column's shadow root (`ShadowLayoutController`), so it needs no per-platform
-code.
+The detail column also has a drag handle on its left edge (opt-in per platform via the
+adapter's `resizable` flag — currently NodeLoc only; the width slider keeps working everywhere):
+dragging resizes live within the shared 320–1200px bounds and commits the displayed width —
+after the geometry clamp — to `columnWidth` on release; arrow keys (±10, Shift for ±50) do the
+same from keyboard focus. The handle lives in the column's shadow root
+(`ShadowLayoutController`), so it needs no per-platform code, and the frame gutter that clears
+the strip follows the same flag.
 
 Compact navigation uses the sites' native renderers through `compact-native.content.ts` in the
 MAIN world. X acquires/releases its native collapse counter; Bluesky updates only the mounted

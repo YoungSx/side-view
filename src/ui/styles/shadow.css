@@ -45,8 +45,11 @@
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
-  /* Clear the resize handle strip: the frame starts past it, so the hover/drag line paints on
-     the column's own surface instead of over the frame's leftmost text. */
+}
+
+/* On resizable platforms the frame starts past the handle strip, so the hover/drag line paints
+   on the column's own surface instead of over the frame's leftmost text. */
+:host([data-sv-resizable]) .sv-body {
   margin-left: 9px;
 }
 

@@ -348,14 +348,33 @@ it('clamps drag resizing to the shared width bounds', () => {
   expect(resizeColumnWidth(600, 800, -300)).toBe(1200); // the ceiling
 });
 
-it('resizes the open column by dragging its edge and commits what fits', async () => {
-  addAnchor();
-  const commit = vi.fn();
+/** A resizable controller over the standard X fixture, for the drag tests below. */
+async function resizableLayout(commit: (px: number) => void): Promise<ShadowLayoutController> {
+  const adapter = new XAdapter();
+  Object.assign(adapter, { resizable: true });
+  const layout = new ShadowLayoutController(ctx, adapter, 600);
   await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
   layout.setOnWidthCommit(commit);
   expect(layout.open()).toBe(true);
+  return layout;
+}
+
+it('omits the resize handle unless the adapter opts in', async () => {
+  addAnchor();
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  expect(layout.open()).toBe(true);
+  expect(host()?.hasAttribute('data-sv-resizable')).toBe(false);
+  expect(host()?.shadowRoot?.querySelector('.sv-resize-handle')).toBeNull();
+});
+
+it('resizes the open column by dragging its edge and commits what fits', async () => {
+  addAnchor();
+  const commit = vi.fn();
+  layout.detach();
+  layout = await resizableLayout(commit);
   const handle = host()?.shadowRoot?.querySelector<HTMLElement>('.sv-resize-handle');
   if (!handle) throw new Error('Missing resize handle');
+  expect(host()?.hasAttribute('data-sv-resizable')).toBe(true);
   pressPointer(handle, 'pointerdown', 800);
   pressPointer(handle, 'pointermove', 700);
   expect(host()?.style.width).toBe('700px');
@@ -368,9 +387,8 @@ it('resizes the open column by dragging its edge and commits what fits', async (
 it('stops the drag at the shared bounds and commits only the displayed width', async () => {
   addAnchor();
   const commit = vi.fn();
-  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
-  layout.setOnWidthCommit(commit);
-  expect(layout.open()).toBe(true);
+  layout.detach();
+  layout = await resizableLayout(commit);
   const handle = host()?.shadowRoot?.querySelector<HTMLElement>('.sv-resize-handle');
   if (!handle) throw new Error('Missing resize handle');
   pressPointer(handle, 'pointerdown', 800);
@@ -386,9 +404,8 @@ it('stops the drag at the shared bounds and commits only the displayed width', a
 it('resizes from the keyboard and commits each step', async () => {
   addAnchor();
   const commit = vi.fn();
-  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
-  layout.setOnWidthCommit(commit);
-  expect(layout.open()).toBe(true);
+  layout.detach();
+  layout = await resizableLayout(commit);
   const handle = host()?.shadowRoot?.querySelector<HTMLElement>('.sv-resize-handle');
   if (!handle) throw new Error('Missing resize handle');
   handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));

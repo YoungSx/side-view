@@ -47,6 +47,11 @@ export interface PlatformAdapter {
   /** Where the detail column attaches: a STABLE CSS selector + which side of the anchor. */
   readonly columnAnchor: { readonly selector: string; readonly append: 'after' | 'before' };
   /**
+   * Opt in to the drag-to-resize edge (and the frame gutter that clears it). Off by default;
+   * the width slider keeps working everywhere regardless.
+   */
+  readonly resizable?: boolean;
+  /**
    * The y where the column starts, measured live (a persistent site header keeps its strip to
    * itself, and the header's own dropdown panels then paint above the column). Absent = 0.
    */
