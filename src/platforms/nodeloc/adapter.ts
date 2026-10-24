@@ -17,6 +17,7 @@ export class NodelocAdapter implements PlatformAdapter {
   readonly columnPosition = 'split' as const;
   readonly detailFrameName = 'sideview-nodeloc-detail';
   readonly columnAnchor = { selector: '#main', append: 'after' as const };
+  readonly resizable = true;
 
   matches(url: URL): boolean {
     return isNodelocUrl(url);

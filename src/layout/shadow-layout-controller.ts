@@ -81,8 +81,11 @@ export class ShadowLayoutController implements LayoutController {
       }
       this.ui = ui;
       // A drag handle on the column's left edge lives in the shadow root, above the iframe.
-      this.handle = this.createResizeHandle();
-      ui.shadow.append(this.handle);
+      // Opt-in per platform (`resizable`): other sites keep a full-bleed frame for now.
+      if (this.adapter.resizable) {
+        this.handle = this.createResizeHandle();
+        ui.shadow.append(this.handle);
+      }
       // X can replace its children without changing the URL or ever leaving the anchor absent.
       // Observe the actual host connection as well as the current anchor, not just selector existence.
       this.observer = new MutationObserver(() => this.reattachIfDetached());
@@ -320,6 +323,8 @@ export class ShadowLayoutController implements LayoutController {
     // root's `all: initial` reset and inherit inward to the column CSS.
     if (this.surface.background) host.style.setProperty('--sv-surface', this.surface.background);
     if (this.surface.foreground) host.style.setProperty('--sv-on-surface', this.surface.foreground);
+    // The frame gutter that clears the resize strip is gated on the same opt-in as the handle.
+    host.toggleAttribute('data-sv-resizable', !!this.adapter.resizable);
 
     const bounds = this.bounds();
     // A null measurement means the timeline column is momentarily gone (an SPA rebuild). Keep the

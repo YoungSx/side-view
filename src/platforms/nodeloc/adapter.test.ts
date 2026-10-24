@@ -81,6 +81,7 @@ describe('Nodeloc adapter', () => {
     const wrapper = document.querySelector<HTMLElement>('#main-outlet-wrapper');
     if (!wrapper) throw new Error('Missing wrapper');
     expect(adapter.columnPosition).toBe('split');
+    expect(adapter.resizable).toBe(true);
     adapter.applyGridReservation('var(--sv-column-width, 0px)');
     expect(wrapper.style.getPropertyPriority('grid-template-columns')).toBe('important');
     const template = wrapper.style.getPropertyValue('grid-template-columns');
