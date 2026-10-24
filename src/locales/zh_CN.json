@@ -4,7 +4,7 @@
     "description": "Extension name shown in the Chrome Web Store listing and in chrome://extensions."
   },
   "extDescription": {
-    "message": "在侧栏中打开 X、Bluesky、Threads 和小红书的帖子详情，无需离开当前时间线。",
+    "message": "在侧栏中打开 X、Bluesky、Threads、小红书和 NodeLoc 的帖子详情，无需离开当前时间线。",
     "description": "Chrome Web Store listing description."
   },
   "brand": "Side View",
@@ -33,7 +33,8 @@
       "X": "X",
       "Bluesky": "Bluesky",
       "Threads": "Threads",
-      "Xiaohongshu": "小红书"
+      "Xiaohongshu": "小红书",
+      "Nodeloc": "NodeLoc"
     },
     "status": {
       "active": "运行中",
@@ -70,7 +71,7 @@
       "title": "常规",
       "subtitle": "在浏览时留在你的时间线里。",
       "enableTitle": "启用 Side View",
-      "enableHint": "在时间线旁打开详情。更改此设置后请重新加载 X、Bluesky 或小红书；Threads 会实时生效。",
+      "enableHint": "在时间线旁打开详情。更改此设置后请重新加载 X、Bluesky、小红书或 NodeLoc；Threads 会实时生效。",
       "interceptTitle": "打开个人主页、话题标签和搜索",
       "interceptHint": "让这些链接也在详情栏中打开。关闭后仅打开帖子。",
       "languageTitle": "界面语言",
@@ -83,7 +84,7 @@
     },
     "layout": {
       "title": "布局",
-      "subtitle": "宽度与原生紧凑导航适用于 X、Bluesky 和小红书。位置适用于 X 和 Bluesky。Threads 自行管理栏目。",
+      "subtitle": "宽度适用于 X、Bluesky、小红书和 NodeLoc；原生紧凑导航适用于 X、Bluesky 和小红书。位置适用于 X 和 Bluesky。Threads 自行管理栏目。",
       "whereLegend": "详情打开的位置",
       "whereLabel": "详情打开的位置",
       "diagramTimeline": "时间线",
@@ -102,13 +103,15 @@
     },
     "platforms": {
       "title": "平台",
-      "subtitle": "同一种阅读习惯，四个不同的家。",
+      "subtitle": "同一种阅读习惯，五个不同的家。",
       "xBlueskyTitle": "X 与 Bluesky",
       "xBlueskyNote": "沿用上方的布局与导航偏好。除总开关外，更改即时生效。",
       "threadsTitle": "Threads",
       "threadsNote": "首页复用保存到 Threads 账号的原生栏。支持的独立动态和搜索页面会打开临时原生栏，保留当前页面且不保存新栏目。使用原生栏目菜单即可关闭。停用 Side View 会关闭临时栏，但不会删除首页保存的栏。",
       "xiaohongshuTitle": "小红书",
-      "xiaohongshuNote": "在信息流旁打开笔记和用户主页。宽度设置生效，最多占窗口一半；侧栏位置不适用。紧凑导航在网站提供原生图标栏时可用。用户链接遵循打开个人主页的设置，话题和搜索链接保持原生行为。"
+      "xiaohongshuNote": "在信息流旁打开笔记和用户主页。宽度设置生效，最多占窗口一半；侧栏位置不适用。紧凑导航在网站提供原生图标栏时可用。用户链接遵循打开个人主页的设置，话题和搜索链接保持原生行为。",
+      "nodelocTitle": "NodeLoc",
+      "nodelocNote": "在话题列表旁打开话题。宽度设置生效；侧栏位置、紧凑导航与个人主页/话题标签设置不适用，作者、节点和标签链接保持原生行为。"
     },
     "advanced": {
       "title": "高级",

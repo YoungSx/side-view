@@ -411,6 +411,10 @@ export function App() {
                   <dt>{i18n.t('options.platforms.xiaohongshuTitle')}</dt>
                   <dd>{i18n.t('options.platforms.xiaohongshuNote')}</dd>
                 </div>
+                <div>
+                  <dt>{i18n.t('options.platforms.nodelocTitle')}</dt>
+                  <dd>{i18n.t('options.platforms.nodelocNote')}</dd>
+                </div>
               </dl>
             </section>
             <Separator />

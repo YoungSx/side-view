@@ -15,7 +15,7 @@ import { browser } from '#imports';
  */
 
 /** The platforms side-view can be active on. Mirrors `PlatformAdapter['id']`. */
-export type PlatformId = 'x' | 'bluesky' | 'threads' | 'xiaohongshu';
+export type PlatformId = 'x' | 'bluesky' | 'threads' | 'xiaohongshu' | 'nodeloc';
 
 /**
  * The answer to "what is side-view doing on this tab?".
@@ -65,7 +65,8 @@ export function isPingResult(value: unknown): value is PingResult {
     (record.platform === 'x' ||
       record.platform === 'bluesky' ||
       record.platform === 'threads' ||
-      record.platform === 'xiaohongshu') &&
+      record.platform === 'xiaohongshu' ||
+      record.platform === 'nodeloc') &&
     typeof record.columnOpen === 'boolean' &&
     (record.compactNavigationAvailable === undefined ||
       typeof record.compactNavigationAvailable === 'boolean')
@@ -83,6 +84,7 @@ export function platformForUrl(url: string): PlatformId | null {
   const { protocol, hostname } = parsed;
   if (protocol !== 'https:' && protocol !== 'http:') return null;
   if (protocol === 'https:' && hostname === 'www.xiaohongshu.com') return 'xiaohongshu';
+  if (/(^|\.)nodeloc\.com$/i.test(hostname)) return 'nodeloc';
   if (/(^|\.)(x|twitter)\.com$/i.test(hostname)) return 'x';
   if (/^bsky\.app$/i.test(hostname)) return 'bluesky';
   if (/(^|\.)threads\.(com|net)$/i.test(hostname)) return 'threads';

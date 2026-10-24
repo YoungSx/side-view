@@ -1,5 +1,6 @@
 import type { PlatformAdapter } from '@/core/types';
 import { BlueskyAdapter } from '@/platforms/bluesky/adapter';
+import { NodelocAdapter } from '@/platforms/nodeloc/adapter';
 import { XAdapter } from '@/platforms/x/adapter';
 import { XiaohongshuAdapter } from '@/platforms/xiaohongshu/adapter';
 
@@ -16,5 +17,7 @@ export function pickAdapter(
   const bluesky = new BlueskyAdapter(overrides);
   if (bluesky.matches(url)) return bluesky;
   const xiaohongshu = new XiaohongshuAdapter();
-  return xiaohongshu.matches(url) ? xiaohongshu : null;
+  if (xiaohongshu.matches(url)) return xiaohongshu;
+  const nodeloc = new NodelocAdapter();
+  return nodeloc.matches(url) ? nodeloc : null;
 }

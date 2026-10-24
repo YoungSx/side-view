@@ -37,7 +37,7 @@ export interface LayoutMountHooks {
 
 /** Encapsulates ALL knowledge of a single platform's DOM and navigation. */
 export interface PlatformAdapter {
-  readonly id: 'x' | 'bluesky' | 'threads' | 'xiaohongshu';
+  readonly id: 'x' | 'bluesky' | 'threads' | 'xiaohongshu' | 'nodeloc';
   /** Split reserves viewport space for a full-width feed using --sv-column-width in layoutCss. */
   readonly columnPosition: 'inline' | 'fixed' | 'split';
   /** Marker set as the detail iframe's `name` so the in-frame script recognises itself. */

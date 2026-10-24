@@ -23,6 +23,7 @@ const PLATFORM_LABEL_KEYS = {
   bluesky: 'Bluesky',
   threads: 'Threads',
   xiaohongshu: 'Xiaohongshu',
+  nodeloc: 'Nodeloc',
 } as const satisfies Record<TabState extends { platform: infer P } ? P : never, string>;
 
 /** Status line copy for each derived tab state. `null` means "no badge". */
@@ -127,6 +128,10 @@ export function App() {
   // Threads renders into a native column it owns, so width and placement genuinely do not apply.
   const isThreads = platform === 'threads';
   const isXiaohongshu = platform === 'xiaohongshu';
+  // Xiaohongshu reserves viewport space and NodeLoc covers the right rails; both ignore placement.
+  const hidesPlacement = isXiaohongshu || platform === 'nodeloc';
+  // NodeLoc intercepts topic links only; the profile/hashtag preference has nothing to gate.
+  const isNodeloc = platform === 'nodeloc';
 
   if (!s) {
     return (
@@ -205,7 +210,7 @@ export function App() {
         </p>
       ) : (
         <div className="space-y-4 px-4 py-3">
-          {!isXiaohongshu && (
+          {!hidesPlacement && (
             <fieldset disabled={busy} className="min-w-0 space-y-2">
               <legend className="text-sm font-medium">{i18n.t('popup.layoutLegend')}</legend>
               <ToggleGroup
@@ -266,12 +271,14 @@ export function App() {
             onCheckedChange={(value) => void save('compactNavigation', value)}
           />
         )}
-        <SwitchRow
-          label={i18n.t(isXiaohongshu ? 'popup.profilesTitle' : 'popup.interceptTitle')}
-          checked={s.interceptProfilesAndTags}
-          disabled={busy}
-          onCheckedChange={(value) => void save('interceptProfilesAndTags', value)}
-        />
+        {!isNodeloc && (
+          <SwitchRow
+            label={i18n.t(isXiaohongshu ? 'popup.profilesTitle' : 'popup.interceptTitle')}
+            checked={s.interceptProfilesAndTags}
+            disabled={busy}
+            onCheckedChange={(value) => void save('interceptProfilesAndTags', value)}
+          />
+        )}
       </div>
 
       <Separator className="mt-2" />

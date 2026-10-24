@@ -103,6 +103,25 @@ and hides unsupported placement controls. Compact navigation is available when t
 navigation renderer is present. Changing the master enable
 switch requires a page reload.
 
+## NodeLoc
+
+`NodelocAdapter` (`src/platforms/nodeloc/`) uses the shared iframe provider on
+`https://www.nodeloc.com` (a Discourse forum with a custom community-card theme). Clicking a
+topic link inside a `.topic-list` row — the card overlay, the title, or a deep `/:post` link —
+opens that topic in the column; author (`data-user-card`), category, tag and every other link
+keeps its native behavior. The site permits same-origin framing (`frame-ancestors 'self'`), so
+no frame-header rule is required.
+
+The column is `fixed` and starts at the topic list's right edge, covering the theme's own
+right rails (`meta-recent-posts`, `sidebar-ads-wrapper`), which `layoutCss` hides while the
+column is open. Xiaohongshu-style viewport reservation is not possible here: the theme declares
+the `#main-outlet-wrapper` grid template with `!important` inside cascade layers, so a
+`<style>`-injected reservation cannot win the cascade. Covering the rails instead keeps the
+centered topic list completely untouched. Placement and the profile/hashtag preference do not
+apply; the popup hides both. The frame keeps the theme's nested topic view and hides the site
+header, left sidebar and rails; the shared detail actions attach to `.nested-view__header`
+(falling back to `.fancy-title`). SPA navigation closes the reading like on other platforms.
+
 For local CDP debugging, keep one browser WebSocket connection alive and multiplex commands
 with request IDs and flattened target sessions (`Target.attachToTarget` with `flatten: true`).
 On Windows Chrome, the current endpoint is recorded in

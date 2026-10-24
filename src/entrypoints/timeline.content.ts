@@ -11,6 +11,7 @@ export default defineContentScript({
     '*://twitter.com/*',
     'https://bsky.app/*',
     'https://www.xiaohongshu.com/*',
+    'https://www.nodeloc.com/*',
   ],
   runAt: 'document_idle',
   cssInjectionMode: 'ui',
