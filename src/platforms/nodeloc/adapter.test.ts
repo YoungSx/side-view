@@ -77,6 +77,26 @@ describe('Nodeloc adapter', () => {
     expect(adapter.getPrimaryColumn()).toBeNull();
   });
 
+  it('reserves the last grid track inline with !important and releases it cleanly', () => {
+    document.body.innerHTML = '<div id="main-outlet-wrapper"><div id="main-outlet"></div></div>';
+    const wrapper = document.querySelector<HTMLElement>('#main-outlet-wrapper');
+    if (!wrapper) throw new Error('Missing wrapper');
+    expect(adapter.columnPosition).toBe('split');
+    adapter.applyGridReservation('var(--sv-column-width, 0px)');
+    expect(wrapper.style.getPropertyPriority('grid-template-columns')).toBe('important');
+    const template = wrapper.style.getPropertyValue('grid-template-columns');
+    expect(template).toContain('[sidebar]');
+    expect(template).toContain('[community] 0');
+    expect(template).toContain('[ads] minmax(0, var(--sv-column-width, 0px))');
+    adapter.applyGridReservation(null);
+    expect(wrapper.style.getPropertyValue('grid-template-columns')).toBe('');
+  });
+
+  it('ignores the reservation when the theme wrapper is absent', () => {
+    expect(() => adapter.applyGridReservation('600px')).not.toThrow();
+    expect(() => adapter.applyGridReservation(null)).not.toThrow();
+  });
+
   it('opens topic rows: the card overlay, the title and deep post links', () => {
     for (const id of ['overlay', 'title', 'post', 'bare']) {
       expect(intent(id)).toEqual({

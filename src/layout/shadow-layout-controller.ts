@@ -117,6 +117,7 @@ export class ShadowLayoutController implements LayoutController {
     this.ui?.remove();
     this.styleEl?.remove();
     this.styleEl = null;
+    this.adapter.applyGridReservation?.(null);
     this.removeBodyClasses();
   }
 
@@ -284,6 +285,7 @@ export class ShadowLayoutController implements LayoutController {
     this.ui = null;
     this.styleEl?.remove();
     this.styleEl = null;
+    this.adapter.applyGridReservation?.(null);
     this.removeBodyClasses();
     document.documentElement.removeAttribute(COMPACT_REQUEST);
   }
@@ -307,6 +309,9 @@ export class ShadowLayoutController implements LayoutController {
         ? `body.${SV_ACTIVE_CLASS} { --sv-column-width: min(${this.width}px, 50vw); }`
         : '';
     this.styleEl.textContent = `${reservation}\n${this.adapter.layoutCss(this.mode)}`;
+    // Themes whose cascade beats stylesheets get an inline reservation instead; it references
+    // the same variable, so drags re-resolve it without rewriting the template.
+    this.adapter.applyGridReservation?.(reservation ? 'var(--sv-column-width, 0px)' : null);
   }
 
   private styleHost(host: HTMLElement): void {
