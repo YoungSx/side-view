@@ -398,7 +398,11 @@ export class ShadowLayoutController implements LayoutController {
       if (!primary || primary.width <= 0) return null;
       const viewport = document.documentElement.clientWidth;
       const width = Math.min(this.width, viewport / 2);
-      return width > 0 ? { left: viewport - width, width } : null;
+      if (width <= 0) return null;
+      // A capped/centered wrapper never reaches the viewport edge: dock to the wrapper.
+      const edge = this.adapter.columnRight?.();
+      const right = typeof edge === 'number' && edge > 0 ? edge : viewport;
+      return { left: Math.max(0, right - width), width };
     }
     const left = this.columnLeft();
     if (left === null) return null;

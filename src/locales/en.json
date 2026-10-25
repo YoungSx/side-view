@@ -35,7 +35,8 @@
       "Bluesky": "Bluesky",
       "Threads": "Threads",
       "Xiaohongshu": "Xiaohongshu",
-      "Nodeloc": "NodeLoc"
+      "Nodeloc": "NodeLoc",
+      "LinuxDo": "linux.do"
     },
     "status": {
       "active": "Active",
@@ -112,7 +113,9 @@
       "xiaohongshuTitle": "Xiaohongshu",
       "xiaohongshuNote": "Opens notes and user profiles beside the feed. Width applies, up to half the window; placement does not. Compact navigation uses the native icon rail when available. Profile links follow the profile-opening preference; topic and search links stay native.",
       "nodelocTitle": "NodeLoc",
-      "nodelocNote": "Opens topics from the topic list beside the list. Width applies; placement, compact navigation and the profile/hashtag preference do not — author, category and tag links keep their native behavior."
+      "nodelocNote": "Opens topics from the topic list beside the list. Width applies; placement, compact navigation and the profile/hashtag preference do not — author, category and tag links keep their native behavior.",
+      "linuxdoTitle": "linux.do",
+      "linuxdoNote": "Opens topics from the topic list beside the list. Width applies; placement, compact navigation and the profile/hashtag preference do not — author, category and tag links keep their native behavior."
     },
     "advanced": {
       "title": "Advanced",

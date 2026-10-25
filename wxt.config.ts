@@ -31,6 +31,8 @@ export default defineConfig({
       'https://*.threads.net/*',
       'https://www.nodeloc.com/*',
       'https://nodeloc.com/*',
+      'https://linux.do/*',
+      'https://www.linux.do/*',
     ],
     // X needs narrowly scoped sub-frame header relaxation. Bluesky permits same-origin
     // frames, so its host permission does not add or broaden these network rules.

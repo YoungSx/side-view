@@ -35,7 +35,8 @@
       "Bluesky": "Bluesky",
       "Threads": "Threads",
       "Xiaohongshu": "小紅書",
-      "Nodeloc": "NodeLoc"
+      "Nodeloc": "NodeLoc",
+      "LinuxDo": "linux.do"
     },
     "status": {
       "active": "執行中",
@@ -112,7 +113,9 @@
       "xiaohongshuTitle": "小紅書",
       "xiaohongshuNote": "在動態旁開啟筆記和使用者主頁。寬度設定生效，最多佔視窗一半；側欄位置不適用。精簡導覽在網站提供原生圖示列時可用。使用者連結依照開啟個人主頁的設定，話題和搜尋連結保留原生行為。",
       "nodelocTitle": "NodeLoc",
-      "nodelocNote": "在話題列表旁開啟話題。寬度設定生效；側欄位置、精簡導覽與個人主頁/話題標籤設定不適用，作者、節點和標籤連結保留原生行為。"
+      "nodelocNote": "在話題列表旁開啟話題。寬度設定生效；側欄位置、精簡導覽與個人主頁/話題標籤設定不適用，作者、節點和標籤連結保留原生行為。",
+      "linuxdoTitle": "linux.do",
+      "linuxdoNote": "在話題列表旁開啟話題。寬度設定生效；側欄位置、精簡導覽與個人主頁/話題標籤設定不適用，作者、分類和標籤連結保留原生行為。"
     },
     "advanced": {
       "title": "進階",

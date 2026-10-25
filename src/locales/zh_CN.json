@@ -35,7 +35,8 @@
       "Bluesky": "Bluesky",
       "Threads": "Threads",
       "Xiaohongshu": "小红书",
-      "Nodeloc": "NodeLoc"
+      "Nodeloc": "NodeLoc",
+      "LinuxDo": "linux.do"
     },
     "status": {
       "active": "运行中",
@@ -112,7 +113,9 @@
       "xiaohongshuTitle": "小红书",
       "xiaohongshuNote": "在信息流旁打开笔记和用户主页。宽度设置生效，最多占窗口一半；侧栏位置不适用。紧凑导航在网站提供原生图标栏时可用。用户链接遵循打开个人主页的设置，话题和搜索链接保持原生行为。",
       "nodelocTitle": "NodeLoc",
-      "nodelocNote": "在话题列表旁打开话题。宽度设置生效；侧栏位置、紧凑导航与个人主页/话题标签设置不适用，作者、节点和标签链接保持原生行为。"
+      "nodelocNote": "在话题列表旁打开话题。宽度设置生效；侧栏位置、紧凑导航与个人主页/话题标签设置不适用，作者、节点和标签链接保持原生行为。",
+      "linuxdoTitle": "linux.do",
+      "linuxdoNote": "在话题列表旁打开话题。宽度设置生效；侧栏位置、紧凑导航与个人主页/话题标签设置不适用，作者、分类和标签链接保持原生行为。"
     },
     "advanced": {
       "title": "高级",
