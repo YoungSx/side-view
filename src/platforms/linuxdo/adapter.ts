@@ -17,8 +17,9 @@ export class LinuxdoAdapter implements PlatformAdapter {
   readonly columnPosition = 'split' as const;
   readonly detailFrameName = 'sideview-linuxdo-detail';
   readonly columnAnchor = { selector: '#main-outlet-wrapper', append: 'after' as const };
-  // Deliberately off: the drag handle is currently nodeloc-only (flip to true to opt in here).
-  readonly resizable = false;
+  // The docking geometry keeps the wrapper's right edge (and so the handle's drag plane) stable
+  // while the reservation grows, so drag-to-resize behaves exactly as on nodeloc.
+  readonly resizable = true;
 
   matches(url: URL): boolean {
     return isLinuxdoUrl(url);
@@ -113,7 +114,13 @@ export class LinuxdoAdapter implements PlatformAdapter {
 
   detailFrameCss(): string {
     return `
-      .d-header, .sidebar-wrapper, .welcome-banner { display: none !important; }
+      /* The post stream is virtualized: scroll deep (or open a deep post link) and the in-content
+         title is reclaimed, with the title re-rendered inside the header's extra-info wrapper.
+         Keep the header only in that state, trimmed to its title row, so the shared actions always
+         have a visible home; at the top of the stream the header disappears entirely. */
+      .d-header-wrap:not(:has(.extra-info-wrapper)) { display: none !important; }
+      .d-header .contents > :not(.extra-info-wrapper) { display: none !important; }
+      .sidebar-wrapper, .welcome-banner { display: none !important; }
       #main-outlet-wrapper { grid-template-columns: minmax(0, 1fr) !important; padding: 0 !important; }
       #main-outlet { width: 100% !important; max-width: 100% !important; }
       .container { padding-left: 8px !important; padding-right: 8px !important; }
@@ -124,10 +131,12 @@ export class LinuxdoAdapter implements PlatformAdapter {
   }
 
   detailHeader(doc: Document): HTMLElement | null {
-    // The topic title row (title · statuses · category · tags): appending there puts the shared
-    // actions beside the category block. Error/plain pages render only an h1.
+    // The topic title row: in-content near the stream top, and in the header's extra-info
+    // wrapper once the stream scrolls the in-content title away (the virtualized stream reclaims
+    // it). The reconciler migrates the actions between the two as the reading scrolls.
     return (
       doc.querySelector<HTMLElement>('#main-outlet .title-wrapper') ??
+      doc.querySelector<HTMLElement>('.d-header .title-wrapper') ??
       doc.querySelector<HTMLElement>('#main-outlet h1')
     );
   }
