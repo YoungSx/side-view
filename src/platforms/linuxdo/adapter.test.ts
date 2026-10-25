@@ -80,8 +80,8 @@ describe('Linuxdo adapter', () => {
     const wrapper = document.querySelector<HTMLElement>('#main-outlet-wrapper');
     if (!wrapper) throw new Error('Missing wrapper');
     expect(adapter.columnPosition).toBe('split');
-    // The resize handle stays nodeloc-only until opted in here as well.
-    expect(adapter.resizable).toBe(false);
+    // The drag handle ships enabled here, like on nodeloc.
+    expect(adapter.resizable).toBe(true);
     adapter.applyGridReservation('var(--sv-column-width, 0px)');
     expect(wrapper.style.getPropertyPriority('padding-right')).toBe('important');
     expect(wrapper.style.getPropertyValue('padding-right')).toBe('var(--sv-column-width, 0px)');
@@ -169,11 +169,18 @@ describe('Linuxdo adapter', () => {
     expect(adapter.layoutCss('replace-sidebar')).not.toMatch(/z-index/);
   });
 
-  it('joins the topic title row, falling back to the h1 when it is absent', () => {
+  it('joins the topic title row, the header title row when scrolled, then the h1', () => {
     document.body.innerHTML =
       '<div id="main-outlet"><div class="container" id="topic-title">' +
       '<div class="title-wrapper"><h1><a class="fancy-title">T</a></h1>' +
       '<div class="topic-category">C</div></div></div></div>';
+    expect(adapter.detailHeader(document)?.className).toBe('title-wrapper');
+    // Scrolled deep, the virtualized stream reclaims the in-content title and only the header's
+    // extra-info wrapper holds one.
+    document.body.innerHTML =
+      '<div class="d-header-wrap"><header class="d-header"><div class="wrap"><div class="contents">' +
+      '<div class="extra-info-wrapper"><div class="title-wrapper"><h1>Deep</h1></div></div>' +
+      '</div></div></header></div>';
     expect(adapter.detailHeader(document)?.className).toBe('title-wrapper');
     document.body.innerHTML = '<div id="main-outlet"><h1><a class="fancy-title">T</a></h1></div>';
     // A block h1 wins over the inline fancy-title anchor so actions right-align, not trail the text.

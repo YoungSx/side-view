@@ -63,7 +63,8 @@ General switches save immediately; width changes use **Apply**, and advanced sel
 after changing the main enable switch, and reload X after saving selector overrides.
 
 The detail column also has a drag handle on its left edge (opt-in per platform via the
-adapter's `resizable` flag — currently NodeLoc only; the width slider keeps working everywhere):
+adapter's `resizable` flag — currently NodeLoc and linux.do; the width slider keeps working
+everywhere):
 dragging resizes live within the shared 320–1200px bounds and commits the displayed width —
 after the geometry clamp — to `columnWidth` on release; arrow keys (±10, Shift for ±50) do the
 same from keyboard focus. The handle lives in the column's shadow root
@@ -158,10 +159,17 @@ floating over the page's dead margin. Because stock Discourse varies its
 reserves the column as a `padding-right` on the wrapper (inline `!important`) instead of
 rewriting the template: the flexible main track shrinks under it in every template variant and
 the native sidebar rail stays untouched. The reservation is removed on close. The frame hides
-the site header, sidebar and welcome banner and collapses the wrapper to a single track; the
-shared detail actions join `.title-wrapper` (title · statuses · category · tags), falling back
-to any `#main-outlet` h1. The drag-resize handle is deliberately off here (`resizable = false`)
-— it stays nodeloc-only until opted in. Placement and the profile/hashtag preference do not
+the sidebar and welcome banner, collapses the wrapper to a single track, and keeps the site
+header only while it carries the topic title: the virtualized post stream reclaims the
+in-content title once the reading scrolls deep (deep post links land there immediately), with
+the title re-rendered in the header's extra-info wrapper, so the header is shown trimmed to its
+title row in exactly that state (`:has(.extra-info-wrapper)`) and hidden at the stream top. The
+shared detail actions join `.title-wrapper` (title · statuses · category · tags) wherever it
+currently lives — in-content first, then the header's row — and migrate between the two as the
+reading scrolls, falling back to any `#main-outlet` h1. The drag-resize handle ships enabled
+here: the docking geometry keeps
+the wrapper's right edge stable while the reservation grows, so dragging behaves exactly as on
+NodeLoc. Placement and the profile/hashtag preference do not
 apply; the popup hides both. SPA navigation closes the reading like on other platforms.
 
 For local CDP debugging, keep one browser WebSocket connection alive and multiplex commands
