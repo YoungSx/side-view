@@ -65,6 +65,30 @@ it('reserves space for a full-width feed, caps it to half the viewport, and rest
   document.documentElement.removeAttribute('data-sideview-xiaohongshu-layout');
 });
 
+it('docks a split column to the adapter-provided wrapper edge and falls back to the viewport', async () => {
+  layout.detach();
+  document.body.innerHTML =
+    '<div id="app"><div class="feeds-container"><section class="note-item"></section></div></div>';
+  const feed = document.querySelector<HTMLElement>('.feeds-container');
+  if (!feed) throw new Error('Missing feed');
+  vi.spyOn(feed, 'getBoundingClientRect').mockReturnValue({ right: 1400, width: 1400 } as DOMRect);
+  const adapter = new XiaohongshuAdapter();
+  // A centered, max-width-capped wrapper ends before the viewport's right edge.
+  const adapterEdge = vi.fn<() => number | null>(() => 1200);
+  Object.assign(adapter, { columnRight: adapterEdge });
+  document.documentElement.setAttribute('data-sideview-xiaohongshu-layout', 'available');
+  layout = new ShadowLayoutController(ctx, adapter, 600);
+  await layout.initialize('replace-sidebar', { onMount: vi.fn(), onRemove: vi.fn() });
+  expect(layout.open()).toBe(true);
+  expect(host()?.style.left).toBe('600px');
+  expect(host()?.style.width).toBe('600px');
+  // A transiently unmeasurable wrapper falls back to the viewport's right edge.
+  adapterEdge.mockReturnValue(null);
+  window.dispatchEvent(new Event('resize'));
+  expect(host()?.style.left).toBe('800px');
+  document.documentElement.removeAttribute('data-sideview-xiaohongshu-layout');
+});
+
 it('drives the grid reservation hook on open, width changes, and close', async () => {
   layout.detach();
   document.body.innerHTML =

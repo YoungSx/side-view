@@ -416,6 +416,10 @@ export function App() {
                   <dt>{i18n.t('options.platforms.nodelocTitle')}</dt>
                   <dd>{i18n.t('options.platforms.nodelocNote')}</dd>
                 </div>
+                <div>
+                  <dt>{i18n.t('options.platforms.linuxdoTitle')}</dt>
+                  <dd>{i18n.t('options.platforms.linuxdoNote')}</dd>
+                </div>
               </dl>
             </section>
             <Separator />

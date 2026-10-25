@@ -37,7 +37,7 @@ export interface LayoutMountHooks {
 
 /** Encapsulates ALL knowledge of a single platform's DOM and navigation. */
 export interface PlatformAdapter {
-  readonly id: 'x' | 'bluesky' | 'threads' | 'xiaohongshu' | 'nodeloc';
+  readonly id: 'x' | 'bluesky' | 'threads' | 'xiaohongshu' | 'nodeloc' | 'linuxdo';
   /** Split reserves viewport space for a full-width feed using --sv-column-width in layoutCss. */
   readonly columnPosition: 'inline' | 'fixed' | 'split';
   /** Marker set as the detail iframe's `name` so the in-frame script recognises itself. */
@@ -56,6 +56,12 @@ export interface PlatformAdapter {
    * itself, and the header's own dropdown panels then paint above the column). Absent = 0.
    */
   columnTop?(): number;
+  /**
+   * The x where a split column's right edge sits, measured live. A centered or max-width-capped
+   * content wrapper never reaches the viewport's right edge, so the column must dock to the
+   * wrapper instead of floating over its dead margin. Absent/null = the viewport's right edge.
+   */
+  columnRight?(): number | null;
   /** Does this adapter own the given location? */
   matches(url: URL): boolean;
   /** The persistent timeline column, or null if not present yet. */

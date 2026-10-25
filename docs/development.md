@@ -139,6 +139,31 @@ header, left sidebar and rails; the shared detail actions join the native toolba
 then any `#main-outlet` h1, never the inline `.fancy-title` anchor. SPA navigation closes
 the reading like on other platforms.
 
+## linux.do
+
+`LinuxdoAdapter` (`src/platforms/linuxdo/`) uses the shared iframe provider on
+`https://linux.do` (a stock Discourse forum — the same CMS as NodeLoc, but without the
+community-card theme). Clicking a topic link inside a `.topic-list` row — the title or a deep
+`/:post` link — opens that topic in the column; a linkless spot opens the row's own topic, while
+author (`data-user-card`), category, tag, pin-toggle and every other link keeps its native
+behavior. The site permits same-origin framing (`frame-ancestors 'self'`), so no frame-header
+rule is required.
+
+The column uses the same `split` positioning and `columnTop` treatment as NodeLoc (below the
+sticky `.d-header`, whose dropdowns paint above it), plus the optional `columnRight` hook: the
+wrapper is centered under a `max-width` on wide screens and never reaches the viewport's right
+edge, so the column docks to the wrapper's edge and hugs the reflowed content instead of
+floating over the page's dead margin. Because stock Discourse varies its
+`#main-outlet-wrapper` grid template by breakpoint and sidebar state, `applyGridReservation`
+reserves the column as a `padding-right` on the wrapper (inline `!important`) instead of
+rewriting the template: the flexible main track shrinks under it in every template variant and
+the native sidebar rail stays untouched. The reservation is removed on close. The frame hides
+the site header, sidebar and welcome banner and collapses the wrapper to a single track; the
+shared detail actions join `.title-wrapper` (title · statuses · category · tags), falling back
+to any `#main-outlet` h1. The drag-resize handle is deliberately off here (`resizable = false`)
+— it stays nodeloc-only until opted in. Placement and the profile/hashtag preference do not
+apply; the popup hides both. SPA navigation closes the reading like on other platforms.
+
 For local CDP debugging, keep one browser WebSocket connection alive and multiplex commands
 with request IDs and flattened target sessions (`Target.attachToTarget` with `flatten: true`).
 On Windows Chrome, the current endpoint is recorded in

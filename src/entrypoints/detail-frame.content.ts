@@ -12,6 +12,8 @@ export default defineContentScript({
     'https://bsky.app/*',
     'https://www.xiaohongshu.com/*',
     'https://www.nodeloc.com/*',
+    'https://linux.do/*',
+    'https://www.linux.do/*',
   ],
   allFrames: true,
   runAt: 'document_start',

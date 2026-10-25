@@ -21,6 +21,7 @@ const PLATFORM_LABEL_KEYS = {
   threads: 'Threads',
   xiaohongshu: 'Xiaohongshu',
   nodeloc: 'Nodeloc',
+  linuxdo: 'LinuxDo',
 } as const satisfies Record<TabState extends { platform: infer P } ? P : never, string>;
 
 /** Status line copy for each derived tab state. `null` means "no badge". */
@@ -125,10 +126,10 @@ export function App() {
   // Threads renders into a native column it owns, so width and placement genuinely do not apply.
   const isThreads = platform === 'threads';
   const isXiaohongshu = platform === 'xiaohongshu';
-  // Xiaohongshu reserves viewport space and NodeLoc covers the right rails; both ignore placement.
-  const hidesPlacement = isXiaohongshu || platform === 'nodeloc';
-  // NodeLoc intercepts topic links only; the profile/hashtag preference has nothing to gate.
-  const isNodeloc = platform === 'nodeloc';
+  // Split-positioned platforms (Xiaohongshu, NodeLoc, linux.do) ignore placement.
+  const hidesPlacement = isXiaohongshu || platform === 'nodeloc' || platform === 'linuxdo';
+  // The Discourse platforms intercept topic links only; the profile/hashtag preference has nothing to gate.
+  const hidesInterceptPref = platform === 'nodeloc' || platform === 'linuxdo';
 
   if (!s) {
     return (
@@ -268,7 +269,7 @@ export function App() {
             onCheckedChange={(value) => void save('compactNavigation', value)}
           />
         )}
-        {!isNodeloc && (
+        {!hidesInterceptPref && (
           <SwitchRow
             label={i18n.t(isXiaohongshu ? 'popup.profilesTitle' : 'popup.interceptTitle')}
             checked={s.interceptProfilesAndTags}
