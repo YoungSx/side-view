@@ -154,7 +154,11 @@ export function updateNativeColumn(column: NativeColumn, url: string): boolean {
   // "Remove column" action instead of treating the view as an unpinned child navigation.
   column.update({ columnID: column.id, relayRecordID: column.relayId, relativeURL: url });
   reset(url);
+  const beforeY = window.scrollY;
   column.element.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' });
+  if (Math.abs(window.scrollY - beforeY) > 2) {
+    window.scrollTo({ top: beforeY, behavior: 'instant' as ScrollBehavior });
+  }
   return true;
 }
 export function createNativeColumn(source: Element, url: string, requestId: string): boolean {

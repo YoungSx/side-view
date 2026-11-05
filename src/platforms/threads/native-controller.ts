@@ -13,7 +13,11 @@ const INTERACTIVE =
 const SCROLL: ScrollIntoViewOptions = { block: 'nearest', inline: 'nearest', behavior: 'auto' };
 export function installThreadsNative(): () => void {
   let config: NativeConfig | null = null;
-  let pending: { requestId: string; optimistic: HTMLElement | null } | null = null;
+  let pending: {
+    requestId: string;
+    optimistic: HTMLElement | null;
+    sourceScrollTop?: number;
+  } | null = null;
   let knownOwned: HTMLElement | null = null;
   const panel = new ThreadsNativePanel();
   const observer = new MutationObserver(() => reconcile());
@@ -48,9 +52,29 @@ export function installThreadsNative(): () => void {
     if (!/^\d+$/.test(column.id)) return;
     config.columnId = column.id;
     knownOwned = column.element;
+    const savedTop = pending.sourceScrollTop;
     pending = null;
     report(column.id);
-    if (column.element.checkVisibility()) column.element.scrollIntoView(SCROLL);
+    if (column.element.checkVisibility()) {
+      const beforeY = window.scrollY;
+      column.element.scrollIntoView(SCROLL);
+      if (Math.abs(window.scrollY - beforeY) > 2) {
+        window.scrollTo({ top: beforeY, behavior: 'instant' as ScrollBehavior });
+      }
+    }
+    // Restore home feed scroll position if single-column layout switched to deck
+    if (typeof savedTop === 'number') {
+      const restoreHome = (): void => {
+        const homeFeed = document.querySelector<HTMLElement>(
+          '[data-deck-column] [data-column-scrollable]',
+        );
+        if (homeFeed && Math.abs(homeFeed.scrollTop - savedTop) > 2) {
+          homeFeed.scrollTop = savedTop;
+        }
+      };
+      restoreHome();
+      requestAnimationFrame(restoreHome);
+    }
   };
   const message = (event: MessageEvent) => {
     const data = event.data;
@@ -136,7 +160,8 @@ export function installThreadsNative(): () => void {
         if (!updateNativeColumn(owned, relative)) return;
       } else if (!config.columnId) {
         const requestId = crypto.randomUUID();
-        pending = { requestId, optimistic: null };
+        const sourceScrollTop = scrollable.scrollTop;
+        pending = { requestId, optimistic: null, sourceScrollTop };
         if (!createNativeColumn(scrollable, relative, requestId)) {
           pending = null;
           if (!panel.open(scrollable, relative)) return;

@@ -63,9 +63,65 @@ export class ClickRouter {
     if (!intent || !this.policy(intent.kind)) return;
     // Classification and policy checks precede any attempt to open the detail.
     if (!this.canIntercept()) return;
+
+    // Snapshot timeline scroll position before layout changes or host reflows
+    const target = event.target instanceof Element ? event.target : null;
+    const scrollContainer = target?.closest?.('[data-column-scrollable]') as HTMLElement | null;
+    const snapshot = {
+      windowX: window.scrollX,
+      windowY: window.scrollY,
+      container: scrollContainer,
+      containerTop: scrollContainer?.scrollTop ?? null,
+    };
+
     if (!this.onIntent(intent)) return;
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
+
+    // Defend timeline scroll position across microtask and subsequent layout animation frames
+    this.restoreScroll(snapshot);
   };
+
+  /**
+   * Keep timeline anchored at its reading position when the detail column expands.
+   * Host layout changes (hiding sidebar, inserting flex column, or virtual list resize)
+   * can transiently truncate scrollHeight or trigger scrollIntoView, resetting scrollTop to 0.
+   */
+  private restoreScroll(snapshot: {
+    windowX: number;
+    windowY: number;
+    container: HTMLElement | null;
+    containerTop: number | null;
+  }): void {
+    const restore = (): void => {
+      let restored = false;
+      if (Math.abs(window.scrollY - snapshot.windowY) > 2) {
+        window.scrollTo({
+          left: snapshot.windowX,
+          top: snapshot.windowY,
+          behavior: 'instant' as ScrollBehavior,
+        });
+        restored = true;
+      }
+      if (
+        snapshot.container &&
+        snapshot.containerTop !== null &&
+        Math.abs(snapshot.container.scrollTop - snapshot.containerTop) > 2
+      ) {
+        snapshot.container.scrollTop = snapshot.containerTop;
+        restored = true;
+      }
+      if (restored) {
+        window.dispatchEvent(new Event('scroll'));
+      }
+    };
+
+    // Protect across immediate microtask and two consecutive animation frames
+    queueMicrotask(restore);
+    requestAnimationFrame(() => {
+      restore();
+      requestAnimationFrame(restore);
+    });
+  }
 }
