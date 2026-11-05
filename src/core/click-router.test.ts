@@ -56,6 +56,27 @@ describe('ClickRouter', () => {
     expect(onIntent).not.toHaveBeenCalled();
     expect(event.defaultPrevented).toBe(false);
   });
+
+  it('restores timeline scroll position if host reflow resets scroll to 0', async () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    Object.defineProperty(window, 'scrollY', { value: 1500, writable: true, configurable: true });
+    const onIntent = vi.fn(() => {
+      window.scrollY = 0;
+      return true;
+    });
+    const router = new ClickRouter(new XAdapter(), onIntent, () => true);
+    router.install({
+      onInvalidated: (cb: () => void) => cleanups.push(cb),
+    } as unknown as ContentScriptContext);
+
+    click('body');
+    expect(onIntent).toHaveBeenCalledOnce();
+
+    // Await microtask and animation frames
+    await new Promise((r) => setTimeout(r, 50));
+    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 1500 }));
+    scrollTo.mockRestore();
+  });
 });
 
 it('only prepares the side column for eligible, unmodified tweet clicks', () => {

@@ -231,6 +231,23 @@ it('records a completed creation after navigation hides the deck without scrolli
   );
   expect(optimistic.element.scrollIntoView).not.toHaveBeenCalled();
 });
+it('restores single-column timeline scrollTop to deck home column upon successful column creation', async () => {
+  configure(null);
+  vi.mocked(createNativeColumn).mockReturnValue(true);
+  const scrollable = document.querySelector<HTMLElement>('[data-column-scrollable]');
+  if (!scrollable) throw new Error('Missing scrollable');
+  scrollable.scrollTop = 800;
+  trustedClick();
+  const requestId = vi.mocked(createNativeColumn).mock.calls[0]?.[2];
+  if (!requestId) throw new Error('Missing creation request');
+  const optimistic = addColumn('optimistic-id', requestId);
+  await Promise.resolve();
+  optimistic.id = '456';
+  scrollable.scrollTop = 0;
+  optimistic.element.append(document.createElement('span'));
+  await Promise.resolve();
+  expect(scrollable.scrollTop).toBe(800);
+});
 it('forgets a removed column from the active deck without a timer or creating a replacement', async () => {
   const owned = addColumn();
   configure(owned.id);
